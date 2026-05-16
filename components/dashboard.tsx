@@ -6,7 +6,7 @@ import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-ut
 import { isFridayToday } from '@/lib/utils'
 import { useSettings } from '@/hooks/useSettings'
 import AppHeader from './app-header'
-import PrayerCarousel from './prayer-carousel'
+import PrayerFocusRail from './prayer-focus-rail'
 import SettingsSheet from './settings-sheet'
 
 interface Props {
@@ -118,9 +118,9 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         onSettingsOpen={() => setSettingsOpen(true)}
       />
 
-      <div className="flex-1 min-h-0">
-        <PrayerCarousel
-          prayers={prayers}
+      {/* Scrollable body: FocusRail rail + countdown + masjid list */}
+      <div className="flex-1 overflow-y-auto scrollbar-none">
+        <PrayerFocusRail
           cards={cards}
           initialIndex={initialIndex}
         />
