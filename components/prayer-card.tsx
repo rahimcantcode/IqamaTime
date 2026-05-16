@@ -37,13 +37,8 @@ export default function PrayerCard({ data, isActive }: Props) {
       {/* Card content */}
       <div className="relative z-10 flex flex-col h-full">
 
-        {/* Collapsible header — shrinks when user scrolls the iqama list */}
-        <motion.div
-          initial={false}
-          animate={{ height: scrolled ? 0 : 'auto', opacity: scrolled ? 0 : 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-          style={{ overflow: 'hidden' }}
-        >
+        {/* Header — hidden instantly when user scrolls the iqama list */}
+        <div className={scrolled ? 'hidden' : ''}>
           {/* Prayer header */}
           <motion.div
             initial={false}
@@ -97,7 +92,7 @@ export default function PrayerCard({ data, isActive }: Props) {
             className="mx-6 mb-4 h-px"
             style={{ background: `linear-gradient(to right, transparent, ${accent}33, transparent)` }}
           />
-        </motion.div>
+        </div>
 
         {/* Masjid iqama list */}
         <div
