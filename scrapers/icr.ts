@@ -8,6 +8,7 @@ import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { sunsetPlus } from './sunsetUtils'
 
 const MASJID_NAME = 'Islamic Center of Rowlett'
 const URL = 'https://icrmasjid.org'
@@ -50,6 +51,9 @@ export async function scrapeICR(): Promise<void> {
         else                times.jummah2 = normalizeTime(timeVal ?? raw)
       }
     }
+
+    // ICR Maghrib iqamah is sunset + 10 min (no fixed time on website)
+    if (!times.maghrib) times.maghrib = await sunsetPlus(10)
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)

@@ -9,6 +9,7 @@ import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { sunsetPlus } from './sunsetUtils'
 
 const MASJID_NAME = 'Qalam Institute'
 const URL = 'https://qalamcampus.org'
@@ -67,7 +68,7 @@ export async function scrapeQalam(): Promise<void> {
                                        times.dhuhr   = normalizeTime(pickActiveTime(line, activeIdx))
         if (lower.includes('asr') && !lower.includes('dhuhr'))
                                        times.asr     = normalizeTime(pickActiveTime(line, activeIdx))
-        if (lower.includes('maghrib')) times.maghrib  = normalizeTime(pickActiveTime(line, activeIdx))
+        if (lower.includes('maghrib')) times.maghrib  = normalizeTime(pickActiveTime(line, activeIdx)) ?? await sunsetPlus(5)
         if (lower.includes('isha'))    times.isha    = normalizeTime(pickActiveTime(line, activeIdx))
       }
     }
