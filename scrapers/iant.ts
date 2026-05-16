@@ -1,8 +1,8 @@
 /**
  * Scraper: IANT
- * URL: https://iant.com
- * Method: POST to WP admin-ajax.php with action=get_monthly_timetable
- *         Parse HTML table — iqamah columns at fixed indices
+ * URL: https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=xdy03lAX
+ * Method: GET AthanPlus widget (embedded on iant.com via iframe)
+ *         Active carousel slide = today's iqamah times
  */
 import axios from 'axios'
 import * as cheerio from 'cheerio'
@@ -11,7 +11,7 @@ import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 
 const MASJID_NAME = 'IANT'
-const AJAX_URL    = 'https://iant.com/wp-admin/admin-ajax.php'
+const WIDGET_URL  = 'https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=xdy03lAX'
 const SOURCE_URL  = 'https://iant.com'
 
 export async function scrapeIANT(): Promise<void> {
@@ -19,50 +19,47 @@ export async function scrapeIANT(): Promise<void> {
   const date  = todayDate()
 
   try {
-    const now   = new Date()
-    const month = now.getMonth() + 1
-    const year  = now.getFullYear()
-
-    const { data: html } = await axios.post(
-      AJAX_URL,
-      new URLSearchParams({ action: 'get_monthly_timetable', month: String(month), year: String(year) }),
-      {
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)',
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
-    )
+    const { data: html } = await axios.get(WIDGET_URL, {
+      timeout: 15000,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' },
+    })
 
     const $ = cheerio.load(html as string)
 
-    // Table columns (0-indexed):
-    // 0=Date, 1=Day, 2=Fajr SuhoorEnd, 3=Fajr Iqamah, 4=Sunrise,
-    // 5=Zuhr Begins, 6=Zuhr Iqamah, 7=Asr Begins, 8=Asr Iqamah,
-    // 9=Maghrib Iftar, 10=Maghrib Iqamah, 11=Isha Begins, 12=Isha Iqamah
-    const IQAMAH_COLS = { fajr: 3, dhuhr: 6, asr: 8, maghrib: 10, isha: 12 }
+    // The carousel has 7 slides (one per day); find which index is active (today)
+    let activeIdx = 0
+    $('.carousel-item').each((i, el) => {
+      if ($(el).hasClass('active')) activeIdx = i
+    })
 
-    const todayLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    // Tables and Jumuah ULs are parallel arrays matching carousel slides
+    const table = $('table').eq(activeIdx)
+
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
       jummah1: null, jummah2: null,
     }
 
-    $('tr').each((_, row) => {
-      const cells = $(row).find('td').map((_, c) => $(c).text().trim()).get()
-      if (cells.length < 13) return
+    // Each prayer row: td[0]=name, td[1]=adhan, td[2]=iqamah (bold)
+    table.find('tr').each((_, row) => {
+      const cells = $(row).find('td')
+      if (cells.length < 3) return
+      const name   = cells.eq(0).text().replace(/\s+/g, ' ').trim().toLowerCase()
+      const iqamah = cells.eq(2).find('b').text().trim() || cells.eq(2).text().trim()
 
-      // Match "May 15, 2026 " (plugin adds trailing space)
-      if (!cells[0].trim().startsWith(todayLabel.replace(',', ',').split(',')[0])) return
-      // Confirm day matches more loosely (month + day number)
-      const cellDate = cells[0].trim()
-      const expectedPrefix = `${now.toLocaleString('en-US', { month: 'long' })} ${now.getDate()},`
-      if (!cellDate.startsWith(expectedPrefix)) return
+      if      (name.includes('fajr'))    times.fajr    = normalizeTime(iqamah)
+      else if (name.includes('dhuhr'))   times.dhuhr   = normalizeTime(iqamah)
+      else if (name.includes('asr'))     times.asr     = normalizeTime(iqamah)
+      else if (name.includes('maghrib')) times.maghrib = normalizeTime(iqamah)
+      else if (name.includes('isha'))    times.isha    = normalizeTime(iqamah)
+    })
 
-      for (const [prayer, col] of Object.entries(IQAMAH_COLS)) {
-        (times as Record<string, string | null>)[prayer] = normalizeTime(cells[col] ?? null)
-      }
+    // Jumuah times: parallel UL list at same index as active carousel slide
+    $('ul.month-calendar').eq(activeIdx).find('li').each((_, item) => {
+      const time  = $(item).find('b').text().trim()
+      const label = $(item).find('p').text().trim().toLowerCase()
+      if      (label.includes('1')) times.jummah1 = normalizeTime(time)
+      else if (label.includes('2')) times.jummah2 = normalizeTime(time)
     })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: SOURCE_URL, ...times })
