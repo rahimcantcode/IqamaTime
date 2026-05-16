@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="35%" r="65%">
+      <stop offset="0%"   stop-color="#0d0d1f"/>
+      <stop offset="100%" stop-color="#080810"/>
+    </radialGradient>
+
+    <!-- Arch fill gradient -->
+    <linearGradient id="archGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#34d399" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.7"/>
+    </linearGradient>
+
+    <!-- Arch glow -->
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#10b981" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Gold accent gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+
+    <!-- Clip rounded corners -->
+    <clipPath id="rounded">
+      <rect width="512" height="512" rx="115"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)"/>
+
+  <g clip-path="url(#rounded)">
+    <!-- Ambient glow behind arch -->
+    <ellipse cx="256" cy="230" rx="180" ry="160" fill="url(#glowGrad)"/>
+
+    <!-- Main arch shape — mihrab/prayer niche -->
+    <!-- Two pillars + semicircular arch top -->
+    <path
+      d="
+        M 175 400
+        L 175 240
+        Q 175 130 256 120
+        Q 337 130 337 240
+        L 337 400
+        Z
+      "
+      fill="none"
+      stroke="url(#archGrad)"
+      stroke-width="14"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+
+    <!-- Inner arch (smaller, offset inward) -->
+    <path
+      d="
+        M 200 390
+        L 200 248
+        Q 200 158 256 150
+        Q 312 158 312 248
+        L 312 390
+      "
+      fill="none"
+      stroke="url(#archGrad)"
+      stroke-width="5"
+      stroke-opacity="0.4"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+
+    <!-- Keystone at arch top -->
+    <ellipse cx="256" cy="122" rx="12" ry="12" fill="url(#goldGrad)" opacity="0.9"/>
+
+    <!-- Small dome on top of arch -->
+    <path
+      d="M 232 122 Q 256 100 280 122"
+      fill="none"
+      stroke="url(#goldGrad)"
+      stroke-width="5"
+      stroke-linecap="round"
+      opacity="0.85"
+    />
+
+    <!-- Crescent moon at keystone -->
+    <path
+      d="M 248 115 A 10 10 0 1 1 264 115 A 7 7 0 1 0 248 115 Z"
+      fill="url(#goldGrad)"
+      opacity="0.9"
+    />
+
+    <!-- Horizontal base line -->
+    <line x1="155" y1="400" x2="357" y2="400" stroke="url(#archGrad)" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Minaret pillars (subtle) -->
+    <rect x="150" y="340" width="18" height="60" rx="4" fill="url(#archGrad)" opacity="0.25"/>
+    <rect x="344" y="340" width="18" height="60" rx="4" fill="url(#archGrad)" opacity="0.25"/>
+
+    <!-- Top finials on minarets -->
+    <ellipse cx="159" cy="337" rx="9"  ry="9"  fill="url(#archGrad)" opacity="0.35"/>
+    <ellipse cx="353" cy="337" rx="9"  ry="9"  fill="url(#archGrad)" opacity="0.35"/>
+
+    <!-- Subtle decorative dots -->
+    <circle cx="256" cy="275" r="4" fill="#34d399" opacity="0.4"/>
+    <circle cx="256" cy="310" r="3" fill="#34d399" opacity="0.25"/>
+    <circle cx="256" cy="340" r="2" fill="#34d399" opacity="0.15"/>
+  </g>
+</svg>

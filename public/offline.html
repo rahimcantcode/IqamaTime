@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>IqamaTime — Offline</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      background: #080810;
+      color: #f9fafb;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 32px;
+      text-align: center;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    p  { font-size: 0.95rem; color: rgba(249,250,251,0.5); line-height: 1.6; }
+    .arabic {
+      font-size: 1.4rem;
+      color: rgba(52,211,153,0.8);
+      letter-spacing: 0.05em;
+    }
+    button {
+      margin-top: 8px;
+      padding: 12px 28px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 9999px;
+      color: #34d399;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <img class="icon" src="/icons/icon-192.png" alt="IqamaTime"/>
+  <p class="arabic">بِسْمِ اللَّهِ</p>
+  <h1>You're Offline</h1>
+  <p>
+    IqamaTime needs a connection to load prayer times.<br/>
+    Please check your internet and try again.
+  </p>
+  <button onclick="window.location.reload()">Try Again</button>
+</body>
+</html>
