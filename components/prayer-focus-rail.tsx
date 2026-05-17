@@ -6,16 +6,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import MasjidList from './masjid-list'
 import CountdownDisplay from './countdown-display'
 import { PrayerCardData } from '@/types'
-import { PRAYER_ACCENT } from '@/lib/prayer-utils'
-
-const CARD_GRADIENTS: Record<string, string> = {
-  fajr:    'from-indigo-800/70 to-indigo-950',
-  dhuhr:   'from-emerald-800/70 to-emerald-950',
-  asr:     'from-amber-800/70 to-amber-950',
-  maghrib: 'from-orange-800/70 to-orange-950',
-  isha:    'from-violet-800/70 to-violet-950',
-  jummah:  'from-emerald-700/70 to-emerald-950',
-}
+import { PRAYER_ACCENT, PRAYER_GRADIENTS, PRAYER_GLOW } from '@/lib/prayer-utils'
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const
 
@@ -30,12 +21,12 @@ interface Props {
 }
 
 export default function PrayerFocusRail({ cards, initialIndex }: Props) {
-  // Unbounded counter — wrap only for display so animations slide correctly
   const [active, setActive] = useState(initialIndex)
   const count    = cards.length
   const activeIdx = wrap(0, count, active)
   const card     = cards[activeIdx]
   const accent   = PRAYER_ACCENT[card.prayer.key]
+  const glow     = PRAYER_GLOW[card.prayer.key]
 
   const goPrev = useCallback(() => setActive(p => p - 1), [])
   const goNext = useCallback(() => setActive(p => p + 1), [])
@@ -52,14 +43,33 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
   }, [goPrev, goNext])
 
   return (
-    <div className="flex flex-col outline-none" tabIndex={0} onKeyDown={onKeyDown}>
+    <div
+      className="flex flex-col outline-none"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+    >
+      {/* ── AMBIENT GLOW ──────────────────────────────────── */}
+      <div className="relative h-[340px] flex items-center justify-center overflow-hidden"
+        style={{ perspective: '1200px' }}>
 
-      {/* ── 3D CARD RAIL ──────────────────────────────────── */}
-      <div
-        className="relative h-[340px] flex items-center justify-center overflow-hidden"
-        style={{ perspective: '1200px' }}
-      >
-        {/* Invisible drag overlay — covers the rail so drag works everywhere */}
+        {/* Glow layer — transitions between prayers */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`glow-${activeIdx}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9 }}
+            className="absolute inset-0 pointer-events-none flex items-start justify-center"
+          >
+            <div
+              className="w-[80%] h-72 rounded-full blur-3xl"
+              style={{ background: `radial-gradient(ellipse, ${glow} 0%, transparent 70%)` }}
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* ── DRAG OVERLAY (captures swipe anywhere on the rail) ── */}
         <motion.div
           className="absolute inset-0 z-30 cursor-grab active:cursor-grabbing"
           drag="x"
@@ -68,6 +78,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           onDragEnd={onDragEnd}
         />
 
+        {/* ── 3D CARD RAIL ──────────────────────────────────── */}
         {[-2, -1, 0, 1, 2].map(offset => {
           const idx      = wrap(0, count, active + offset)
           const c        = cards[idx]
@@ -77,76 +88,116 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           return (
             <motion.div
               key={active + offset}
-              className="absolute w-[190px] h-[260px] md:w-[220px] md:h-[295px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl"
-              style={{ transformStyle: 'preserve-3d', zIndex: isCenter ? 20 : 10 - dist }}
+              className="absolute w-[188px] h-[258px] md:w-[218px] md:h-[290px] rounded-[1.25rem] overflow-hidden shadow-2xl"
+              style={{
+                transformStyle: 'preserve-3d',
+                zIndex: isCenter ? 20 : 10 - dist,
+              }}
               initial={false}
               animate={{
-                x:      offset * 270,
-                z:      -dist * 150,
-                scale:  isCenter ? 1 : 0.82,
+                x:       offset * 268,
+                z:       -dist * 148,
+                scale:   isCenter ? 1 : 0.82,
                 rotateY: offset * -18,
-                opacity: isCenter ? 1 : Math.max(0.15, 1 - dist * 0.45),
-                filter:  `blur(${isCenter ? 0 : dist * 5}px) brightness(${isCenter ? 1 : 0.5})`,
+                opacity: isCenter ? 1 : Math.max(0.12, 1 - dist * 0.44),
+                filter:  `blur(${isCenter ? 0 : dist * 4}px) brightness(${isCenter ? 1 : 0.45})`,
               }}
               transition={SPRING}
               onClick={() => { if (offset !== 0) setActive(p => p + offset) }}
             >
-              {/* Gradient fill */}
-              <div className={`w-full h-full bg-gradient-to-b ${CARD_GRADIENTS[c.prayer.key] ?? 'from-neutral-800 to-neutral-900'} flex flex-col items-center justify-center gap-3 px-4`}>
+              {/* Gradient base */}
+              <div className={`absolute inset-0 bg-gradient-to-b ${PRAYER_GRADIENTS[c.prayer.key]}`} />
+
+              {/* Glass overlay */}
+              <div
+                className="absolute inset-0 bg-white/[0.045]"
+                style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+              />
+
+              {/* Border */}
+              <div className="absolute inset-0 rounded-[1.25rem] border border-white/[0.11]" />
+
+              {/* Top rim light */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+              {/* Content */}
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-2 px-5">
                 <p
-                  className="text-3xl opacity-50"
-                  style={{ fontFamily: 'Georgia, serif', direction: 'rtl' }}
+                  className="text-[1.7rem] leading-none"
+                  style={{
+                    fontFamily: 'Georgia, serif',
+                    direction: 'rtl',
+                    color: 'rgba(255,255,255,0.38)',
+                  }}
                 >
                   {c.prayer.arabicName}
                 </p>
-                <p className="text-2xl font-bold text-white tracking-tight">
+
+                <p className="text-[1.5rem] font-bold text-white tracking-tight leading-none">
                   {c.prayer.displayName}
                 </p>
+
                 {c.adhanTime && (
-                  <p className="text-xs tracking-widest uppercase text-white/40 mt-1">
+                  <p
+                    className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase mt-2"
+                    style={{ color: PRAYER_ACCENT[c.prayer.key] }}
+                  >
                     {c.adhanTime}
                   </p>
                 )}
               </div>
-
-              {/* Top-edge highlight */}
-              <div className="absolute inset-x-0 top-0 h-px bg-white/20 pointer-events-none" />
             </motion.div>
           )
         })}
       </div>
 
-      {/* ── NAV BUTTONS ───────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-3 py-3">
+      {/* ── DOT INDICATORS + CHEVRONS ─────────────────────── */}
+      <div className="flex items-center justify-center gap-3 pb-1 pt-1">
         <button
           onClick={goPrev}
-          className="rounded-full p-2 text-white/30 hover:text-white hover:bg-white/10 transition active:scale-95"
+          className="p-1.5 text-white/20 hover:text-white/50 transition-colors active:scale-90"
           aria-label="Previous prayer"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="w-4 h-4" />
         </button>
-        <span className="text-xs font-mono text-white/20">{activeIdx + 1} / {count}</span>
+
+        <div className="flex items-center gap-2">
+          {cards.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              aria-label={cards[i].prayer.displayName}
+              className="flex items-center justify-center transition-all duration-300"
+            >
+              {i === activeIdx ? (
+                <div
+                  className="w-5 h-[5px] rounded-full transition-all duration-300"
+                  style={{ background: '#d4af37' }}
+                />
+              ) : (
+                <div className="w-[5px] h-[5px] rounded-full bg-white/20" />
+              )}
+            </button>
+          ))}
+        </div>
+
         <button
           onClick={goNext}
-          className="rounded-full p-2 text-white/30 hover:text-white hover:bg-white/10 transition active:scale-95"
+          className="p-1.5 text-white/20 hover:text-white/50 transition-colors active:scale-90"
           aria-label="Next prayer"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
       {/* ── COUNTDOWN ─────────────────────────────────────── */}
-      <div className="flex justify-center py-6 border-t border-white/5">
+      <div className="flex justify-center pt-6 pb-5 mx-8 border-t border-white/[0.06]">
         <CountdownDisplay targetTime={card.adhanTime} accentColor={accent} />
       </div>
 
-      {/* ── SWIPEABLE IQAMA TIMES ─────────────────────────── */}
-      <div className="pb-12">
-        <div
-          className="mb-3 h-px mx-8"
-          style={{ background: `linear-gradient(to right, transparent, ${accent}33, transparent)` }}
-        />
-        <p className="text-xs font-semibold tracking-widest uppercase text-white/30 px-8 mb-3">
+      {/* ── SWIPEABLE IQAMA LIST ───────────────────────────── */}
+      <div className="pb-16">
+        <p className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase text-white/30 px-7 mb-3">
           Iqama Times
         </p>
 
@@ -157,9 +208,9 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
             onDragEnd={onDragEnd}
-            initial={{ opacity: 0, x: 32 }}
+            initial={{ opacity: 0, x: 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -32 }}
+            exit={{ opacity: 0, x: -28 }}
             transition={{ duration: 0.18 }}
             className="px-4 cursor-grab active:cursor-grabbing"
           >
@@ -171,7 +222,6 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           </motion.div>
         </AnimatePresence>
       </div>
-
     </div>
   )
 }

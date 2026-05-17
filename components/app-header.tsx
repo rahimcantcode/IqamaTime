@@ -50,20 +50,20 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
     >
       {/* Left: dates & next prayer */}
       <div className="flex flex-col gap-0.5">
-        <motion.p
-          className="text-3xl font-bold text-white tabular-nums"
-          key={formatTime(now)}
-        >
+        <p className="text-3xl font-bold text-white tabular-nums tracking-tight">
           {formatTime(now)}
-        </motion.p>
-        <p className="text-xs text-white/50 font-medium">{formatDate(now)}</p>
+        </p>
+        <p className="text-xs text-white/40 font-medium">{formatDate(now)}</p>
         {hijri && (
-          <p className="text-xs text-white/30">{hijri}</p>
+          <p className="text-xs text-white/22">{hijri}</p>
         )}
         {nextPrayerName && (
-          <div className="flex items-center gap-1.5 mt-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <p className="text-xs font-medium text-emerald-400">
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <div
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ background: '#d4af37' }}
+            />
+            <p className="text-xs font-semibold" style={{ color: '#d4af37' }}>
               {nextPrayerName}
               {minutesUntil > 0 && ` · ${minutesUntil}m`}
             </p>
@@ -71,13 +71,19 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
         )}
       </div>
 
-      {/* Right: settings */}
+      {/* Right: settings — glass button */}
       <button
         onClick={onSettingsOpen}
-        className="mt-1 p-2.5 rounded-2xl bg-white/5 active:bg-white/10 transition-colors"
+        className="mt-1 p-2.5 rounded-2xl transition-colors active:scale-95"
+        style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
         aria-label="Open settings"
       >
-        <Settings className="w-5 h-5 text-white/60" />
+        <Settings className="w-5 h-5 text-white/45" />
       </button>
     </motion.header>
   )

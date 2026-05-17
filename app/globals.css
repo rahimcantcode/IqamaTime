@@ -2,8 +2,12 @@
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
 @theme inline {
-  --color-background: #080810;
-  --color-foreground:  #f9fafb;
+  --color-background:   #131925;
+  --color-foreground:   #e5e7eb;
+
+  /* Brand */
+  --color-emerald-brand: #1ca094;
+  --color-gold-brand:    #d4af37;
 
   --font-sans: var(--font-inter);
   --font-mono: ui-monospace, 'SF Mono', monospace;
@@ -25,12 +29,11 @@ body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: #080810;
-  color: #f9fafb;
+  background: #131925;
+  color: #e5e7eb;
   font-family: var(--font-inter, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent text selection during swipe */
   user-select: none;
   -webkit-user-select: none;
 }
@@ -46,9 +49,7 @@ body {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
 /* ─── Arabic typography ──────────────────────────────────────── */
 [lang="ar"], .arabic {
@@ -58,8 +59,8 @@ body {
 
 /* ─── Glassmorphism card ─────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

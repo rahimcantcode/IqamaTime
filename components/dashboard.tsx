@@ -111,7 +111,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#080810]">
+    <div className="fixed inset-0 flex flex-col bg-[#131925]">
       <AppHeader
         nextPrayerName={nextPrayer?.displayName ?? ''}
         nextPrayerTime={nextTime}

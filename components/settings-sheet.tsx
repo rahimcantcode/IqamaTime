@@ -45,7 +45,7 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 36 }}
             className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl overflow-hidden"
-            style={{ maxHeight: '82vh', background: '#0f0f1a' }}
+            style={{ maxHeight: '82vh', background: '#131925', borderTop: '1px solid rgba(255,255,255,0.07)' }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
