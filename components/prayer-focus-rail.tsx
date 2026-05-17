@@ -188,7 +188,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               key={i}
               onClick={() => setActive(i)}
               aria-label={cards[i].prayer.displayName}
-              className="flex items-center justify-center transition-all duration-300"
+              className="flex items-center justify-center p-3 transition-all duration-300"
             >
               {i === activeIdx ? (
                 <div
