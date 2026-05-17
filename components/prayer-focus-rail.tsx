@@ -173,7 +173,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── DOT INDICATORS + CHEVRONS ─────────────────────── */}
-      <div className="flex items-center justify-center gap-3 pb-1 pt-1">
+      <div className="flex items-center justify-between w-[75vw] max-w-[420px] mx-auto pb-1 pt-1">
         <button
           onClick={goPrev}
           className="p-1.5 text-white/20 hover:text-white/50 transition-colors active:scale-90"
