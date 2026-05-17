@@ -110,7 +110,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           return (
             <motion.div
               key={active + offset}
-            className="absolute h-[252px] w-[184px] overflow-hidden rounded-[1.4rem] shadow-2xl md:h-[290px] md:w-[218px]"
+              className="absolute h-[252px] w-[184px] overflow-hidden rounded-[1.4rem] shadow-2xl md:h-[290px] md:w-[218px]"
               style={{
                 transformStyle: 'preserve-3d',
                 zIndex: isCenter ? 20 : 10 - dist,
@@ -163,17 +163,22 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                 </p>
 
                 {c.adhanTime && (
-                  <p
-                    className="mt-2 rounded-full px-3 py-1 text-sm font-bold tracking-[0.12em] uppercase"
-                    style={{
-                      color: PRAYER_ACCENT[c.prayer.key],
-                      background: `${PRAYER_ACCENT[c.prayer.key]}14`,
-                      border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}22`,
-                      opacity: 0.95,
-                    }}
-                  >
-                    {c.adhanTime}
-                  </p>
+                  <div className="mt-3 flex flex-col items-center gap-1">
+                    <p className="text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-white/38">
+                      Adhan Time
+                    </p>
+                    <p
+                      className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.12em] uppercase"
+                      style={{
+                        color: PRAYER_ACCENT[c.prayer.key],
+                        background: `${PRAYER_ACCENT[c.prayer.key]}14`,
+                        border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}22`,
+                        opacity: 0.95,
+                      }}
+                    >
+                      {c.adhanTime}
+                    </p>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -224,7 +229,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       <div className="mx-6 mt-2 flex flex-col items-center gap-1.5 rounded-[1.35rem] px-4 py-5 iphone-panel">
         {!allIqamaPast && !adhanPast && (
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white/32">
-            Time Remaining
+            Until Adhan
           </p>
         )}
         {allIqamaPast ? (
