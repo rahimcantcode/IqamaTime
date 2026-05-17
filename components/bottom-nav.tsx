@@ -17,14 +17,15 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 px-2 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10"
       style={{
         background: 'rgba(13,18,29,0.92)',
         backdropFilter: 'blur(24px) saturate(1.2)',
         WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="mx-auto flex h-16 max-w-md items-center justify-around">
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         {TABS.map(({ href, icon: Icon, label }) => {
           const isHome = href === '/'
           const active = isHome ? pathname === '/' : pathname.startsWith(href)
