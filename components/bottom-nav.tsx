@@ -33,16 +33,16 @@ export default function BottomNav() {
           <Link
             key={href}
             href={href}
-            className="flex flex-col items-center gap-0.5 py-1.5 px-5 transition-all duration-200"
+            className="flex flex-col items-center gap-[3px] py-1 px-5 transition-all duration-200"
             style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.28)' }}
           >
             <Icon
-              className="w-[17px] h-[17px] transition-all duration-200"
+              className="w-[19px] h-[19px] transition-all duration-200"
               strokeWidth={active ? 2.2 : 1.5}
             />
             <span
-              className="text-[0.5rem] font-semibold tracking-wide transition-all duration-200"
-              style={{ opacity: active ? 1 : 0.7 }}
+              className="text-[0.5rem] font-semibold tracking-wide"
+              style={{ opacity: active ? 0.9 : 0.5 }}
             >
               {label}
             </span>
