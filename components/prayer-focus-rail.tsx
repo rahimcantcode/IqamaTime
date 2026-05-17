@@ -93,6 +93,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
         {/* ── DRAG OVERLAY (captures swipe anywhere on the rail) ── */}
         <motion.div
           className="absolute inset-0 z-30 cursor-grab active:cursor-grabbing"
+          data-page-swipe-ignore="true"
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.15}
@@ -257,6 +258,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={activeIdx}
+            data-page-swipe-ignore="true"
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}

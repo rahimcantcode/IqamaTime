@@ -79,6 +79,7 @@ export default function PrayerCarousel({ prayers, cards, initialIndex }: Props) 
         {width > 0 && (
           <motion.div
             className="absolute inset-0 flex"
+            data-page-swipe-ignore="true"
             style={{ x, width: cards.length * width }}
             drag="x"
             dragConstraints={{
