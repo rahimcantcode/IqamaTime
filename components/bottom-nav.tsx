@@ -1,7 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { TrendingUp, Bell, Home, BookOpen, Settings } from 'lucide-react'
 
 const TABS = [
@@ -14,6 +13,7 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
 
   return (
     <nav
@@ -30,12 +30,16 @@ export default function BottomNav() {
         const isHome = href === '/'
         const active = isHome ? pathname === '/' : pathname.startsWith(href)
         return (
-          <Link
+          <button
             key={href}
-            href={href}
+            type="button"
+            onClick={() => {
+              if (!active) router.replace(href, { scroll: false })
+            }}
             className="relative flex min-w-[58px] flex-col items-center gap-[3px] px-2 pb-1.5 pt-2 transition-all duration-200"
             style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.28)' }}
             aria-current={active ? 'page' : undefined}
+            aria-label={label}
           >
             {active && (
               <span
@@ -53,7 +57,7 @@ export default function BottomNav() {
             >
               {label}
             </span>
-          </Link>
+          </button>
         )
       })}
     </nav>
