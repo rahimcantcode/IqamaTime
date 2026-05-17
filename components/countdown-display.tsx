@@ -11,22 +11,13 @@ interface Props {
 export default function CountdownDisplay({ targetTime, accentColor }: Props) {
   const seconds = useCountdown(targetTime)
   const compact = formatCountdownCompact(seconds)
-  const text    = formatCountdownText(seconds)
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <p
-        className="font-mono text-6xl font-bold tracking-tight tabular-nums"
-        style={{ color: accentColor }}
-      >
-        {compact}
-      </p>
-      <p
-        className="text-sm font-medium tracking-widest uppercase"
-        style={{ color: `${accentColor}99` }}
-      >
-        {text}
-      </p>
-    </div>
+    <p
+      className="font-mono text-6xl font-bold tracking-tight tabular-nums"
+      style={{ color: accentColor }}
+    >
+      {compact}
+    </p>
   )
 }
