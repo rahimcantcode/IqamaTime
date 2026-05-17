@@ -17,7 +17,7 @@ const VELOCITY_THRESHOLD = 400  // px/s
 
 export default function PrayerCarousel({ prayers, cards, initialIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [current, setCurrent]     = useState(initialIndex)
+  const [current, setCurrent]     = useState(() => initialIndex)
   const [width, setWidth]         = useState(0)
   const [dragging, setDragging]   = useState(false)
   const x = useMotionValue(0)
@@ -39,9 +39,8 @@ export default function PrayerCarousel({ prayers, cards, initialIndex }: Props) 
   useEffect(() => {
     if (width > 0) {
       x.set(-initialIndex * width)
-      setCurrent(initialIndex)
     }
-  }, [width, initialIndex])
+  }, [width, initialIndex, x])
 
   const snapTo = useCallback(
     (index: number) => {

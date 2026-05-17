@@ -25,12 +25,13 @@ async function getPrayerData(): Promise<MasjidWithPrayers[]> {
     // Primary: today's UTC date. Fallback: yesterday's, for the ~4h window
     // between UTC midnight and when the scraper writes the new date's rows (11:15 PM CT).
     const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0]
-    let { data: prayerTimes, error: ptErr } = await supabase
+    const todayResult = await supabase
       .from('prayer_times')
       .select('*')
       .eq('date', today)
+    let prayerTimes = todayResult.data
 
-    if (ptErr) return MOCK_PRAYER_TIMES
+    if (todayResult.error) return MOCK_PRAYER_TIMES
 
     if (!prayerTimes?.length) {
       ;({ data: prayerTimes } = await supabase.from('prayer_times').select('*').eq('date', yesterday))

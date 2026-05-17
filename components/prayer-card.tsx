@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function PrayerCard({ data, isActive }: Props) {
-  const { prayer, adhanTime, iqamaTimes, isFriday } = data
+  const { prayer, adhanTime, iqamaTimes } = data
   const gradient = PRAYER_GRADIENTS[prayer.key]
   const glow     = PRAYER_GLOW[prayer.key]
   const accent   = PRAYER_ACCENT[prayer.key]

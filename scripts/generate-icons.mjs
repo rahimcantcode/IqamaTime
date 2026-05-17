@@ -4,7 +4,7 @@
  * Requires: npm install -D sharp (add to devDependencies)
  */
 import { createRequire } from 'module'
-import { readFileSync, existsSync } from 'fs'
+import { readFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 

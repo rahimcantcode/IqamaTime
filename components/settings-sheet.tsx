@@ -44,8 +44,13 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 36 }}
-            className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl overflow-hidden"
-            style={{ maxHeight: '82vh', background: '#131925', borderTop: '1px solid rgba(255,255,255,0.07)' }}
+            className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-[2rem]"
+            style={{
+              maxHeight: '84vh',
+              background: 'linear-gradient(180deg, rgba(24,32,48,0.98), rgba(15,20,32,0.99))',
+              borderTop: '1px solid rgba(255,255,255,0.10)',
+              boxShadow: '0 -24px 80px rgba(0,0,0,0.42)',
+            }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
@@ -57,14 +62,15 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
               <h2 className="text-xl font-bold text-white">Settings</h2>
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl bg-white/5 active:bg-white/10"
+                className="rounded-xl bg-white/5 p-2 transition-colors active:bg-white/10"
+                aria-label="Close settings"
               >
                 <X className="w-5 h-5 text-white/60" />
               </button>
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-safe">
+            <div className="flex-1 overflow-y-auto px-6 pb-safe scroll-momentum">
 
               {/* Actions */}
               <section className="mb-6">
@@ -75,7 +81,7 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
                   <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/[0.04] active:bg-white/[0.08] transition-colors"
+                    className="pressable flex items-center gap-3 rounded-[1.2rem] bg-white/[0.045] p-4 transition-colors active:bg-white/[0.08] disabled:opacity-70"
                   >
                     <RefreshCw
                       className={`w-5 h-5 text-emerald-400 ${refreshing ? 'animate-spin' : ''}`}
@@ -87,7 +93,7 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
                   </button>
 
                   <button
-                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/[0.04] opacity-50 cursor-not-allowed"
+                    className="flex cursor-not-allowed items-center gap-3 rounded-[1.2rem] bg-white/[0.035] p-4 opacity-50"
                     disabled
                   >
                     <Bell className="w-5 h-5 text-amber-400" />
@@ -132,10 +138,10 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
                       <button
                         key={masjid.id}
                         onClick={() => toggleMasjid(masjid.id)}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.04] active:bg-white/[0.08] transition-colors"
+                        className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] bg-white/[0.045] p-4 transition-colors active:bg-white/[0.08]"
                       >
-                        <div className="text-left">
-                          <p className="text-sm font-medium text-white">{masjid.name}</p>
+                        <div className="min-w-0 pr-3 text-left">
+                          <p className="truncate text-sm font-medium text-white">{masjid.name}</p>
                           <p className="text-xs text-white/40">{masjid.city}</p>
                         </div>
                         {selected

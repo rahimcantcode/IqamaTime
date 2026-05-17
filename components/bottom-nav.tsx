@@ -17,12 +17,12 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 flex items-end justify-around"
+      className="fixed bottom-0 inset-x-0 z-50 flex items-end justify-around px-2"
       style={{
-        background: 'rgba(19,25,37,0.94)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: 'linear-gradient(to top, rgba(13,18,29,0.98), rgba(19,25,37,0.90))',
+        backdropFilter: 'blur(24px) saturate(1.2)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
+        borderTop: '1px solid rgba(255,255,255,0.075)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
@@ -33,9 +33,16 @@ export default function BottomNav() {
           <Link
             key={href}
             href={href}
-            className="flex flex-col items-center gap-[3px] py-1 px-5 transition-all duration-200"
+            className="relative flex min-w-[58px] flex-col items-center gap-[3px] px-2 pb-1.5 pt-2 transition-all duration-200"
             style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.28)' }}
+            aria-current={active ? 'page' : undefined}
           >
+            {active && (
+              <span
+                className="absolute top-0 h-0.5 w-7 rounded-full"
+                style={{ background: '#d4af37', boxShadow: '0 0 16px rgba(212,175,55,0.45)' }}
+              />
+            )}
             <Icon
               className="w-[19px] h-[19px] transition-all duration-200"
               strokeWidth={active ? 2.2 : 1.5}

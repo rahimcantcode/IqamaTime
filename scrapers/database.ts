@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { WebSocketLikeConstructor } from '@supabase/realtime-js'
 import { logger } from './logger'
 import WebSocket from 'ws'
 
@@ -26,9 +27,8 @@ function getSupabase() {
     throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return createClient(url, key, {
-    realtime: { transport: WebSocket as any },
+    realtime: { transport: WebSocket as unknown as WebSocketLikeConstructor },
   })
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCountdown } from '@/hooks/useCountdown'
-import { formatCountdownCompact, formatCountdownText } from '@/lib/prayer-utils'
+import { formatCountdownCompact } from '@/lib/prayer-utils'
 
 interface Props {
   targetTime: string | null
@@ -14,8 +14,9 @@ export default function CountdownDisplay({ targetTime, accentColor }: Props) {
 
   return (
     <p
-      className="font-mono text-6xl font-bold tracking-tight tabular-nums"
+      className="font-mono text-[3.35rem] font-bold leading-none tracking-tight tabular-nums"
       style={{ color: accentColor }}
+      suppressHydrationWarning
     >
       {compact}
     </p>

@@ -24,12 +24,13 @@ export async function GET() {
     if (m) return NextResponse.json({ error: m.message }, { status: 500 })
 
     const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0]
-    let { data: prayerTimes, error: p } = await supabase
+    const todayResult = await supabase
       .from('prayer_times')
       .select('*')
       .eq('date', today)
+    let prayerTimes = todayResult.data
 
-    if (p) return NextResponse.json({ error: p.message }, { status: 500 })
+    if (todayResult.error) return NextResponse.json({ error: todayResult.error.message }, { status: 500 })
 
     if (!prayerTimes?.length) {
       ;({ data: prayerTimes } = await supabase.from('prayer_times').select('*').eq('date', yesterday))

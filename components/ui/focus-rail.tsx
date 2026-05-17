@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,13 +34,6 @@ const BASE_SPRING = {
   type: "spring",
   stiffness: 300,
   damping: 30,
-  mass: 1,
-};
-
-const TAP_SPRING = {
-  type: "spring",
-  stiffness: 450,
-  damping: 18,
   mass: 1,
 };
 
@@ -139,10 +133,13 @@ export function FocusRail({
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="absolute inset-0"
           >
-            <img
+            <Image
               src={activeItem.imageSrc}
               alt=""
-              className="h-full w-full object-cover blur-3xl saturate-200"
+              fill
+              unoptimized
+              sizes="100vw"
+              className="object-cover blur-3xl saturate-200"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
           </motion.div>
@@ -199,10 +196,13 @@ export function FocusRail({
                   if (offset !== 0) setActive((p) => p + offset);
                 }}
               >
-                <img
+                <Image
                   src={item.imageSrc}
                   alt={item.title}
-                  className="h-full w-full rounded-2xl object-cover pointer-events-none"
+                  fill
+                  unoptimized
+                  sizes="300px"
+                  className="pointer-events-none rounded-2xl object-cover"
                 />
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
                 <div className="absolute inset-0 rounded-2xl bg-black/10 pointer-events-none mix-blend-multiply" />

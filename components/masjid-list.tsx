@@ -32,14 +32,14 @@ function TimePill({
 }) {
   if (isPast) {
     return (
-      <span className="text-sm font-semibold tabular-nums text-white/20">
+      <span className="text-sm font-semibold tabular-nums text-white/24">
         {time}
       </span>
     )
   }
   return (
     <span
-      className="inline-block rounded-full px-3 py-0.5 text-sm font-bold tabular-nums"
+      className="inline-flex min-w-[76px] items-center justify-center rounded-full px-3 py-1 text-sm font-bold tabular-nums"
       style={{
         color:      accent,
         background: `${accent}18`,
@@ -58,7 +58,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
 
   if (sorted.length === 0) {
     return (
-      <div className="text-center py-8 text-white/20 text-sm">
+      <div className="iphone-panel rounded-[1.25rem] py-8 text-center text-sm text-white/24">
         No iqama times available
       </div>
     )
@@ -69,7 +69,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
       variants={container}
       initial="hidden"
       animate="show"
-      className="flex flex-col gap-1"
+      className="flex flex-col gap-2"
     >
       {sorted.map((entry) => {
         const hasBoth = isJummah && entry.iqama2
@@ -79,17 +79,20 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             key={entry.masjid.id}
             variants={item}
             className={cn(
-              'flex items-center justify-between px-4 py-3.5 rounded-2xl',
-              entry.isPast ? 'opacity-35' : 'opacity-100'
+              'pressable flex min-h-[68px] items-center justify-between rounded-[1.2rem] px-4 py-3.5',
+              entry.isPast ? 'opacity-42' : 'opacity-100'
             )}
-            style={{ background: 'rgba(255,255,255,0.03)' }}
+            style={{
+              background: entry.isPast ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.045)',
+              border: '1px solid rgba(255,255,255,0.065)',
+            }}
           >
             {/* Masjid name + city */}
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-sm font-semibold text-gray-200 truncate leading-tight">
+            <div className="flex min-w-0 flex-col gap-1 pr-2">
+              <span className="truncate text-[0.92rem] font-semibold leading-tight text-gray-100">
                 {entry.masjid.name}
               </span>
-              <span className="text-[0.7rem] text-white/30 leading-tight">
+              <span className="text-[0.72rem] leading-tight text-white/34">
                 {entry.masjid.city}
               </span>
             </div>

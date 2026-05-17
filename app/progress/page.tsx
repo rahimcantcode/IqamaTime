@@ -26,7 +26,7 @@ export default function ProgressPage() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col bg-[#131925] overflow-y-auto scrollbar-none"
+      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#131925] scrollbar-none scroll-momentum"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       {/* Header */}
@@ -47,7 +47,7 @@ export default function ProgressPage() {
         ].map(({ label, value, unit, accent }) => (
           <div
             key={label}
-            className="flex flex-col items-center justify-center py-4 px-2 rounded-2xl"
+            className="flex min-h-[104px] flex-col items-center justify-center rounded-[1.2rem] px-2 py-4"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
             {label === 'Streak' && (
@@ -70,7 +70,7 @@ export default function ProgressPage() {
             <button
               key={prayer}
               onClick={() => setTodayLog(p => ({ ...p, [prayer]: !p[prayer] }))}
-              className="flex items-center justify-between px-4 py-3.5 rounded-2xl transition-colors active:scale-[0.98]"
+              className="pressable flex min-h-[62px] items-center justify-between rounded-[1.2rem] px-4 py-3.5 transition-colors"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <span className="text-sm font-medium text-white">{prayer}</span>
@@ -89,7 +89,7 @@ export default function ProgressPage() {
           This Week
         </p>
         <div
-          className="rounded-2xl overflow-hidden p-4"
+          className="overflow-hidden rounded-[1.2rem] p-4"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
         >
           {/* Day headers */}

@@ -11,17 +11,23 @@ const DEFAULT_SETTINGS: AppSettings = {
 }
 
 export function useSettings() {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
+  const readSettings = useCallback((): AppSettings => {
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(raw) })
+        return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) }
       }
     } catch {}
-    setLoaded(true)
+    return DEFAULT_SETTINGS
+  }, [])
+
+  const [settings, setSettings] = useState<AppSettings>(readSettings)
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setLoaded(true))
+    return () => window.cancelAnimationFrame(id)
   }, [])
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {

@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { timeStrToDate } from '@/lib/prayer-utils'
 
 export function useCountdown(targetTimeStr: string | null) {
-  const getSeconds = () => {
+  const getSeconds = useCallback(() => {
     if (!targetTimeStr) return 0
     const target = timeStrToDate(targetTimeStr)
     if (!target) return 0
     return Math.max(0, Math.floor((target.getTime() - Date.now()) / 1000))
-  }
+  }, [targetTimeStr])
 
   const [seconds, setSeconds] = useState(getSeconds)
 
@@ -18,7 +18,7 @@ export function useCountdown(targetTimeStr: string | null) {
     tick()
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [targetTimeStr])
+  }, [getSeconds])
 
   return seconds
 }

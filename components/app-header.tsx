@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 import { Settings } from 'lucide-react'
-import { formatTime, formatDate } from '@/lib/utils'
-import { getHijriDate } from '@/lib/prayer-utils'
+import { cn, formatTime, formatDate } from '@/lib/utils'
+import { getHijriDate, timeStrToDate } from '@/lib/prayer-utils'
 import { useCurrentTime } from '@/hooks/useCountdown'
 
 interface Props {
@@ -15,55 +14,42 @@ interface Props {
 
 export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOpen }: Props) {
   const now      = useCurrentTime()
-  const [hijri, setHijri] = useState('')
+  const [hijri] = useState(() => getHijriDate())
 
-  useEffect(() => {
-    setHijri(getHijriDate())
-  }, [])
-
-  const secondsUntil = nextPrayerTime
-    ? Math.max(0, Math.floor((
-        (() => {
-          const d = new Date()
-          const match = nextPrayerTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
-          if (!match) return d.getTime()
-          let h = parseInt(match[1])
-          const m = parseInt(match[2])
-          const p = match[3].toUpperCase()
-          if (p === 'PM' && h !== 12) h += 12
-          if (p === 'AM' && h === 12) h = 0
-          d.setHours(h, m, 0, 0)
-          return d.getTime()
-        })() - Date.now()
-      ) / 1000))
-    : 0
+  const secondsUntil = useMemo(() => {
+    if (!nextPrayerTime) return 0
+    const target = timeStrToDate(nextPrayerTime)
+    if (!target) return 0
+    return Math.max(0, Math.floor((target.getTime() - now.getTime()) / 1000))
+  }, [nextPrayerTime, now])
 
   const minutesUntil = Math.floor(secondsUntil / 60)
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="flex items-start justify-between px-6 pt-safe pb-4"
-      style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
+    <header
+      className="relative z-30 flex items-start justify-between px-5 pb-2"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top), 14px)',
+        background: 'linear-gradient(180deg, rgba(19,25,37,0.99) 0%, rgba(19,25,37,0.97) 78%, rgba(19,25,37,0.92) 100%)',
+      }}
     >
       {/* Left: dates & next prayer */}
-      <div className="flex flex-col gap-0.5">
-        <p className="text-3xl font-bold text-white tabular-nums tracking-tight">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <p className="text-[2rem] font-bold leading-none tracking-tight text-white tabular-nums" suppressHydrationWarning>
           {formatTime(now)}
         </p>
-        <p className="text-xs text-white/40 font-medium">{formatDate(now)}</p>
+        <p className="text-xs font-medium text-white/42" suppressHydrationWarning>{formatDate(now)}</p>
         {hijri && (
-          <p className="text-xs text-white/22">{hijri}</p>
+          <p className="text-xs text-white/24" suppressHydrationWarning>{hijri}</p>
         )}
         {nextPrayerName && (
-          <div className="flex items-center gap-1.5 mt-1.5">
+          <div className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1"
+            style={{ background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.18)' }}>
             <div
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: '#d4af37' }}
             />
-            <p className="text-xs font-semibold" style={{ color: '#d4af37' }}>
+            <p className="text-[0.68rem] font-bold tracking-wide" style={{ color: '#d4af37' }} suppressHydrationWarning>
               {nextPrayerName}
               {minutesUntil > 0 && ` · ${minutesUntil}m`}
             </p>
@@ -74,7 +60,10 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
       {/* Right: settings — glass button */}
       <button
         onClick={onSettingsOpen}
-        className="mt-1 p-2.5 rounded-2xl transition-colors active:scale-95"
+        className={cn(
+          'mt-1 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors active:scale-95',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d4af37]'
+        )}
         style={{
           background: 'rgba(255,255,255,0.05)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -85,6 +74,6 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
       >
         <Settings className="w-5 h-5 text-white/45" />
       </button>
-    </motion.header>
+    </header>
   )
 }

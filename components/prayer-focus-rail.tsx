@@ -70,7 +70,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       onKeyDown={onKeyDown}
     >
       {/* ── AMBIENT GLOW ──────────────────────────────────── */}
-      <div className="relative h-[340px] flex items-center justify-center overflow-hidden"
+      <div className="relative flex h-[318px] items-center justify-center overflow-hidden sm:h-[340px]"
         style={{ perspective: '1200px' }}>
 
         {/* Glow layer — transitions between prayers */}
@@ -109,14 +109,17 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           return (
             <motion.div
               key={active + offset}
-              className="absolute w-[188px] h-[258px] md:w-[218px] md:h-[290px] rounded-[1.25rem] overflow-hidden shadow-2xl"
+            className="absolute h-[252px] w-[184px] overflow-hidden rounded-[1.4rem] shadow-2xl md:h-[290px] md:w-[218px]"
               style={{
                 transformStyle: 'preserve-3d',
                 zIndex: isCenter ? 20 : 10 - dist,
+                boxShadow: isCenter
+                  ? `0 24px 80px ${PRAYER_ACCENT[c.prayer.key]}18, 0 18px 38px rgba(0,0,0,0.36)`
+                  : '0 14px 34px rgba(0,0,0,0.24)',
               }}
               initial={false}
               animate={{
-                x:       offset * 268,
+                x:       offset * 248,
                 z:       -dist * 148,
                 scale:   isCenter ? 1 : 0.82,
                 rotateY: offset * -18,
@@ -136,15 +139,15 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               />
 
               {/* Border */}
-              <div className="absolute inset-0 rounded-[1.25rem] border border-white/[0.11]" />
+              <div className="absolute inset-0 rounded-[1.4rem] border border-white/[0.12]" />
 
               {/* Top rim light */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
               {/* Content */}
-              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-2 px-5">
+              <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2 px-5">
                 <p
-                  className="text-[1.7rem] leading-none"
+                  className="text-[1.65rem] leading-none"
                   style={{
                     fontFamily: 'Georgia, serif',
                     direction: 'rtl',
@@ -154,14 +157,19 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                   {c.prayer.arabicName}
                 </p>
 
-                <p className="text-[1.5rem] font-bold text-white tracking-tight leading-none">
+                <p className="text-[1.45rem] font-bold leading-none tracking-tight text-white">
                   {c.prayer.displayName}
                 </p>
 
                 {c.adhanTime && (
                   <p
-                    className="text-sm font-bold tracking-[0.12em] uppercase mt-2"
-                    style={{ color: PRAYER_ACCENT[c.prayer.key], opacity: 0.9 }}
+                    className="mt-2 rounded-full px-3 py-1 text-sm font-bold tracking-[0.12em] uppercase"
+                    style={{
+                      color: PRAYER_ACCENT[c.prayer.key],
+                      background: `${PRAYER_ACCENT[c.prayer.key]}14`,
+                      border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}22`,
+                      opacity: 0.95,
+                    }}
                   >
                     {c.adhanTime}
                   </p>
@@ -173,10 +181,10 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── DOT INDICATORS + CHEVRONS ─────────────────────── */}
-      <div className="flex items-center justify-between w-[75vw] max-w-[420px] mx-auto pb-1 pt-1">
+      <div className="mx-auto flex w-[82vw] max-w-[420px] items-center justify-between pb-1 pt-1">
         <button
           onClick={goPrev}
-          className="p-1.5 text-white/20 hover:text-white/50 transition-colors active:scale-90"
+          className="rounded-full p-2 text-white/24 transition-colors hover:text-white/55 active:scale-90"
           aria-label="Previous prayer"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -188,7 +196,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               key={i}
               onClick={() => setActive(i)}
               aria-label={cards[i].prayer.displayName}
-              className="flex items-center justify-center p-3 transition-all duration-300"
+              className="flex min-h-9 min-w-9 items-center justify-center transition-all duration-300"
             >
               {i === activeIdx ? (
                 <div
@@ -204,7 +212,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
         <button
           onClick={goNext}
-          className="p-1.5 text-white/20 hover:text-white/50 transition-colors active:scale-90"
+          className="rounded-full p-2 text-white/24 transition-colors hover:text-white/55 active:scale-90"
           aria-label="Next prayer"
         >
           <ChevronRight className="w-4 h-4" />
@@ -212,9 +220,9 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── COUNTDOWN / STATUS ────────────────────────────── */}
-      <div className="flex flex-col items-center gap-1.5 pt-6 pb-5 mx-8 border-t border-white/[0.06]">
+      <div className="mx-6 mt-2 flex flex-col items-center gap-1.5 rounded-[1.35rem] px-4 py-5 iphone-panel">
         {!allIqamaPast && !adhanPast && (
-          <p className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase text-white/30">
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white/32">
             Time Remaining
           </p>
         )}
@@ -241,8 +249,8 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── SWIPEABLE IQAMA LIST ───────────────────────────── */}
-      <div className="pb-28">
-        <p className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase text-white/30 px-7 mb-3">
+      <div className="pb-28 pt-6">
+        <p className="mb-3 px-7 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white/32">
           Iqama Times
         </p>
 
@@ -257,7 +265,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -28 }}
             transition={{ duration: 0.18 }}
-            className="px-4 cursor-grab active:cursor-grabbing"
+            className="cursor-grab px-4 active:cursor-grabbing"
           >
             <MasjidList
               iqamaTimes={card.iqamaTimes}

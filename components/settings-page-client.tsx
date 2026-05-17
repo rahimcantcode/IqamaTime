@@ -26,7 +26,7 @@ export default function SettingsPageClient({ masjids }: Props) {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col bg-[#131925] overflow-y-auto scrollbar-none"
+      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#131925] scrollbar-none scroll-momentum"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       {/* Header */}
@@ -48,7 +48,7 @@ export default function SettingsPageClient({ masjids }: Props) {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-3 p-4 rounded-2xl transition-colors active:scale-[0.98]"
+              className="pressable flex items-center gap-3 rounded-[1.2rem] p-4 transition-colors disabled:opacity-70"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div
@@ -67,7 +67,7 @@ export default function SettingsPageClient({ masjids }: Props) {
             </button>
 
             <div
-              className="flex items-center gap-3 p-4 rounded-2xl opacity-50"
+              className="flex items-center gap-3 rounded-[1.2rem] p-4 opacity-50"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div
@@ -113,13 +113,13 @@ export default function SettingsPageClient({ masjids }: Props) {
               const selected = allSelected || settings.selectedMasjidIds.includes(masjid.id)
               return (
                 <button
-                  key={masjid.id}
-                  onClick={() => toggleMasjid(masjid.id)}
-                  className="flex items-center justify-between p-4 rounded-2xl transition-colors active:scale-[0.98]"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-white">{masjid.name}</p>
+                key={masjid.id}
+                onClick={() => toggleMasjid(masjid.id)}
+                className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] p-4 transition-colors"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                  <div className="min-w-0 pr-3 text-left">
+                    <p className="truncate text-sm font-medium text-white">{masjid.name}</p>
                     <p className="text-xs text-white/40">{masjid.city}</p>
                   </div>
                   {selected

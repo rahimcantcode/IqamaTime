@@ -120,7 +120,7 @@ export default function DhikrPage() {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col bg-[#131925] overflow-y-auto scrollbar-none"
+      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#131925] scrollbar-none scroll-momentum"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       {/* Header */}
@@ -149,7 +149,7 @@ export default function DhikrPage() {
                   <button
                     key={dhikr.id}
                     onClick={() => increment(dhikr.id, dhikr.target)}
-                    className="text-left rounded-2xl overflow-hidden transition-all duration-150 active:scale-[0.98]"
+                    className="pressable overflow-hidden rounded-[1.2rem] text-left"
                     style={{
                       background: completed
                         ? `${dhikr.accent}18`
@@ -165,7 +165,7 @@ export default function DhikrPage() {
                       />
                     </div>
 
-                    <div className="px-4 py-3.5 flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3 px-4 py-3.5">
                       <div className="flex-1 min-w-0">
                         <p
                           className="text-xl mb-1 leading-snug"

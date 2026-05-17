@@ -4,7 +4,6 @@
  * Method: axios + cheerio (Elementor icon-box structure)
  */
 import axios from 'axios'
-import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
@@ -23,7 +22,6 @@ export async function scrapeICR(): Promise<void> {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' },
     })
 
-    const $ = cheerio.load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
       jummah1: null, jummah2: null,

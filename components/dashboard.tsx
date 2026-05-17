@@ -111,7 +111,8 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#131925]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#131925]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(28,160,148,0.16),transparent_34rem)]" />
       <AppHeader
         nextPrayerName={nextPrayer?.displayName ?? ''}
         nextPrayerTime={nextTime}
@@ -119,12 +120,12 @@ export default function Dashboard({ data, adhanTimes }: Props) {
       />
 
       {/* Scrollable body: FocusRail rail + countdown + masjid list */}
-      <div className="flex-1 overflow-y-auto scrollbar-none">
+      <main className="relative z-10 flex-1 overflow-y-auto scrollbar-none scroll-momentum">
         <PrayerFocusRail
           cards={cards}
           initialIndex={initialIndex}
         />
-      </div>
+      </main>
 
       <SettingsSheet
         open={settingsOpen}

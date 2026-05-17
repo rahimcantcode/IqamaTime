@@ -30,7 +30,7 @@ const PREVIEW_CARDS = [
 export default function UpdatesPage() {
   return (
     <div
-      className="fixed inset-0 flex flex-col bg-[#131925] overflow-y-auto scrollbar-none"
+      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#131925] scrollbar-none scroll-momentum"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       {/* Header */}
@@ -39,11 +39,11 @@ export default function UpdatesPage() {
           <Bell className="w-5 h-5" style={{ color: '#1ca094' }} />
           <h1 className="text-xl font-bold text-white">Updates</h1>
         </div>
-        <p className="text-xs text-white/30">What's new and what's coming</p>
+        <p className="text-xs text-white/30">What&apos;s new and what&apos;s coming</p>
       </div>
 
       {/* Coming soon banner */}
-      <div className="mx-6 mt-6 rounded-2xl overflow-hidden">
+      <div className="mx-6 mt-6 overflow-hidden rounded-[1.35rem]">
         <div
           className="px-5 py-6 text-center"
           style={{
@@ -57,7 +57,7 @@ export default function UpdatesPage() {
           >
             Coming Soon
           </div>
-          <p className="text-base font-semibold text-white mb-1">Notifications & more</p>
+          <p className="text-base font-semibold text-white mb-1">Notifications &amp; more</p>
           <p className="text-xs text-white/40 max-w-[260px] mx-auto">
             These features are actively being built. Stay tuned for updates.
           </p>
@@ -73,7 +73,7 @@ export default function UpdatesPage() {
           {PREVIEW_CARDS.map(({ icon: Icon, title, description, accent }) => (
             <div
               key={title}
-              className="flex items-start gap-4 px-4 py-4 rounded-2xl opacity-60"
+              className="flex items-start gap-4 rounded-[1.2rem] px-4 py-4 opacity-60"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <div
