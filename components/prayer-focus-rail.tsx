@@ -241,7 +241,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── SWIPEABLE IQAMA LIST ───────────────────────────── */}
-      <div className="pb-16">
+      <div className="pb-28">
         <p className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase text-white/30 px-7 mb-3">
           Iqama Times
         </p>
