@@ -6,7 +6,15 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import MasjidList from './masjid-list'
 import CountdownDisplay from './countdown-display'
 import { PrayerCardData } from '@/types'
-import { PRAYER_ACCENT, PRAYER_GRADIENTS, PRAYER_GLOW } from '@/lib/prayer-utils'
+import { PRAYER_ACCENT, PRAYER_GRADIENTS, PRAYER_GLOW, timeStrToDate } from '@/lib/prayer-utils'
+import { useCurrentTime } from '@/hooks/useCountdown'
+import { compareTimesAsc } from '@/scrapers/normalizeTime'
+
+function isTimePast(timeStr: string | null): boolean {
+  if (!timeStr) return false
+  const target = timeStrToDate(timeStr.replace(/^~/, ''))
+  return !!target && target.getTime() < Date.now()
+}
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const
 
@@ -27,6 +35,19 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
   const card     = cards[activeIdx]
   const accent   = PRAYER_ACCENT[card.prayer.key]
   const glow     = PRAYER_GLOW[card.prayer.key]
+
+  // Re-render every second so adhan/iqama state stays live
+  useCurrentTime()
+
+  const adhanPast = isTimePast(card.adhanTime)
+
+  // Latest iqama across all masjids for this prayer
+  const latestIqama = card.iqamaTimes
+    .map(t => t.iqama)
+    .filter((t): t is string => !!t)
+    .sort((a, b) => compareTimesAsc(b, a))[0] ?? null
+
+  const allIqamaPast = isTimePast(latestIqama)
 
   const goPrev = useCallback(() => setActive(p => p - 1), [])
   const goNext = useCallback(() => setActive(p => p + 1), [])
@@ -190,9 +211,28 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
         </button>
       </div>
 
-      {/* ── COUNTDOWN ─────────────────────────────────────── */}
+      {/* ── COUNTDOWN / STATUS ────────────────────────────── */}
       <div className="flex justify-center pt-6 pb-5 mx-8 border-t border-white/[0.06]">
-        <CountdownDisplay targetTime={card.adhanTime} accentColor={accent} />
+        {allIqamaPast ? (
+          /* All iqama times have passed — prayer window closed */
+          <p className="text-sm font-semibold tracking-[0.18em] uppercase text-white/25">
+            Prayer Ended
+          </p>
+        ) : adhanPast ? (
+          /* Adhan called, iqama still upcoming */
+          <div className="flex items-center gap-2.5">
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ background: accent }}
+            />
+            <p className="text-base font-semibold text-white/70">
+              Adhan Called
+            </p>
+          </div>
+        ) : (
+          /* Countdown to adhan */
+          <CountdownDisplay targetTime={card.adhanTime} accentColor={accent} />
+        )}
       </div>
 
       {/* ── SWIPEABLE IQAMA LIST ───────────────────────────── */}
