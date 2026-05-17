@@ -3,7 +3,6 @@
 import { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
-import BottomNav from './bottom-nav'
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -25,7 +24,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {children}
         </motion.div>
       </AnimatePresence>
-      <BottomNav />
     </div>
   )
 }

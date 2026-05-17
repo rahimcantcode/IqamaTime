@@ -25,7 +25,7 @@ export default function BottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
+      <div className="mx-auto flex max-w-md items-end justify-around px-4 pt-2 pb-0.5">
         {TABS.map(({ href, icon: Icon, label }) => {
           const isHome = href === '/'
           const active = isHome ? pathname === '/' : pathname.startsWith(href)
