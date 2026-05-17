@@ -13,19 +13,23 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const router = useRouter()
+  const router   = useRouter()
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10"
-      style={{
-        background: 'rgba(13,18,29,0.92)',
-        backdropFilter: 'blur(24px) saturate(1.2)',
-        WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
+      className="fixed left-1/2 z-50 w-[90vw] max-w-[430px] -translate-x-1/2"
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
     >
-      <div className="mx-auto flex max-w-md items-end justify-around px-4 pt-2 pb-0.5">
+      <div
+        className="flex h-[60px] items-center justify-around rounded-full px-3"
+        style={{
+          background: 'rgba(19,25,37,0.88)',
+          backdropFilter: 'blur(28px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset',
+        }}
+      >
         {TABS.map(({ href, icon: Icon, label }) => {
           const isHome = href === '/'
           const active = isHome ? pathname === '/' : pathname.startsWith(href)
@@ -33,27 +37,22 @@ export default function BottomNav() {
             <button
               key={href}
               type="button"
-              onClick={() => {
-                if (!active) router.replace(href, { scroll: false })
+              onClick={() => { if (!active) router.replace(href, { scroll: false }) }}
+              className="relative flex flex-col items-center gap-[3px] rounded-full px-3.5 py-2 transition-all duration-200"
+              style={{
+                color: active ? '#d4af37' : 'rgba(255,255,255,0.32)',
+                background: active ? 'rgba(212,175,55,0.12)' : 'transparent',
               }}
-              className="relative flex min-w-[58px] flex-col items-center gap-[3px] px-2 pb-1 pt-2 transition-all duration-200"
-              style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.28)' }}
               aria-current={active ? 'page' : undefined}
               aria-label={label}
             >
-              {active && (
-                <span
-                  className="absolute top-0 h-0.5 w-7 rounded-full"
-                  style={{ background: '#d4af37', boxShadow: '0 0 16px rgba(212,175,55,0.45)' }}
-                />
-              )}
               <Icon
-                className="h-[19px] w-[19px] transition-all duration-200"
+                className="h-[18px] w-[18px]"
                 strokeWidth={active ? 2.2 : 1.5}
               />
               <span
-                className="text-[0.5rem] font-semibold tracking-wide"
-                style={{ opacity: active ? 0.9 : 0.5 }}
+                className="text-[0.48rem] font-semibold tracking-wide"
+                style={{ opacity: active ? 1 : 0.55 }}
               >
                 {label}
               </span>
