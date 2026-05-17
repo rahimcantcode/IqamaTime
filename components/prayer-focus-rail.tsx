@@ -160,8 +160,8 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
                 {c.adhanTime && (
                   <p
-                    className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase mt-2"
-                    style={{ color: PRAYER_ACCENT[c.prayer.key] }}
+                    className="text-xs font-bold tracking-[0.14em] uppercase mt-2"
+                    style={{ color: PRAYER_ACCENT[c.prayer.key], opacity: 0.9 }}
                   >
                     {c.adhanTime}
                   </p>
@@ -212,7 +212,12 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── COUNTDOWN / STATUS ────────────────────────────── */}
-      <div className="flex justify-center pt-6 pb-5 mx-8 border-t border-white/[0.06]">
+      <div className="flex flex-col items-center gap-1.5 pt-6 pb-5 mx-8 border-t border-white/[0.06]">
+        {!allIqamaPast && !adhanPast && (
+          <p className="text-[0.65rem] font-semibold tracking-[0.18em] uppercase text-white/30">
+            Time Remaining
+          </p>
+        )}
         {allIqamaPast ? (
           /* All iqama times have passed — prayer window closed */
           <p className="text-sm font-semibold tracking-[0.18em] uppercase text-white/25">
