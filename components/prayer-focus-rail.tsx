@@ -160,7 +160,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
                 {c.adhanTime && (
                   <p
-                    className="text-xs font-bold tracking-[0.14em] uppercase mt-2"
+                    className="text-sm font-bold tracking-[0.12em] uppercase mt-2"
                     style={{ color: PRAYER_ACCENT[c.prayer.key], opacity: 0.9 }}
                   >
                     {c.adhanTime}
