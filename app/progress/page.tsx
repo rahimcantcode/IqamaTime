@@ -19,6 +19,7 @@ import {
 } from '@/lib/prayer-checkins'
 
 const PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
+const PRAYER_INITIALS = ['F', 'D', 'A', 'M', 'I'] as const
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
 const MOCK_GRID: boolean[][] = [
@@ -52,6 +53,14 @@ function getPieBackground(count: number) {
 
 function weekDayCount(dayIndex: number) {
   return MOCK_GRID.reduce((total, row) => total + (row[dayIndex] ? 1 : 0), 0)
+}
+
+function getDayMood(count: number) {
+  if (count === 5) return 'Complete'
+  if (count >= 4) return 'Strong'
+  if (count >= 3) return 'Steady'
+  if (count >= 1) return 'Started'
+  return 'Open'
 }
 
 export default function ProgressPage() {
@@ -261,71 +270,121 @@ export default function ProgressPage() {
         <div className="mb-3 flex items-end justify-between">
           <div>
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
-              This Week
+              Weekly Rhythm
             </p>
             <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
-              Daily completion by prayer
+              Each row is one day, each bead is one salah
             </p>
           </div>
-          <p className="text-xs font-semibold tabular-nums" style={{ color: '#4F6F52' }}>
+          <div className="rounded-full px-3 py-1 text-xs font-semibold tabular-nums" style={{ background: 'rgba(79,111,82,0.10)', color: '#4F6F52' }}>
             {weeklyTotal}/{weeklyMax}
-          </p>
+          </div>
         </div>
 
         <div
-          className="rounded-[1.5rem] border p-4"
-          style={{ background: '#FFFFFF', borderColor: '#E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
+          className="overflow-hidden rounded-[1.6rem] border"
+          style={{
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,241,234,0.58))',
+            borderColor: '#E7E2D8',
+            boxShadow: '0 8px 28px rgba(31,41,55,0.06)',
+          }}
         >
-          <div className="grid grid-cols-7 gap-2">
+          <div className="px-4 pb-3 pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-semibold" style={{ color: '#202124' }}>
+                Week completion
+              </p>
+              <p className="text-xs font-bold tabular-nums" style={{ color: '#4F6F52' }}>
+                {weekPercent}%
+              </p>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full" style={{ background: 'rgba(231,226,216,0.85)' }}>
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${weekPercent}%`, background: 'linear-gradient(90deg, rgba(79,111,82,0.78), rgba(143,174,147,0.88))' }}
+              />
+            </div>
+          </div>
+
+          <div className="border-t border-[#E7E2D8]/80">
             {DAYS.map((day, dayIndex) => {
               const count = weekDayCount(dayIndex)
+              const mood = getDayMood(count)
               return (
-                <div key={day} className="flex flex-col items-center gap-2">
-                  <p className="text-[0.62rem] font-semibold" style={{ color: '#9CA3AF' }}>
-                    {day}
-                  </p>
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold tabular-nums"
-                    style={{
-                      background: count === 5 ? 'rgba(79,111,82,0.16)' : 'rgba(244,241,234,0.86)',
-                      color: count === 5 ? '#4F6F52' : '#6B7280',
-                      border: count === 5 ? '1px solid rgba(79,111,82,0.24)' : '1px solid rgba(231,226,216,0.92)',
-                    }}
-                  >
-                    {count}/5
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    {PRAYERS.map((_, prayerIndex) => (
-                      <span
-                        key={prayerIndex}
-                        className="h-1.5 w-7 rounded-full"
+                <div
+                  key={day}
+                  className={`px-4 py-3 ${dayIndex < DAYS.length - 1 ? 'border-b border-[#E7E2D8]/70' : ''}`}
+                >
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-2xl text-xs font-bold"
                         style={{
-                          background: MOCK_GRID[prayerIndex][dayIndex]
-                            ? 'rgba(79,111,82,0.72)'
-                            : 'rgba(231,226,216,0.95)',
+                          background: count === 5 ? 'rgba(79,111,82,0.14)' : 'rgba(244,241,234,0.90)',
+                          color: count === 5 ? '#4F6F52' : '#6B7280',
                         }}
-                      />
-                    ))}
+                      >
+                        {day}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: '#202124' }}>
+                          {count}/5 prayers
+                        </p>
+                        <p className="text-[0.62rem]" style={{ color: '#9CA3AF' }}>
+                          {mood} day
+                        </p>
+                      </div>
+                    </div>
+
+                    {count === 5 && (
+                      <span className="rounded-full px-2.5 py-1 text-[0.58rem] font-semibold" style={{ background: 'rgba(79,111,82,0.10)', color: '#4F6F52' }}>
+                        Complete
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-2">
+                    {PRAYERS.map((prayer, prayerIndex) => {
+                      const prayed = MOCK_GRID[prayerIndex][dayIndex]
+                      return (
+                        <div
+                          key={`${day}-${prayer}`}
+                          className="flex flex-col items-center gap-1 rounded-2xl px-1.5 py-2"
+                          style={{
+                            background: prayed ? 'rgba(79,111,82,0.10)' : 'rgba(231,226,216,0.42)',
+                            border: prayed ? '1px solid rgba(79,111,82,0.16)' : '1px solid rgba(231,226,216,0.76)',
+                          }}
+                        >
+                          <div
+                            className="flex h-6 w-6 items-center justify-center rounded-full text-[0.6rem] font-bold"
+                            style={{
+                              background: prayed ? 'rgba(79,111,82,0.76)' : 'rgba(255,255,255,0.76)',
+                              color: prayed ? '#FFFFFF' : '#9CA3AF',
+                            }}
+                          >
+                            {prayed ? '✓' : PRAYER_INITIALS[prayerIndex]}
+                          </div>
+                          <p className="text-[0.52rem] font-semibold" style={{ color: prayed ? '#4F6F52' : '#9CA3AF' }}>
+                            {PRAYER_INITIALS[prayerIndex]}
+                          </p>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )
             })}
           </div>
 
-          <div className="mt-5 grid grid-cols-5 gap-1.5">
-            {PRAYERS.map((prayer, prayerIndex) => {
-              const total = MOCK_GRID[prayerIndex].filter(Boolean).length
-              return (
-                <div key={prayer} className="rounded-2xl px-2 py-2 text-center" style={{ background: 'rgba(244,241,234,0.62)' }}>
-                  <p className="truncate text-[0.58rem] font-semibold" style={{ color: '#6B7280' }}>
-                    {prayer}
-                  </p>
-                  <p className="mt-0.5 text-xs font-bold tabular-nums" style={{ color: '#4F6F52' }}>
-                    {total}/7
-                  </p>
-                </div>
-              )
-            })}
+          <div className="flex items-center justify-center gap-4 px-4 py-3 text-[0.58rem] font-medium" style={{ color: '#9CA3AF' }}>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(79,111,82,0.76)' }} />
+              Logged
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(231,226,216,0.95)' }} />
+              Open
+            </span>
           </div>
         </div>
 
