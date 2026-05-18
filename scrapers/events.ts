@@ -69,6 +69,26 @@ function cleanText(value?: string | null): string | null {
   return cleaned.length ? cleaned : null
 }
 
+function cleanDescription(text: string, title: string, sourceName: string): string | null {
+  let cleaned = text
+    .replace(/\b\d+\s*min\s*read\b/gi, '')
+    .replace(new RegExp(sourceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
+    .replace(/\bHilalz\s+Team\b/gi, '')
+    .replace(/\bThe Weekend:?\s*/gi, '')
+    .replace(/\s*•\s*/g, ' • ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  cleaned = cleaned.replace(new RegExp(escapedTitle, 'gi'), '').replace(/\s+/g, ' ').trim()
+
+  if (!cleaned || cleaned.length < 20) {
+    return `Community event at ${title.includes('VRIC') ? 'Valley Ranch Islamic Center' : 'a supported masjid'}. Tap to view full event details.`
+  }
+
+  return cleaned.length > 170 ? `${cleaned.slice(0, 167).trim()}...` : cleaned
+}
+
 function findMasjidMatch(text: string): string | null {
   const normalized = text.toLowerCase()
   for (const [masjidName, aliases] of Object.entries(MASJID_ALIASES)) {
@@ -139,7 +159,7 @@ function buildEvent($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: {
     eventTime: extractTime(text),
     location: cleanText(node.find('[class*=location], [class*=venue], address').first().text()) || masjidName,
     speakers: extractSpeaker(text),
-    description: text.length > 240 ? `${text.slice(0, 237)}...` : text,
+    description: cleanDescription(text, title, source.name),
     imageUrl,
     sourceUrl: href,
     sourceName: source.name,
@@ -181,13 +201,14 @@ async function scrapeSource(source: { name: EventSource; url: string }): Promise
 
   const wholePageMatch = findMasjidMatch(pageText)
   if (wholePageMatch && candidates.length === 0) {
+    const title = `${source.name} community event`
     candidates.push({
-      title: `${source.name} community event`,
+      title,
       eventDate: extractDate(pageText),
       eventTime: extractTime(pageText),
       location: wholePageMatch,
       speakers: extractSpeaker(pageText),
-      description: pageText.length > 240 ? `${pageText.slice(0, 237)}...` : pageText,
+      description: cleanDescription(pageText, title, source.name),
       imageUrl: absoluteUrl($('img').first().attr('src') || $('img').first().attr('data-src'), source.url),
       sourceUrl: source.url,
       sourceName: source.name,
