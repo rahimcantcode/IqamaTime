@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { PrayerKey } from '@/types'
+import { getLocalDate } from '@/lib/prayer-checkins'
 import {
-  getLocalDate,
-  getPrayerCheckinForDateAndPrayer,
-  savePrayerCheckin,
-} from '@/lib/prayer-checkins'
+  getPrivateSession,
+  getPrivatePrayerCheckins,
+  savePrivatePrayerCheckin,
+} from '@/lib/private-auth'
+import PrivateAuthModal from '@/components/private-auth-modal'
 
 interface Props {
   prayerKey: PrayerKey
@@ -24,33 +26,57 @@ export default function PrayerCardActions({
 }: Props) {
   const router = useRouter()
   const [checkedIn, setCheckedIn] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  // Read from localStorage after mount (SSR-safe)
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
+  const loadCheckin = async () => {
+    const session = getPrivateSession()
+    if (!session) {
+      setCheckedIn(false)
+      return
+    }
+
+    try {
       const date = getLocalDate()
-      setCheckedIn(!!getPrayerCheckinForDateAndPrayer(date, prayerKey))
-    }, 0)
+      const checkins = await getPrivatePrayerCheckins(date, date, session)
+      setCheckedIn(checkins.some(c => c.date === date && c.prayer === prayerKey))
+    } catch {
+      setCheckedIn(false)
+    }
+  }
 
+  useEffect(() => {
+    const timer = window.setTimeout(loadCheckin, 0)
     return () => window.clearTimeout(timer)
   }, [prayerKey])
 
-  const handleCheckin = () => {
-    if (checkedIn) return
-    savePrayerCheckin({
-      date: getLocalDate(),
-      prayer: prayerKey,
-      prayerLabel,
-      adhanTime: adhanTime ?? '',
-    })
-    setCheckedIn(true)
+  const handleCheckin = async () => {
+    if (checkedIn || saving) return
+
+    const session = getPrivateSession()
+    if (!session) {
+      setAuthOpen(true)
+      return
+    }
+
+    setSaving(true)
+    try {
+      await savePrivatePrayerCheckin({
+        date: getLocalDate(),
+        prayer: prayerKey,
+        prayerLabel,
+        adhanTime: adhanTime ?? '',
+      }, session)
+      setCheckedIn(true)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleTasbih = () => {
     router.replace('/dhikr', { scroll: false })
   }
 
-  // Before adhan: show subtle pre-adhan label
   if (!adhanPast) {
     return (
       <p
@@ -78,14 +104,15 @@ export default function PrayerCardActions({
           type="button"
           onPointerDown={e => e.stopPropagation()}
           onClick={handleCheckin}
-          className="w-full rounded-full py-1.5 text-[0.62rem] font-semibold tracking-wide transition-all active:scale-95"
+          disabled={saving}
+          className="w-full rounded-full py-1.5 text-[0.62rem] font-semibold tracking-wide transition-all active:scale-95 disabled:opacity-60"
           style={{
             background: 'rgba(79,111,82,0.13)',
             border: '1px solid rgba(79,111,82,0.28)',
             color: '#4F6F52',
           }}
         >
-          I prayed at the masjid
+          {saving ? 'Saving...' : 'I prayed at the masjid'}
         </button>
       )}
 
@@ -102,6 +129,13 @@ export default function PrayerCardActions({
       >
         Tasbih
       </button>
+
+      <PrivateAuthModal
+        open={authOpen}
+        reason="Create a private profile before saving prayer progress."
+        onClose={() => setAuthOpen(false)}
+        onSuccess={() => loadCheckin()}
+      />
     </div>
   )
 }
