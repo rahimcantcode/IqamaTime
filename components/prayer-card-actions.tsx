@@ -50,17 +50,7 @@ export default function PrayerCardActions({
     router.replace('/dhikr', { scroll: false })
   }
 
-  // Before adhan: show subtle pre-adhan label
-  if (!adhanPast) {
-    return (
-      <p
-        className="text-center text-[0.58rem] font-medium tracking-wide"
-        style={{ color: '#9CA3AF' }}
-      >
-        Available after Adhan
-      </p>
-    )
-  }
+  if (!adhanPast) return null
 
   return (
     <div className="flex w-full flex-col items-center gap-2">
