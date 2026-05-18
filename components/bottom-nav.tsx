@@ -18,16 +18,16 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed left-1/2 z-50 w-[90vw] max-w-[430px] -translate-x-1/2"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4px)' }}
     >
       <div
-        className="flex h-[60px] items-center justify-around rounded-full px-3"
+        className="flex h-[58px] items-center justify-around rounded-full px-2"
         style={{
-          background: 'rgba(19,25,37,0.88)',
-          backdropFilter: 'blur(28px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset',
+          background: 'rgba(255,255,255,0.90)',
+          backdropFilter: 'blur(24px) saturate(1.8)',
+          WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
+          border: '1px solid rgba(231,226,216,0.90)',
+          boxShadow: '0 4px 24px rgba(31,41,55,0.10), 0 1px 0 rgba(255,255,255,0.95) inset',
         }}
       >
         {TABS.map(({ href, icon: Icon, label }) => {
@@ -38,10 +38,10 @@ export default function BottomNav() {
               key={href}
               type="button"
               onClick={() => { if (!active) router.replace(href, { scroll: false }) }}
-              className="relative flex flex-col items-center gap-[3px] rounded-full px-3.5 py-2 transition-all duration-200"
+              className="relative flex flex-col items-center gap-[3px] rounded-full px-3 py-2 transition-all duration-200"
               style={{
-                color: active ? '#d4af37' : 'rgba(255,255,255,0.32)',
-                background: active ? 'rgba(212,175,55,0.12)' : 'transparent',
+                color:      active ? '#4F6F52' : '#9CA3AF',
+                background: active ? 'rgba(79,111,82,0.10)' : 'transparent',
               }}
               aria-current={active ? 'page' : undefined}
               aria-label={label}
@@ -52,7 +52,7 @@ export default function BottomNav() {
               />
               <span
                 className="text-[0.48rem] font-semibold tracking-wide"
-                style={{ opacity: active ? 1 : 0.55 }}
+                style={{ opacity: active ? 1 : 0.7 }}
               >
                 {label}
               </span>

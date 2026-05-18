@@ -10,7 +10,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div
       data-app-shell="true"
-      className="fixed inset-0 overflow-hidden bg-[#131925]"
+      className="fixed inset-0 overflow-hidden bg-[#FAFAF7]"
     >
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div

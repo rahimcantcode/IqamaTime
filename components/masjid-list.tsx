@@ -32,7 +32,7 @@ function TimePill({
 }) {
   if (isPast) {
     return (
-      <span className="text-sm font-semibold tabular-nums text-white/24">
+      <span className="text-sm font-semibold tabular-nums" style={{ color: '#9CA3AF' }}>
         {time}
       </span>
     )
@@ -42,8 +42,8 @@ function TimePill({
       className="inline-flex min-w-[76px] items-center justify-center rounded-full px-3 py-1 text-sm font-bold tabular-nums"
       style={{
         color:      accent,
-        background: `${accent}18`,
-        border:     `1px solid ${accent}28`,
+        background: `${accent}14`,
+        border:     `1px solid ${accent}30`,
       }}
     >
       {time}
@@ -58,7 +58,10 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
 
   if (sorted.length === 0) {
     return (
-      <div className="iphone-panel rounded-[1.25rem] py-8 text-center text-sm text-white/24">
+      <div
+        className="iphone-panel rounded-[1.25rem] py-8 text-center text-sm"
+        style={{ color: '#9CA3AF' }}
+      >
         No iqama times available
       </div>
     )
@@ -80,29 +83,36 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             variants={item}
             className={cn(
               'pressable flex min-h-[68px] items-center justify-between rounded-[1.2rem] px-4 py-3.5',
-              entry.isPast ? 'opacity-42' : 'opacity-100'
+              entry.isPast ? 'opacity-50' : 'opacity-100'
             )}
             style={{
-              background: entry.isPast ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.045)',
-              border: '1px solid rgba(255,255,255,0.065)',
+              background: '#FFFFFF',
+              border: '1px solid rgba(231,226,216,0.90)',
+              boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
             }}
           >
             {/* Masjid name + city */}
             <div className="flex min-w-0 flex-col gap-1 pr-2">
-              <span className="truncate text-[0.92rem] font-semibold leading-tight text-gray-100">
+              <span
+                className="truncate text-[0.92rem] font-semibold leading-tight"
+                style={{ color: '#202124' }}
+              >
                 {entry.masjid.name}
               </span>
-              <span className="text-[0.72rem] leading-tight text-white/34">
+              <span
+                className="text-[0.72rem] leading-tight"
+                style={{ color: '#6B7280' }}
+              >
                 {entry.masjid.city}
               </span>
             </div>
 
             {/* Time(s) */}
-            <div className="flex flex-col items-end gap-1.5 ml-4 shrink-0">
+            <div className="ml-4 flex shrink-0 flex-col items-end gap-1.5">
               {entry.iqama ? (
                 <TimePill time={entry.iqama} isPast={entry.isPast} accent={accentColor} />
               ) : (
-                <span className="text-xs text-white/15">—</span>
+                <span className="text-xs" style={{ color: '#9CA3AF' }}>—</span>
               )}
               {hasBoth && entry.iqama2 && (
                 <TimePill time={entry.iqama2} isPast={false} accent={accentColor} />

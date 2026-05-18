@@ -2,15 +2,29 @@
 
 /* ─── Design Tokens ─────────────────────────────────────────── */
 @theme inline {
-  --color-background:   #131925;
-  --color-foreground:   #e5e7eb;
-
-  /* Brand */
-  --color-emerald-brand: #1ca094;
-  --color-gold-brand:    #d4af37;
+  --color-background:  #FAFAF7;
+  --color-foreground:  #202124;
+  --color-sage:        #8FAE93;
+  --color-forest:      #4F6F52;
+  --color-gold:        #C8A951;
 
   --font-sans: var(--font-inter);
   --font-mono: ui-monospace, 'SF Mono', monospace;
+}
+
+/* ─── CSS Custom Properties ──────────────────────────────────── */
+:root {
+  --background:     #FAFAF7;
+  --surface:        #FFFFFF;
+  --surface-soft:   #F4F1EA;
+  --text-primary:   #202124;
+  --text-secondary: #6B7280;
+  --text-muted:     #9CA3AF;
+  --accent:         #8FAE93;
+  --accent-dark:    #4F6F52;
+  --gold:           #C8A951;
+  --border:         #E7E2D8;
+  --shadow:         rgba(31, 41, 55, 0.08);
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -23,17 +37,15 @@ html {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: #131925;
+  background: var(--background);
 }
 
 body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(28, 160, 148, 0.13), transparent 36rem),
-    linear-gradient(180deg, #151d2b 0%, #111725 42%, #0f1420 100%);
-  color: #e5e7eb;
+  background: var(--background);
+  color: var(--text-primary);
   font-family: var(--font-inter, system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,10 +73,10 @@ body {
   direction: rtl;
 }
 
-/* ─── Glassmorphism card ─────────────────────────────────────── */
+/* ─── Glassmorphism card — light ─────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(231, 226, 216, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -75,10 +87,11 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ─── Surface panel — light ─────────────────────────────────── */
 .iphone-panel {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.075);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(231, 226, 216, 0.90);
+  box-shadow: 0 1px 4px rgba(31, 41, 55, 0.06);
 }
 
 .pressable {

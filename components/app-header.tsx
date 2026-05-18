@@ -27,29 +27,43 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
 
   return (
     <header
-      className="relative z-30 flex items-start justify-between px-5 pb-2"
+      className="relative z-30 flex items-start justify-between px-5 pb-3"
       style={{
         paddingTop: 'max(env(safe-area-inset-top), 14px)',
-        background: 'linear-gradient(180deg, rgba(19,25,37,0.99) 0%, rgba(19,25,37,0.97) 78%, rgba(19,25,37,0.92) 100%)',
+        background: 'linear-gradient(180deg, rgba(250,250,247,0.99) 0%, rgba(250,250,247,0.97) 75%, rgba(250,250,247,0.88) 100%)',
       }}
     >
       {/* Left: dates & next prayer */}
       <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="text-[2rem] font-bold leading-none tracking-tight text-white tabular-nums" suppressHydrationWarning>
+        <p
+          className="text-[2rem] font-bold leading-none tracking-tight tabular-nums"
+          style={{ color: '#202124' }}
+          suppressHydrationWarning
+        >
           {formatTime(now)}
         </p>
-        <p className="text-xs font-medium text-white/42" suppressHydrationWarning>{formatDate(now)}</p>
+        <p className="text-xs font-medium" style={{ color: '#6B7280' }} suppressHydrationWarning>
+          {formatDate(now)}
+        </p>
         {hijri && (
-          <p className="text-xs text-white/24" suppressHydrationWarning>{hijri}</p>
+          <p className="text-xs" style={{ color: '#9CA3AF' }} suppressHydrationWarning>
+            {hijri}
+          </p>
         )}
         {nextPrayerName && (
-          <div className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1"
-            style={{ background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.18)' }}>
+          <div
+            className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1"
+            style={{ background: 'rgba(200,169,81,0.12)', border: '1px solid rgba(200,169,81,0.22)' }}
+          >
             <div
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: '#d4af37' }}
+              className="h-1.5 w-1.5 rounded-full animate-pulse"
+              style={{ background: '#C8A951' }}
             />
-            <p className="text-[0.68rem] font-bold tracking-wide" style={{ color: '#d4af37' }} suppressHydrationWarning>
+            <p
+              className="text-[0.68rem] font-bold tracking-wide"
+              style={{ color: '#C8A951' }}
+              suppressHydrationWarning
+            >
               {nextPrayerName}
               {minutesUntil > 0 && ` · ${minutesUntil}m`}
             </p>
@@ -57,22 +71,22 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
         )}
       </div>
 
-      {/* Right: settings — glass button */}
+      {/* Right: settings button */}
       <button
         onClick={onSettingsOpen}
         className={cn(
           'mt-1 flex h-11 w-11 items-center justify-center rounded-2xl transition-colors active:scale-95',
-          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d4af37]'
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8A951]'
         )}
         style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(31,41,55,0.05)',
+          border: '1px solid rgba(31,41,55,0.08)',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
         }}
         aria-label="Open settings"
       >
-        <Settings className="w-5 h-5 text-white/45" />
+        <Settings className="w-5 h-5" style={{ color: '#6B7280' }} />
       </button>
     </header>
   )

@@ -35,7 +35,8 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-40 backdrop-blur-sm"
+            style={{ background: 'rgba(31,41,55,0.18)' }}
           />
 
           {/* Sheet */}
@@ -47,25 +48,26 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
             className="fixed inset-x-0 bottom-0 z-50 flex flex-col overflow-hidden rounded-t-[2rem]"
             style={{
               maxHeight: '84vh',
-              background: 'linear-gradient(180deg, rgba(24,32,48,0.98), rgba(15,20,32,0.99))',
-              borderTop: '1px solid rgba(255,255,255,0.10)',
-              boxShadow: '0 -24px 80px rgba(0,0,0,0.42)',
+              background: '#FFFFFF',
+              borderTop: '1px solid #E7E2D8',
+              boxShadow: '0 -8px 40px rgba(31,41,55,0.10)',
             }}
           >
             {/* Handle */}
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="h-1 w-10 rounded-full" style={{ background: '#E7E2D8' }} />
             </div>
 
             {/* Header */}
             <div className="flex items-center justify-between px-6 pb-4">
-              <h2 className="text-xl font-bold text-white">Settings</h2>
+              <h2 className="text-xl font-bold" style={{ color: '#202124' }}>Settings</h2>
               <button
                 onClick={onClose}
-                className="rounded-xl bg-white/5 p-2 transition-colors active:bg-white/10"
+                className="rounded-xl p-2 transition-colors active:scale-95"
+                style={{ background: 'rgba(31,41,55,0.06)', border: '1px solid rgba(31,41,55,0.08)' }}
                 aria-label="Close settings"
               >
-                <X className="w-5 h-5 text-white/60" />
+                <X className="w-5 h-5" style={{ color: '#6B7280' }} />
               </button>
             </div>
 
@@ -74,57 +76,70 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
 
               {/* Actions */}
               <section className="mb-6">
-                <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">
+                <p
+                  className="mb-3 text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: '#9CA3AF' }}
+                >
                   Data
                 </p>
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={handleRefresh}
                     disabled={refreshing}
-                    className="pressable flex items-center gap-3 rounded-[1.2rem] bg-white/[0.045] p-4 transition-colors active:bg-white/[0.08] disabled:opacity-70"
+                    className="pressable flex items-center gap-3 rounded-[1.2rem] p-4 transition-colors disabled:opacity-60"
+                    style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}
                   >
-                    <RefreshCw
-                      className={`w-5 h-5 text-emerald-400 ${refreshing ? 'animate-spin' : ''}`}
-                    />
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                      style={{ background: 'rgba(79,111,82,0.12)', border: '1px solid rgba(79,111,82,0.20)' }}
+                    >
+                      <RefreshCw
+                        className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
+                        style={{ color: '#4F6F52' }}
+                      />
+                    </div>
                     <div className="text-left">
-                      <p className="text-sm font-medium text-white">Refresh Times</p>
-                      <p className="text-xs text-white/40">Fetch latest prayer times</p>
+                      <p className="text-sm font-medium" style={{ color: '#202124' }}>Refresh Times</p>
+                      <p className="text-xs" style={{ color: '#9CA3AF' }}>Fetch latest prayer times</p>
                     </div>
                   </button>
 
-                  <button
-                    className="flex cursor-not-allowed items-center gap-3 rounded-[1.2rem] bg-white/[0.035] p-4 opacity-50"
-                    disabled
+                  <div
+                    className="flex items-center gap-3 rounded-[1.2rem] p-4 opacity-50"
+                    style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}
                   >
-                    <Bell className="w-5 h-5 text-amber-400" />
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-white">Notifications</p>
-                      <p className="text-xs text-white/40">Coming soon — iqama reminders</p>
+                    <div
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                      style={{ background: 'rgba(200,169,81,0.12)', border: '1px solid rgba(200,169,81,0.20)' }}
+                    >
+                      <Bell className="w-4 h-4" style={{ color: '#C8A951' }} />
                     </div>
-                  </button>
+                    <div className="text-left">
+                      <p className="text-sm font-medium" style={{ color: '#202124' }}>Notifications</p>
+                      <p className="text-xs" style={{ color: '#9CA3AF' }}>Coming soon — iqama reminders</p>
+                    </div>
+                  </div>
                 </div>
               </section>
 
               {/* Masjid selection */}
               <section className="mb-8">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-white/30">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#9CA3AF' }}>
                     Favorite Masjids
                   </p>
                   {!allSelected && (
                     <button
-                      onClick={() => {
-                        // Clear selection = show all
-                        settings.selectedMasjidIds.forEach(id => toggleMasjid(id))
-                      }}
-                      className="text-xs text-emerald-400 font-medium"
+                      onClick={() => settings.selectedMasjidIds.forEach(id => toggleMasjid(id))}
+                      className="text-xs font-medium"
+                      style={{ color: '#4F6F52' }}
                     >
                       Show All
                     </button>
                   )}
                 </div>
 
-                <p className="text-xs text-white/30 mb-3">
+                <p className="mb-3 text-xs" style={{ color: '#9CA3AF' }}>
                   {allSelected
                     ? 'Showing all masjids. Tap to filter.'
                     : `${settings.selectedMasjidIds.length} selected`
@@ -138,15 +153,18 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
                       <button
                         key={masjid.id}
                         onClick={() => toggleMasjid(masjid.id)}
-                        className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] bg-white/[0.045] p-4 transition-colors active:bg-white/[0.08]"
+                        className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] p-4 transition-colors"
+                        style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}
                       >
                         <div className="min-w-0 pr-3 text-left">
-                          <p className="truncate text-sm font-medium text-white">{masjid.name}</p>
-                          <p className="text-xs text-white/40">{masjid.city}</p>
+                          <p className="truncate text-sm font-medium" style={{ color: '#202124' }}>
+                            {masjid.name}
+                          </p>
+                          <p className="text-xs" style={{ color: '#6B7280' }}>{masjid.city}</p>
                         </div>
                         {selected
-                          ? <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                          : <Circle       className="w-5 h-5 text-white/20 shrink-0" />
+                          ? <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#4F6F52' }} />
+                          : <Circle className="w-5 h-5 shrink-0" style={{ color: '#9CA3AF' }} />
                         }
                       </button>
                     )
@@ -155,8 +173,10 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
               </section>
 
               {/* App info */}
-              <div className="text-center pb-6">
-                <p className="text-xs text-white/15">IqamaTime · Updated daily at 11:15 PM CT</p>
+              <div className="pb-6 text-center">
+                <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                  IqamaTime · Updated daily at 11:15 PM CT
+                </p>
               </div>
             </div>
           </motion.div>

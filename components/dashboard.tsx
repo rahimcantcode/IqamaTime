@@ -111,8 +111,8 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#131925]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(28,160,148,0.16),transparent_34rem)]" />
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#FAFAF7]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(143,174,147,0.14),transparent_34rem)]" />
       <AppHeader
         nextPrayerName={nextPrayer?.displayName ?? ''}
         nextPrayerTime={nextTime}
