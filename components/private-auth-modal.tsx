@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Lock, UserRound, X } from 'lucide-react'
 import { createPrivateProfile, loginPrivateProfile, PrivateUserSession } from '@/lib/private-auth'
 
@@ -17,8 +18,24 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
   const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
 
-  if (!open) return null
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [open])
+
+  if (!open || !mounted) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,11 +58,22 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 px-4 pb-4 backdrop-blur-sm sm:items-center">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/20 px-4 backdrop-blur-sm sm:items-center"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
+    >
+      <button
+        type="button"
+        aria-label="Close login modal"
+        className="absolute inset-0 h-full w-full cursor-default"
+        onClick={onClose}
+      />
+
       <div
-        className="w-full max-w-sm overflow-hidden rounded-[1.8rem] border bg-white"
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-[1.8rem] border bg-white"
         style={{ borderColor: '#E7E2D8', boxShadow: '0 20px 60px rgba(31,41,55,0.22)' }}
+        onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5">
           <div>
@@ -151,6 +179,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
           </p>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
