@@ -10,12 +10,11 @@ import type { WebSocketLikeConstructor } from '@supabase/realtime-js'
 import WebSocket from 'ws'
 import { logger } from './logger'
 
-type EventSource = string
-
 interface SourceDef {
-  name: EventSource
+  name: string
   url: string
-  forcedMasjidName?: string
+  masjidName: string
+  paths: string[]
 }
 
 interface RawEvent {
@@ -27,39 +26,30 @@ interface RawEvent {
   description: string | null
   imageUrl: string | null
   sourceUrl: string
-  sourceName: EventSource
+  sourceName: string
   matchedMasjidName: string
 }
 
 const SOURCES: SourceDef[] = [
-  { name: 'SalamDFW', url: 'https://salamdfw.com' },
-  { name: 'Hilalz Dallas', url: 'https://dallas.hilalz.com' },
-  { name: 'Islamic Center of Rowlett', url: 'https://icrmasjid.org', forcedMasjidName: 'Islamic Center of Rowlett' },
-  { name: 'EPIC Masjid', url: 'https://epicmasjid.org', forcedMasjidName: 'EPIC Masjid' },
-  { name: 'American Imams Academy', url: 'https://imamsacademy.org', forcedMasjidName: 'American Imams Academy' },
-  { name: 'SMS Masjid of Sachse', url: 'https://sachsemasjid.org', forcedMasjidName: 'SMS Masjid of Sachse' },
-  { name: 'Valley Ranch Islamic Center', url: 'https://vric.org', forcedMasjidName: 'Valley Ranch Islamic Center' },
-  { name: 'Qalam Institute', url: 'https://qalamcampus.org', forcedMasjidName: 'Qalam Institute' },
-  { name: 'Islamic Association of Collin County', url: 'https://planomasjid.org', forcedMasjidName: 'Islamic Association of Collin County' },
-  { name: 'Masjid Yaseen', url: 'https://masjidyaseen.org', forcedMasjidName: 'Masjid Yaseen' },
-  { name: 'IANT', url: 'https://iant.com', forcedMasjidName: 'IANT' },
-  { name: 'Islamic Center of Irving', url: 'https://www.irvingmasjid.org', forcedMasjidName: 'Islamic Center of Irving' },
+  {
+    name: 'EPIC Masjid',
+    masjidName: 'EPIC Masjid',
+    url: 'https://epicmasjid.org',
+    paths: ['/', '/events', '/event'],
+  },
+  {
+    name: 'SMS Masjid of Sachse',
+    masjidName: 'SMS Masjid of Sachse',
+    url: 'https://sachsemasjid.org',
+    paths: ['/', '/events', '/calendar'],
+  },
+  {
+    name: 'Qalam Institute',
+    masjidName: 'Qalam Institute',
+    url: 'https://qalamcampus.org',
+    paths: ['/', '/events', '/calendar'],
+  },
 ]
-
-const EVENT_PATHS = ['', '/events', '/calendar']
-
-const MASJID_ALIASES: Record<string, string[]> = {
-  'Islamic Center of Rowlett': ['islamic center of rowlett', 'icr', 'rowlett masjid', 'masjid rowlett', 'rowlett'],
-  'EPIC Masjid': ['epic masjid', 'east plano islamic center', 'epic', 'epic plano'],
-  'American Imams Academy': ['american imams academy', 'aia', 'imams academy'],
-  'SMS Masjid of Sachse': ['sms masjid of sachse', 'sms masjid', 'sachse masjid', 'masjid of sachse', 'sachse'],
-  'Valley Ranch Islamic Center': ['valley ranch islamic center', 'vric', 'valley ranch masjid', 'valley ranch'],
-  'Qalam Institute': ['qalam institute', 'qalam'],
-  'Islamic Association of Collin County': ['islamic association of collin county', 'islamic assoc. of collin county', 'iacc', 'plano masjid'],
-  'Masjid Yaseen': ['masjid yaseen', 'yaseen'],
-  'IANT': ['iant', 'islamic association of north texas', 'north texas islamic association'],
-  'Islamic Center of Irving': ['islamic center of irving', 'ici', 'irving masjid'],
-}
 
 const BAD_TITLE_PATTERNS = [
   /^no events?$/i,
@@ -68,26 +58,25 @@ const BAD_TITLE_PATTERNS = [
   /^services?$/i,
   /^registration$/i,
   /^committees?$/i,
-  /^divisions?$/i,
-  /^get involved$/i,
-  /^volunteering$/i,
-  /^masjid$/i,
   /^education$/i,
-  /^enter keyword/i,
   /^search/i,
+  /^enter keyword/i,
   /advanced search/i,
   /events? found/i,
+  /select date/i,
+  /now now/i,
   /geo_placeholder/i,
   /email-protection/i,
-  /protected]/i,
 ]
 
-const EVENT_KEYWORDS = /lecture|seminar|workshop|halaqa|qiyam|iftar|dinner|fundraiser|conference|retreat|camp|market|hoops|class|series|program|youth night|family night|guest speaker|registration open/i
+const EVENT_WORDS = /lecture|seminar|workshop|halaqa|qiyam|iftar|dinner|fundraiser|conference|retreat|camp|market|class|series|youth|family|guest speaker|registration open|announcement|upcoming/i
 
 function getSupabase() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
   if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+
   return createClient(url, key, {
     realtime: { transport: WebSocket as unknown as WebSocketLikeConstructor },
   })
@@ -95,48 +84,30 @@ function getSupabase() {
 
 function absoluteUrl(url: string | undefined, base: string): string | null {
   if (!url || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('#')) return null
-  try { return new URL(url, base).toString() } catch { return null }
+  try {
+    return new URL(url, base).toString()
+  } catch {
+    return null
+  }
 }
 
 function cleanText(value?: string | null): string | null {
   if (!value) return null
-  const cleaned = value.replace(/\s+/g, ' ').trim()
-  return cleaned.length ? cleaned : null
-}
-
-function isBadTitle(title: string): boolean {
-  const cleaned = title.trim()
-  if (cleaned.length < 4 || cleaned.length > 95) return true
-  return BAD_TITLE_PATTERNS.some(pattern => pattern.test(cleaned))
-}
-
-function cleanDescription(text: string, title: string, sourceName: string): string | null {
-  let cleaned = text
-    .replace(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}\s*[•-]?\s*/gi, '')
-    .replace(/\b\d+\s*min\s*read\b/gi, '')
-    .replace(new RegExp(sourceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
-    .replace(/\bHilalz\s+Team\b/gi, '')
-    .replace(/\bThe Weekend:?\s*/gi, '')
-    .replace(/\s*•\s*/g, ' ')
+  const cleaned = value
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim()
 
-  const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  cleaned = cleaned.replace(new RegExp(escapedTitle, 'gi'), '').replace(/\s+/g, ' ').trim()
-  cleaned = cleaned.replace(/^[:\-•\s]+/, '').trim()
-
-  if (!cleaned || cleaned.length < 20 || cleaned.toLowerCase().includes(title.toLowerCase().slice(0, 24))) {
-    return `Tap to view full event details from ${sourceName}.`
-  }
-  return cleaned.length > 140 ? `${cleaned.slice(0, 137).trim()}...` : cleaned
+  return cleaned.length ? cleaned : null
 }
 
-function findMasjidMatch(text: string): string | null {
-  const normalized = text.toLowerCase()
-  for (const [masjidName, aliases] of Object.entries(MASJID_ALIASES)) {
-    if (aliases.some(alias => normalized.includes(alias))) return masjidName
-  }
-  return null
+function isBadTitle(title: string) {
+  const cleaned = title.trim()
+  if (cleaned.length < 4 || cleaned.length > 90) return true
+  return BAD_TITLE_PATTERNS.some(pattern => pattern.test(cleaned))
 }
 
 function extractDate(text: string): string | null {
@@ -145,12 +116,14 @@ function extractDate(text: string): string | null {
     const parsed = new Date(`${monthMatch[1]} ${monthMatch[2]}, ${monthMatch[3] || new Date().getFullYear()}`)
     if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   }
+
   const numericMatch = text.match(/\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/)
   if (numericMatch) {
     const year = numericMatch[3].length === 2 ? `20${numericMatch[3]}` : numericMatch[3]
     const parsed = new Date(`${year}-${numericMatch[1].padStart(2, '0')}-${numericMatch[2].padStart(2, '0')}`)
     if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   }
+
   return null
 }
 
@@ -164,49 +137,95 @@ function extractSpeaker(text: string): string | null {
   return match ? cleanText(match[1]) : null
 }
 
+function cleanDescription(text: string, title: string, sourceName: string): string {
+  let cleaned = text
+    .replace(title, '')
+    .replace(/\b\d+\s*min\s*read\b/gi, '')
+    .replace(/search and views navigation/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (!cleaned || cleaned.length < 24 || cleaned.toLowerCase().includes(title.toLowerCase().slice(0, 18))) {
+    return `Tap to view full event details from ${sourceName}.`
+  }
+
+  return cleaned.length > 150 ? `${cleaned.slice(0, 147).trim()}...` : cleaned
+}
+
 function contentHash(event: RawEvent): string {
-  return crypto.createHash('sha256').update([event.sourceName, event.sourceUrl, event.title, event.eventDate, event.matchedMasjidName].join('|')).digest('hex')
+  return crypto
+    .createHash('sha256')
+    .update([event.sourceName, event.sourceUrl, event.title, event.eventDate, event.matchedMasjidName].join('|'))
+    .digest('hex')
 }
 
-function isLikelyRealEvent(title: string, text: string, source: SourceDef, href: string | null, imageUrl: string | null, eventDate: string | null): boolean {
+function hasRealEventSignal(title: string, text: string, href: string | null, imageUrl: string | null, date: string | null) {
   if (isBadTitle(title)) return false
-  if (/geo_placeholder|location options|state\/county|distance units|search and views navigation/i.test(text)) return false
-  if (/no events?/i.test(title)) return false
+  if (/geo_placeholder|location options|state\/county|distance units|search and views navigation|select date|now now/i.test(text)) return false
 
-  const urlLooksEventSpecific = Boolean(href && /event|events|calendar|program|class|registration|newsletter|beehiiv/i.test(href))
-  const hasStrongSignal = Boolean(eventDate || imageUrl || EVENT_KEYWORDS.test(`${title} ${text}`))
+  const urlLooksUseful = Boolean(href && /event|events|calendar|announcement|registration|program|class/i.test(href))
+  const hasContentSignal = Boolean(date || imageUrl || EVENT_WORDS.test(`${title} ${text}`))
 
-  if (!source.forcedMasjidName) return Boolean(findMasjidMatch(text) && hasStrongSignal)
-  return urlLooksEventSpecific && hasStrongSignal
+  return urlLooksUseful && hasContentSignal
 }
 
-function buildEvent($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: SourceDef, pageUrl: string): RawEvent | null {
+function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: SourceDef, pageUrl: string): RawEvent | null {
   const imageAlt = node.find('img').map((_, img) => $(img).attr('alt') || '').get().join(' ')
-  const hrefText = node.find('a').map((_, a) => $(a).text()).get().join(' ')
-  const text = cleanText([node.text(), imageAlt, hrefText].filter(Boolean).join(' '))
-  if (!text || text.length < 8) return null
+  const text = cleanText([node.text(), imageAlt].filter(Boolean).join(' '))
+  if (!text) return null
 
-  const title = cleanText(node.find('h1,h2,h3,h4,a').first().text()) || cleanText(node.find('img').first().attr('alt')) || text.slice(0, 90)
+  const title =
+    cleanText(node.find('h1,h2,h3,h4,a').first().text()) ||
+    cleanText(node.find('img').first().attr('alt')) ||
+    text.slice(0, 80)
+
+  if (!title) return null
+
   const href = absoluteUrl(node.find('a[href]').first().attr('href'), pageUrl) || pageUrl
-  const imageUrl = absoluteUrl(node.find('img').first().attr('src') || node.find('img').first().attr('data-src') || node.find('img').first().attr('data-lazy-src'), pageUrl)
+  const imageUrl = absoluteUrl(
+    node.find('img').first().attr('src') ||
+      node.find('img').first().attr('data-src') ||
+      node.find('img').first().attr('data-lazy-src'),
+    pageUrl
+  )
   const eventDate = extractDate(text)
 
-  if (!isLikelyRealEvent(title, text, source, href, imageUrl, eventDate)) return null
-
-  const masjidName = source.forcedMasjidName || findMasjidMatch(text)
-  if (!masjidName) return null
+  if (!hasRealEventSignal(title, text, href, imageUrl, eventDate)) return null
 
   return {
     title,
     eventDate,
     eventTime: extractTime(text),
-    location: cleanText(node.find('[class*=location], [class*=venue], address').first().text()) || masjidName,
+    location: source.masjidName,
     speakers: extractSpeaker(text),
     description: cleanDescription(text, title, source.name),
     imageUrl,
     sourceUrl: href,
     sourceName: source.name,
-    matchedMasjidName: masjidName,
+    matchedMasjidName: source.masjidName,
+  }
+}
+
+function buildFromJsonLd(item: any, source: SourceDef, pageUrl: string): RawEvent | null {
+  if (item?.['@type'] !== 'Event') return null
+
+  const title = cleanText(item.name)
+  if (!title || isBadTitle(title)) return null
+
+  const text = cleanText(`${item.name || ''} ${item.description || ''} ${item.location?.name || ''}`) || title
+  const eventDate = item.startDate ? String(item.startDate).slice(0, 10) : extractDate(text)
+
+  return {
+    title,
+    eventDate,
+    eventTime: extractTime(String(item.startDate || text)),
+    location: cleanText(item.location?.name || item.location?.address?.streetAddress) || source.masjidName,
+    speakers: null,
+    description: cleanDescription(text, title, source.name),
+    imageUrl: Array.isArray(item.image) ? item.image[0] : item.image || null,
+    sourceUrl: item.url || pageUrl,
+    sourceName: source.name,
+    matchedMasjidName: source.masjidName,
   }
 }
 
@@ -219,40 +238,24 @@ async function scrapePage(source: SourceDef, pageUrl: string): Promise<RawEvent[
       Accept: 'text/html,application/xhtml+xml',
     },
   })
+
   const $ = cheerio.load(response.data)
   const candidates: RawEvent[] = []
   console.log(`${source.name}: scanned ${pageUrl}`)
 
-  const selectors = ['article', '.event', '[class*=event]', '.tribe-events-calendar-list__event', '.post', '.card']
+  const selectors = ['article', '.event', '[class*=event]', '.tribe-events-calendar-list__event', '.post', '.card', 'section']
   $(selectors.join(',')).each((_, element) => {
-    const event = buildEvent($, $(element), source, pageUrl)
+    const event = buildFromNode($, $(element), source, pageUrl)
     if (event) candidates.push(event)
   })
 
   $('script[type="application/ld+json"]').each((_, element) => {
-    const raw = $(element).text()
     try {
-      const parsed = JSON.parse(raw)
+      const parsed = JSON.parse($(element).text())
       const items = Array.isArray(parsed) ? parsed : [parsed]
       for (const item of items) {
-        if (item?.['@type'] !== 'Event') continue
-        const title = cleanText(item.name)
-        if (!title || isBadTitle(title)) continue
-        const text = cleanText(`${item.name || ''} ${item.description || ''} ${item.location?.name || ''}`) || title
-        const masjidName = source.forcedMasjidName || findMasjidMatch(text)
-        if (!masjidName) continue
-        candidates.push({
-          title,
-          eventDate: item.startDate ? String(item.startDate).slice(0, 10) : extractDate(text),
-          eventTime: extractTime(String(item.startDate || text)),
-          location: cleanText(item.location?.name || item.location?.address?.streetAddress) || masjidName,
-          speakers: null,
-          description: cleanDescription(text, title, source.name),
-          imageUrl: Array.isArray(item.image) ? item.image[0] : item.image || null,
-          sourceUrl: item.url || pageUrl,
-          sourceName: source.name,
-          matchedMasjidName: masjidName,
-        })
+        const event = buildFromJsonLd(item, source, pageUrl)
+        if (event) candidates.push(event)
       }
     } catch {}
   })
@@ -261,15 +264,14 @@ async function scrapePage(source: SourceDef, pageUrl: string): Promise<RawEvent[
 }
 
 async function scrapeSource(source: SourceDef): Promise<RawEvent[]> {
-  const pageUrls = source.forcedMasjidName
-    ? EVENT_PATHS.map(path => absoluteUrl(path, source.url)).filter(Boolean) as string[]
-    : [source.url]
-
   const all: RawEvent[] = []
-  for (const pageUrl of pageUrls) {
+
+  for (const path of source.paths) {
+    const pageUrl = absoluteUrl(path, source.url)
+    if (!pageUrl) continue
+
     try {
-      const events = await scrapePage(source, pageUrl)
-      all.push(...events)
+      all.push(...await scrapePage(source, pageUrl))
     } catch (error) {
       logger.warn(source.name, `Could not scrape ${pageUrl}: ${error instanceof Error ? error.message : String(error)}`)
     }
@@ -277,7 +279,7 @@ async function scrapeSource(source: SourceDef): Promise<RawEvent[]> {
 
   const unique = new Map<string, RawEvent>()
   for (const event of all) unique.set(contentHash(event), event)
-  return [...unique.values()].slice(0, 8)
+  return [...unique.values()].slice(0, 6)
 }
 
 async function upsertEvents(events: RawEvent[]) {
@@ -286,9 +288,13 @@ async function upsertEvents(events: RawEvent[]) {
   if (masjidError) throw masjidError
 
   const masjidByName = new Map((masjids || []).map((m: { id: string; name: string }) => [m.name, m.id]))
-  if (!events.length) throw new Error('No matching community events found from configured sources.')
 
   await supabase.from('community_events').update({ active: false }).eq('active', true)
+
+  if (!events.length) {
+    logger.warn('Events', 'No clean EPIC, Sachse, or Qalam events found. Feed will show empty state.')
+    return
+  }
 
   const rows = events.map(event => ({
     masjid_id: masjidByName.get(event.matchedMasjidName) ?? null,
@@ -306,20 +312,20 @@ async function upsertEvents(events: RawEvent[]) {
     active: true,
   }))
 
-  console.log(`Upserting ${rows.length} community_events rows`)
+  console.log(`Upserting ${rows.length} clean community_events rows`)
   const { error } = await supabase.from('community_events').upsert(rows, { onConflict: 'content_hash' })
   if (error) throw error
 }
 
 async function run() {
   const started = Date.now()
-  console.log('\nIqamaTime Events Scraper')
+  console.log('\nIqamaTime Events Scraper: EPIC, Sachse, Qalam only')
   const allEvents: RawEvent[] = []
 
   for (const source of SOURCES) {
     const events = await scrapeSource(source)
-    logger.info(source.name, `Found ${events.length} matching events`)
-    events.forEach(event => console.log(`- ${event.sourceName}: ${event.title} => ${event.matchedMasjidName}`))
+    logger.info(source.name, `Found ${events.length} clean events`)
+    events.forEach(event => console.log(`- ${event.sourceName}: ${event.title}`))
     allEvents.push(...events)
   }
 
