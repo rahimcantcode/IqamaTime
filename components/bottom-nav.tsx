@@ -1,6 +1,8 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { TrendingUp, Bell, Home, BookOpen, Settings } from 'lucide-react'
 
 const TABS = [
@@ -13,47 +15,43 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const router   = useRouter()
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-[430px] justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-2xl justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div
-        className="pointer-events-auto flex h-[58px] w-full items-center justify-around rounded-full px-2"
+        className="pointer-events-auto flex w-full items-center justify-between rounded-full px-3 py-2 backdrop-blur-xl"
         style={{
-          background: 'rgba(255,255,255,0.90)',
-          backdropFilter: 'blur(24px) saturate(1.8)',
-          WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
-          border: '1px solid rgba(231,226,216,0.90)',
-          boxShadow: '0 4px 24px rgba(31,41,55,0.10), 0 1px 0 rgba(255,255,255,0.95) inset',
+          background: 'rgba(255,255,255,0.68)',
+          border: '1px solid rgba(255,255,255,0.70)',
+          boxShadow: '0 -4px 22px rgba(123,138,119,0.06), 0 20px 52px rgba(93,109,90,0.10)',
         }}
       >
         {TABS.map(({ href, icon: Icon, label }) => {
           const isHome = href === '/'
           const active = isHome ? pathname === '/' : pathname.startsWith(href)
+
           return (
-            <button
+            <Link
               key={href}
-              type="button"
-              onClick={() => { if (!active) router.replace(href, { scroll: false }) }}
-              className="relative flex min-w-0 flex-1 flex-col items-center gap-[3px] rounded-full px-2 py-2 transition-all duration-200 active:scale-[0.97]"
-              style={{
-                color:      active ? '#4F6F52' : '#9CA3AF',
-                background: active ? 'rgba(79,111,82,0.10)' : 'transparent',
-              }}
-              aria-current={active ? 'page' : undefined}
-              aria-label={label}
+              href={href}
+              className={`relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-full px-2 py-2 text-[11px] font-medium transition-[color,transform] duration-300 active:scale-[0.97] ${
+                active ? 'text-[#4F6F52]' : 'text-[rgba(122,122,122,0.9)]'
+              }`}
             >
+              {active ? (
+                <motion.span
+                  layoutId="iqamatime-bottom-nav-pill"
+                  className="absolute inset-0 rounded-full bg-[rgba(237,243,235,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]"
+                  transition={{ type: 'spring', stiffness: 340, damping: 28, mass: 0.6 }}
+                />
+              ) : null}
+
               <Icon
-                className="h-[18px] w-[18px]"
-                strokeWidth={active ? 2.2 : 1.5}
+                className="relative z-10 h-4 w-4"
+                strokeWidth={active ? 2.2 : 1.8}
               />
-              <span
-                className="text-[0.48rem] font-semibold tracking-wide"
-                style={{ opacity: active ? 1 : 0.7 }}
-              >
-                {label}
-              </span>
-            </button>
+              <span className="relative z-10">{label}</span>
+            </Link>
           )
         })}
       </div>
