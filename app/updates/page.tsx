@@ -95,7 +95,7 @@ export default async function UpdatesPage() {
 
   return (
     <div
-      className="fixed inset-0 overflow-y-auto bg-[#FAFAF7] pb-28"
+      className="fixed inset-0 overflow-y-auto bg-[#FAFAF7]"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="px-6 pb-4 pt-2">
@@ -109,7 +109,7 @@ export default async function UpdatesPage() {
         </p>
       </div>
 
-      <section className="flex flex-col gap-5 px-5 pb-24">
+      <section className="flex flex-col gap-5 px-5 pb-[calc(9rem+env(safe-area-inset-bottom))]">
         {!visibleEvents.length && (
           <div
             className="rounded-[1.5rem] border border-[#E7E2D8] bg-white px-5 py-8 text-center"
