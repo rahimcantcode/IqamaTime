@@ -1,6 +1,7 @@
 import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { epicRecurringEvents } from '@/data/epic-recurring-events'
+import BottomNav from '@/components/bottom-nav'
 
 function cleanDisplayDescription(description: string | null, title: string, sourceName: string) {
   if (!description) return null
@@ -94,7 +95,7 @@ export default async function UpdatesPage() {
   const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
-    <main className="min-h-dvh bg-[#FAFAF7] pt-[max(env(safe-area-inset-top),16px)]">
+    <main className="min-h-screen bg-[#FAFAF7] pt-[max(env(safe-area-inset-top),16px)]">
       <div className="px-6 pb-4 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Bell className="h-5 w-5" style={{ color: '#4F6F52' }} />
@@ -203,6 +204,8 @@ export default async function UpdatesPage() {
           )
         })}
       </section>
+
+      <BottomNav />
     </main>
   )
 }
