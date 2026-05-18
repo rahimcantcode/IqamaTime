@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
+import { Bell, CalendarDays, ChevronDown, Filter, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { epicRecurringEvents } from '@/data/epic-recurring-events'
 
@@ -75,10 +75,11 @@ function mergeDuplicateEvents(events: any[] | null | undefined) {
   )
 }
 
-export default async function UpdatesPage({ searchParams }: { searchParams?: { masjid?: string } }) {
+export default async function UpdatesPage({ searchParams }: { searchParams?: { masjid?: string; filter?: string } }) {
   const selectedFilter = searchParams?.masjid === 'iant' || searchParams?.masjid === 'epic'
     ? searchParams.masjid
     : 'all'
+  const filterOpen = searchParams?.filter === 'open'
 
   const supabase = await createServerSupabaseClient()
 
@@ -104,11 +105,7 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
   const combinedEvents = [...(events || []), ...epicRecurringEvents]
   const visibleEvents = mergeDuplicateEvents(combinedEvents).filter(event => eventMatchesFilter(event, selectedFilter))
 
-  const filters = [
-    { label: 'All', value: 'all', href: '/updates' },
-    { label: 'IANT', value: 'iant', href: '/updates?masjid=iant' },
-    { label: 'EPIC', value: 'epic', href: '/updates?masjid=epic' },
-  ]
+  const selectedLabel = selectedFilter === 'iant' ? 'IANT' : selectedFilter === 'epic' ? 'EPIC' : 'All Masajid'
 
   return (
     <div
@@ -125,23 +122,29 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
           Community lectures, seminars, and gatherings from supported masjids.
         </p>
 
-        <div className="mt-4 flex w-fit gap-1 rounded-full border border-[#E7E2D8] bg-white p-1 shadow-sm">
-          {filters.map(filter => {
-            const active = selectedFilter === filter.value
-            return (
-              <Link
-                key={filter.value}
-                href={filter.href}
-                className={`rounded-full px-3 py-1 text-[0.7rem] font-semibold transition ${
-                  active
-                    ? 'bg-[#4F6F52] text-white'
-                    : 'text-[#6B7280] hover:bg-[#EEF2ED] hover:text-[#4F6F52]'
-                }`}
-              >
-                {filter.label}
+        <div className="relative mt-4 w-fit">
+          <Link
+            href={filterOpen ? `/updates${selectedFilter === 'all' ? '' : `?masjid=${selectedFilter}`}` : `/updates?filter=open${selectedFilter === 'all' ? '' : `&masjid=${selectedFilter}`}`}
+            className="flex items-center gap-2 rounded-full border border-[#E7E2D8] bg-white px-3 py-2 text-[0.72rem] font-semibold text-[#4F6F52] shadow-sm"
+          >
+            <Filter className="h-3.5 w-3.5" />
+            <span>{selectedLabel}</span>
+            <ChevronDown className={`h-3.5 w-3.5 transition ${filterOpen ? 'rotate-180' : ''}`} />
+          </Link>
+
+          {filterOpen && (
+            <div className="absolute left-0 top-11 z-20 w-36 overflow-hidden rounded-2xl border border-[#E7E2D8] bg-white py-1 text-sm shadow-lg">
+              <Link href="/updates" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'all' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+                All Masajid
               </Link>
-            )
-          })}
+              <Link href="/updates?masjid=iant" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'iant' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+                IANT
+              </Link>
+              <Link href="/updates?masjid=epic" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'epic' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+                EPIC
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
