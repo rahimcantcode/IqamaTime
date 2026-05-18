@@ -30,26 +30,25 @@ interface RawEvent {
   matchedMasjidName: string
 }
 
+interface DebugCandidate {
+  source: string
+  pageUrl: string
+  title: string
+  href: string | null
+  hasImage: boolean
+  date: string | null
+  textSample: string
+  accepted: boolean
+  reason: string
+}
+
 const SOURCES: SourceDef[] = [
-  {
-    name: 'EPIC Masjid',
-    masjidName: 'EPIC Masjid',
-    url: 'https://epicmasjid.org',
-    paths: ['/', '/events', '/event'],
-  },
-  {
-    name: 'SMS Masjid of Sachse',
-    masjidName: 'SMS Masjid of Sachse',
-    url: 'https://sachsemasjid.org',
-    paths: ['/', '/events', '/calendar'],
-  },
-  {
-    name: 'Qalam Institute',
-    masjidName: 'Qalam Institute',
-    url: 'https://qalamcampus.org',
-    paths: ['/', '/events', '/calendar'],
-  },
+  { name: 'EPIC Masjid', masjidName: 'EPIC Masjid', url: 'https://epicmasjid.org', paths: ['/', '/events', '/event'] },
+  { name: 'SMS Masjid of Sachse', masjidName: 'SMS Masjid of Sachse', url: 'https://sachsemasjid.org', paths: ['/', '/events', '/calendar'] },
+  { name: 'Qalam Institute', masjidName: 'Qalam Institute', url: 'https://qalamcampus.org', paths: ['/', '/events', '/calendar'] },
 ]
+
+const DEBUG_CANDIDATES: DebugCandidate[] = []
 
 const BAD_TITLE_PATTERNS = [
   /^no events?$/i,
@@ -74,21 +73,13 @@ const EVENT_WORDS = /lecture|seminar|workshop|halaqa|qiyam|iftar|dinner|fundrais
 function getSupabase() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-
   if (!url || !key) throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
-
-  return createClient(url, key, {
-    realtime: { transport: WebSocket as unknown as WebSocketLikeConstructor },
-  })
+  return createClient(url, key, { realtime: { transport: WebSocket as unknown as WebSocketLikeConstructor } })
 }
 
 function absoluteUrl(url: string | undefined, base: string): string | null {
   if (!url || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('#')) return null
-  try {
-    return new URL(url, base).toString()
-  } catch {
-    return null
-  }
+  try { return new URL(url, base).toString() } catch { return null }
 }
 
 function cleanText(value?: string | null): string | null {
@@ -100,7 +91,6 @@ function cleanText(value?: string | null): string | null {
     .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim()
-
   return cleaned.length ? cleaned : null
 }
 
@@ -116,14 +106,12 @@ function extractDate(text: string): string | null {
     const parsed = new Date(`${monthMatch[1]} ${monthMatch[2]}, ${monthMatch[3] || new Date().getFullYear()}`)
     if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   }
-
   const numericMatch = text.match(/\b(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})\b/)
   if (numericMatch) {
     const year = numericMatch[3].length === 2 ? `20${numericMatch[3]}` : numericMatch[3]
     const parsed = new Date(`${year}-${numericMatch[1].padStart(2, '0')}-${numericMatch[2].padStart(2, '0')}`)
     if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   }
-
   return null
 }
 
@@ -144,29 +132,32 @@ function cleanDescription(text: string, title: string, sourceName: string): stri
     .replace(/search and views navigation/gi, '')
     .replace(/\s+/g, ' ')
     .trim()
-
   if (!cleaned || cleaned.length < 24 || cleaned.toLowerCase().includes(title.toLowerCase().slice(0, 18))) {
     return `Tap to view full event details from ${sourceName}.`
   }
-
   return cleaned.length > 150 ? `${cleaned.slice(0, 147).trim()}...` : cleaned
 }
 
 function contentHash(event: RawEvent): string {
-  return crypto
-    .createHash('sha256')
-    .update([event.sourceName, event.sourceUrl, event.title, event.eventDate, event.matchedMasjidName].join('|'))
-    .digest('hex')
+  return crypto.createHash('sha256').update([event.sourceName, event.sourceUrl, event.title, event.eventDate, event.matchedMasjidName].join('|')).digest('hex')
+}
+
+function candidateReason(title: string, text: string, href: string | null, imageUrl: string | null, date: string | null) {
+  if (isBadTitle(title)) return 'bad-title'
+  if (/geo_placeholder|location options|state\/county|distance units|search and views navigation|select date|now now/i.test(text)) return 'search-or-widget-junk'
+  const urlLooksUseful = Boolean(href && /event|events|calendar|announcement|registration|program|class/i.test(href))
+  if (!urlLooksUseful) return 'url-not-event-like'
+  const hasContentSignal = Boolean(date || imageUrl || EVENT_WORDS.test(`${title} ${text}`))
+  if (!hasContentSignal) return 'no-date-image-or-event-keyword'
+  return 'accepted'
 }
 
 function hasRealEventSignal(title: string, text: string, href: string | null, imageUrl: string | null, date: string | null) {
-  if (isBadTitle(title)) return false
-  if (/geo_placeholder|location options|state\/county|distance units|search and views navigation|select date|now now/i.test(text)) return false
+  return candidateReason(title, text, href, imageUrl, date) === 'accepted'
+}
 
-  const urlLooksUseful = Boolean(href && /event|events|calendar|announcement|registration|program|class/i.test(href))
-  const hasContentSignal = Boolean(date || imageUrl || EVENT_WORDS.test(`${title} ${text}`))
-
-  return urlLooksUseful && hasContentSignal
+function rememberCandidate(candidate: DebugCandidate) {
+  if (DEBUG_CANDIDATES.length < 120) DEBUG_CANDIDATES.push(candidate)
 }
 
 function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: SourceDef, pageUrl: string): RawEvent | null {
@@ -174,21 +165,25 @@ function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source
   const text = cleanText([node.text(), imageAlt].filter(Boolean).join(' '))
   if (!text) return null
 
-  const title =
-    cleanText(node.find('h1,h2,h3,h4,a').first().text()) ||
-    cleanText(node.find('img').first().attr('alt')) ||
-    text.slice(0, 80)
-
+  const title = cleanText(node.find('h1,h2,h3,h4,a').first().text()) || cleanText(node.find('img').first().attr('alt')) || text.slice(0, 80)
   if (!title) return null
 
   const href = absoluteUrl(node.find('a[href]').first().attr('href'), pageUrl) || pageUrl
-  const imageUrl = absoluteUrl(
-    node.find('img').first().attr('src') ||
-      node.find('img').first().attr('data-src') ||
-      node.find('img').first().attr('data-lazy-src'),
-    pageUrl
-  )
+  const imageUrl = absoluteUrl(node.find('img').first().attr('src') || node.find('img').first().attr('data-src') || node.find('img').first().attr('data-lazy-src'), pageUrl)
   const eventDate = extractDate(text)
+  const reason = candidateReason(title, text, href, imageUrl, eventDate)
+
+  rememberCandidate({
+    source: source.name,
+    pageUrl,
+    title,
+    href,
+    hasImage: Boolean(imageUrl),
+    date: eventDate,
+    textSample: text.slice(0, 160),
+    accepted: reason === 'accepted',
+    reason,
+  })
 
   if (!hasRealEventSignal(title, text, href, imageUrl, eventDate)) return null
 
@@ -208,13 +203,10 @@ function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source
 
 function buildFromJsonLd(item: any, source: SourceDef, pageUrl: string): RawEvent | null {
   if (item?.['@type'] !== 'Event') return null
-
   const title = cleanText(item.name)
   if (!title || isBadTitle(title)) return null
-
   const text = cleanText(`${item.name || ''} ${item.description || ''} ${item.location?.name || ''}`) || title
   const eventDate = item.startDate ? String(item.startDate).slice(0, 10) : extractDate(text)
-
   return {
     title,
     eventDate,
@@ -241,9 +233,9 @@ async function scrapePage(source: SourceDef, pageUrl: string): Promise<RawEvent[
 
   const $ = cheerio.load(response.data)
   const candidates: RawEvent[] = []
-  console.log(`${source.name}: scanned ${pageUrl}`)
+  console.log(`${source.name}: scanned ${pageUrl}, ${response.data.length} chars`)
 
-  const selectors = ['article', '.event', '[class*=event]', '.tribe-events-calendar-list__event', '.post', '.card', 'section']
+  const selectors = ['article', '.event', '[class*=event]', '.tribe-events-calendar-list__event', '.post', '.card', 'section', 'a[href]']
   $(selectors.join(',')).each((_, element) => {
     const event = buildFromNode($, $(element), source, pageUrl)
     if (event) candidates.push(event)
@@ -265,28 +257,39 @@ async function scrapePage(source: SourceDef, pageUrl: string): Promise<RawEvent[
 
 async function scrapeSource(source: SourceDef): Promise<RawEvent[]> {
   const all: RawEvent[] = []
-
   for (const path of source.paths) {
     const pageUrl = absoluteUrl(path, source.url)
     if (!pageUrl) continue
-
     try {
       all.push(...await scrapePage(source, pageUrl))
     } catch (error) {
       logger.warn(source.name, `Could not scrape ${pageUrl}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
-
   const unique = new Map<string, RawEvent>()
   for (const event of all) unique.set(contentHash(event), event)
   return [...unique.values()].slice(0, 6)
+}
+
+function printDebugReport() {
+  console.log('\nEvent scraper candidate debug report')
+  console.log('='.repeat(80))
+  for (const source of SOURCES) {
+    const rows = DEBUG_CANDIDATES.filter(row => row.source === source.name).slice(0, 25)
+    console.log(`\n${source.name}: showing ${rows.length} candidates`)
+    for (const row of rows) {
+      console.log(`- [${row.accepted ? 'KEEP' : 'DROP'}:${row.reason}] ${row.title}`)
+      console.log(`  href=${row.href || 'none'} | date=${row.date || 'none'} | image=${row.hasImage}`)
+      console.log(`  text=${row.textSample}`)
+    }
+  }
+  console.log('='.repeat(80))
 }
 
 async function upsertEvents(events: RawEvent[]) {
   const supabase = getSupabase()
   const { data: masjids, error: masjidError } = await supabase.from('masjids').select('id,name')
   if (masjidError) throw masjidError
-
   const masjidByName = new Map((masjids || []).map((m: { id: string; name: string }) => [m.name, m.id]))
 
   await supabase.from('community_events').update({ active: false }).eq('active', true)
@@ -328,6 +331,8 @@ async function run() {
     events.forEach(event => console.log(`- ${event.sourceName}: ${event.title}`))
     allEvents.push(...events)
   }
+
+  printDebugReport()
 
   const unique = new Map<string, RawEvent>()
   for (const event of allEvents) unique.set(contentHash(event), event)
