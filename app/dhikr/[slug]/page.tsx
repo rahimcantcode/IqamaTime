@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft, Clock, Sparkles } from 'lucide-react'
 import { DHIKR_DETAIL_CONTENT } from '@/lib/dhikr-data'
+import { POST_SALAH_DHIKR_DETAIL } from '@/lib/post-salah-dhikr'
 import DhikrLiquidCard from '@/components/dhikr-liquid-card'
 import DhikrTasbihGroupCard from '@/components/dhikr-tasbih-group-card'
 
@@ -13,7 +14,7 @@ export default function DhikrDetailPage() {
   const params  = useParams()
   const router  = useRouter()
   const slug    = typeof params.slug === 'string' ? params.slug : ''
-  const detail  = DHIKR_DETAIL_CONTENT[slug]
+  const detail  = slug === 'post-salah' ? POST_SALAH_DHIKR_DETAIL : DHIKR_DETAIL_CONTENT[slug]
 
   const [mode, setMode] = useState<Mode>('interactive')
 
