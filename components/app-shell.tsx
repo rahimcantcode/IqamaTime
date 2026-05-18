@@ -10,7 +10,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div
       data-app-shell="true"
-      className="fixed inset-0 overflow-hidden bg-[#FAFAF7]"
+      className="min-h-dvh bg-[#FAFAF7]"
     >
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div
@@ -19,7 +19,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0.96, scale: 0.992 }}
           transition={{ duration: 0.16, ease: 'easeOut' }}
-          className="fixed inset-0 overflow-hidden"
+          className="min-h-dvh"
         >
           {children}
         </motion.div>
