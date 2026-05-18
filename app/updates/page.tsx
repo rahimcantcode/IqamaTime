@@ -20,6 +20,48 @@ function cleanDisplayDescription(description: string | null, title: string, sour
   return description
 }
 
+function normalizeEventTitle(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/&[#a-z0-9]+;/gi, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function eventIdentity(event: any) {
+  return [
+    normalizeEventTitle(event.title || ''),
+    event.event_date || '',
+    event.event_time || '',
+  ].join('|')
+}
+
+function removeDuplicateEvents(events: any[] | null | undefined) {
+  if (!events?.length) return []
+
+  const unique = new Map<string, any>()
+
+  for (const event of events) {
+    const key = eventIdentity(event)
+    const existing = unique.get(key)
+
+    if (!existing) {
+      unique.set(key, event)
+      continue
+    }
+
+    // When IANT produces one card with a picture and one without, keep the simpler text card.
+    const existingHasImage = Boolean(existing.image_url)
+    const currentHasImage = Boolean(event.image_url)
+
+    if (existingHasImage && !currentHasImage) {
+      unique.set(key, event)
+    }
+  }
+
+  return [...unique.values()]
+}
+
 export default async function UpdatesPage() {
   const supabase = await createServerSupabaseClient()
 
@@ -40,7 +82,9 @@ export default async function UpdatesPage() {
     `)
     .eq('active', true)
     .order('event_date', { ascending: true })
-    .limit(25)
+    .limit(50)
+
+  const visibleEvents = removeDuplicateEvents(events)
 
   return (
     <div
@@ -59,7 +103,7 @@ export default async function UpdatesPage() {
       </div>
 
       <section className="flex flex-col gap-5 px-5 pb-24">
-        {!events?.length && (
+        {!visibleEvents.length && (
           <div
             className="rounded-[1.5rem] border border-[#E7E2D8] bg-white px-5 py-8 text-center"
             style={{ boxShadow: '0 4px 16px rgba(15,23,42,0.05)' }}
@@ -73,7 +117,7 @@ export default async function UpdatesPage() {
           </div>
         )}
 
-        {events?.map((event: any) => {
+        {visibleEvents.map((event: any) => {
           const displayDescription = cleanDisplayDescription(event.description, event.title, event.source_name)
 
           return (
