@@ -1,33 +1,30 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────────────────────── */
 @theme inline {
-  --color-background:  #FAFAF7;
-  --color-foreground:  #202124;
-  --color-sage:        #8FAE93;
-  --color-forest:      #4F6F52;
-  --color-gold:        #C8A951;
-
+  --color-background: #FAFAF7;
+  --color-foreground: #202124;
+  --color-sage: #8FAE93;
+  --color-forest: #4F6F52;
+  --color-gold: #C8A951;
   --font-sans: var(--font-inter);
   --font-mono: ui-monospace, 'SF Mono', monospace;
 }
 
-/* ─── CSS Custom Properties ──────────────────────────────────── */
 :root {
-  --background:     #FAFAF7;
-  --surface:        #FFFFFF;
-  --surface-soft:   #F4F1EA;
-  --text-primary:   #202124;
+  --background: #FAFAF7;
+  --surface: #FFFFFF;
+  --surface-soft: #F4F1EA;
+  --text-primary: #202124;
   --text-secondary: #6B7280;
-  --text-muted:     #9CA3AF;
-  --accent:         #8FAE93;
-  --accent-dark:    #4F6F52;
-  --gold:           #C8A951;
-  --border:         #E7E2D8;
-  --shadow:         rgba(31, 41, 55, 0.08);
+  --text-muted: #9CA3AF;
+  --accent: #8FAE93;
+  --accent-dark: #4F6F52;
+  --gold: #C8A951;
+  --border: #E7E2D8;
+  --shadow: rgba(31, 41, 55, 0.08);
+  --app-height: 100dvh;
 }
 
-/* ─── Base ───────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -41,7 +38,8 @@ html {
 }
 
 body {
-  height: 100%;
+  height: var(--app-height);
+  min-height: var(--app-height);
   overflow: hidden;
   overscroll-behavior: none;
   background: var(--background);
@@ -54,26 +52,25 @@ body {
   touch-action: manipulation;
 }
 
-/* ─── Safe area helpers ──────────────────────────────────────── */
-.pt-safe  { padding-top:    env(safe-area-inset-top,    0px); }
-.pb-safe  { padding-bottom: env(safe-area-inset-bottom, 0px); }
-.pl-safe  { padding-left:   env(safe-area-inset-left,   0px); }
-.pr-safe  { padding-right:  env(safe-area-inset-right,  0px); }
+.pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.pl-safe { padding-left: env(safe-area-inset-left, 0px); }
+.pr-safe { padding-right: env(safe-area-inset-right, 0px); }
 
-/* ─── Scrollbar ──────────────────────────────────────────────── */
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ─── Arabic typography ──────────────────────────────────────── */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 [lang="ar"], .arabic {
   font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', Georgia, serif;
   direction: rtl;
 }
 
-/* ─── Glassmorphism card — light ─────────────────────────────── */
 .glass {
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(231, 226, 216, 0.85);
@@ -81,13 +78,11 @@ body {
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ─── Smooth momentum scroll ─────────────────────────────────── */
 .scroll-momentum {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Surface panel — light ─────────────────────────────────── */
 .iphone-panel {
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(231, 226, 216, 0.90);
@@ -111,7 +106,9 @@ body {
   }
 }
 
-/* ─── PWA standalone full height ─────────────────────────────── */
 @media (display-mode: standalone) {
-  body { height: 100dvh; }
+  body {
+    height: var(--app-height);
+    min-height: var(--app-height);
+  }
 }
