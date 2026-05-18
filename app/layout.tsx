@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
-import AppShell from '@/components/app-shell'
-import BottomNav from '@/components/bottom-nav'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -51,8 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/apple-icon-180.png" />
       </head>
       <body className="min-h-full bg-[#FAFAF7] text-[#202124]">
-        <AppShell>{children}</AppShell>
-        <BottomNav />
+        {children}
         <Script id="register-service-worker" strategy="afterInteractive">
           {`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});})}`}
         </Script>
