@@ -32,11 +32,10 @@ export default function DhikrDetailPage() {
   }
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#FAFAF7] scrollbar-none scroll-momentum"
+    <main
+      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
-      {/* Back navigation */}
       <div className="flex items-center gap-2 px-4 pb-1 pt-2">
         <button
           type="button"
@@ -50,8 +49,7 @@ export default function DhikrDetailPage() {
         </button>
       </div>
 
-      <div className="flex-1 px-6 pb-32 pt-3">
-        {/* Page title */}
+      <div className="px-6 pb-32 pt-3">
         <div className="mb-5">
           <h1 className="text-xl font-bold" style={{ color: '#202124' }}>
             {detail?.title ?? fallbackTitle}
@@ -65,7 +63,6 @@ export default function DhikrDetailPage() {
 
         {detail ? (
           <>
-            {/* Simple | Interactive toggle */}
             <div
               className="mb-5 inline-flex rounded-full p-0.5"
               style={{ background: 'rgba(31,41,55,0.06)', border: '1px solid rgba(31,41,55,0.08)' }}
@@ -152,14 +149,11 @@ export default function DhikrDetailPage() {
               </button>
             )}
 
-            {/* Dhikr cards */}
             <div id={detail.tasbihGroup ? 'tasbih-counters' : undefined} className="flex scroll-mt-4 flex-col gap-4">
-              {/* Items before tasbih group */}
               {detail.items.slice(0, splitIndex).map(item => (
                 <DhikrLiquidCard key={item.id} item={item} mode={mode} />
               ))}
 
-              {/* Tasbih group card (when present) */}
               {detail.tasbihGroup && (
                 <DhikrTasbihGroupCard
                   key="tasbih-group"
@@ -168,7 +162,6 @@ export default function DhikrDetailPage() {
                 />
               )}
 
-              {/* Items after tasbih group */}
               {detail.items.slice(splitIndex).map(item => (
                 <DhikrLiquidCard key={item.id} item={item} mode={mode} />
               ))}
@@ -184,7 +177,6 @@ export default function DhikrDetailPage() {
             )}
           </>
         ) : (
-          /* Coming soon placeholder */
           <div
             className="flex flex-col items-center rounded-[1.35rem] px-6 py-10 text-center"
             style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
@@ -204,6 +196,6 @@ export default function DhikrDetailPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
