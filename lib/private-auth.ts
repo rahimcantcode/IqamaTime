@@ -18,6 +18,14 @@ function normalizeUsername(username: string) {
   return username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '')
 }
 
+function readAuthRow(row: any): PrivateUserSession {
+  return {
+    userId: row.user_id ?? row.out_user_id,
+    username: row.username ?? row.out_username,
+    sessionToken: row.session_token ?? row.out_session_token,
+  }
+}
+
 async function sha256(value: string) {
   const encoder = new TextEncoder()
   const data = encoder.encode(value)
@@ -85,11 +93,7 @@ export async function createPrivateProfile(username: string, pin: string) {
   if (error) throw new Error(error.message)
 
   const row = Array.isArray(data) ? data[0] : data
-  const session: PrivateUserSession = {
-    userId: row.user_id,
-    username: row.username,
-    sessionToken: row.session_token,
-  }
+  const session = readAuthRow(row)
 
   setPrivateSession(session)
   return session
@@ -112,11 +116,7 @@ export async function loginPrivateProfile(username: string, pin: string) {
   if (error) throw new Error(error.message)
 
   const row = Array.isArray(data) ? data[0] : data
-  const session: PrivateUserSession = {
-    userId: row.user_id,
-    username: row.username,
-    sessionToken: row.session_token,
-  }
+  const session = readAuthRow(row)
 
   setPrivateSession(session)
   return session
