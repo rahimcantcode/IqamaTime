@@ -100,7 +100,16 @@ function cleanDescription(text: string, title: string): string {
 }
 
 function contentHash(event: EventRow): string {
-  return crypto.createHash('sha256').update([event.sourceUrl, event.title, event.eventDate, event.eventTime].join('|')).digest('hex')
+  const normalizedTitle = event.title
+    .toLowerCase()
+    .replace(/&[#a-z0-9]+;/gi, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+
+  return crypto
+    .createHash('sha256')
+    .update([normalizedTitle, event.eventDate || '', event.eventTime || ''].join('|'))
+    .digest('hex')
 }
 
 function fromJsonLd(item: any, pageUrl: string): EventRow | null {
@@ -201,7 +210,7 @@ async function upsertEvents(events: EventRow[]) {
     event_time: event.eventTime,
     location: event.location,
     speakers: null,
-    description: event.description,
+    description: 'Tap to view full event details from IANT.',
     image_url: event.imageUrl,
     source_url: event.sourceUrl,
     source_name: SOURCE_NAME,
