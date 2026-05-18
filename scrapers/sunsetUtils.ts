@@ -14,7 +14,7 @@ export async function sunsetPlus(offsetMinutes: number): Promise<string | null> 
   try {
     const url = `https://api.aladhan.com/v1/timingsByCity/${todayCT()}?city=Richardson&country=US&method=2`
     const { data } = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0' } })
-    const sunsetStr: string = data?.data?.timings?.Sunset
+    const sunsetStr: string = data?.data?.timings?.Maghrib
     if (!sunsetStr) return null
 
     const [hStr, mStr] = sunsetStr.split(':')
