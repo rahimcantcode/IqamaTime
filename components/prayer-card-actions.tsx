@@ -27,8 +27,12 @@ export default function PrayerCardActions({
 
   // Read from localStorage after mount (SSR-safe)
   useEffect(() => {
-    const date = getLocalDate()
-    setCheckedIn(!!getPrayerCheckinForDateAndPrayer(date, prayerKey))
+    const timer = window.setTimeout(() => {
+      const date = getLocalDate()
+      setCheckedIn(!!getPrayerCheckinForDateAndPrayer(date, prayerKey))
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [prayerKey])
 
   const handleCheckin = () => {

@@ -27,17 +27,21 @@ export default function ProgressPage() {
 
   // Hydrate from localStorage after mount
   useEffect(() => {
-    const date = getLocalDate()
-    const checkins = getPrayerCheckins().filter(c => c.date === date)
-    if (checkins.length === 0) return
-    setTodayLog(prev => {
-      const next = { ...prev }
-      checkins.forEach(c => {
-        const label = c.prayerLabel // "Fajr", "Dhuhr", etc.
-        if (label in next) next[label] = true
+    const timer = window.setTimeout(() => {
+      const date = getLocalDate()
+      const checkins = getPrayerCheckins().filter(c => c.date === date)
+      if (checkins.length === 0) return
+      setTodayLog(prev => {
+        const next = { ...prev }
+        checkins.forEach(c => {
+          const label = c.prayerLabel // "Fajr", "Dhuhr", etc.
+          if (label in next) next[label] = true
+        })
+        return next
       })
-      return next
-    })
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [])
 
   const todayCount  = Object.values(todayLog).filter(Boolean).length
