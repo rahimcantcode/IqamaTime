@@ -28,38 +28,43 @@ function normalizeEventTitle(title: string) {
     .trim()
 }
 
-function eventIdentity(event: any) {
-  return [
-    normalizeEventTitle(event.title || ''),
-    event.event_date || '',
-    event.event_time || '',
-  ].join('|')
+function hasValue(value: unknown) {
+  return typeof value === 'string' && value.trim().length > 0
 }
 
-function removeDuplicateEvents(events: any[] | null | undefined) {
+function mergeDuplicateEvents(events: any[] | null | undefined) {
   if (!events?.length) return []
 
-  const unique = new Map<string, any>()
+  const merged = new Map<string, any>()
 
   for (const event of events) {
-    const key = eventIdentity(event)
-    const existing = unique.get(key)
+    const key = normalizeEventTitle(event.title || '')
+    const existing = merged.get(key)
 
     if (!existing) {
-      unique.set(key, event)
+      merged.set(key, { ...event })
       continue
     }
 
-    // When IANT produces one card with a picture and one without, keep the simpler text card.
-    const existingHasImage = Boolean(existing.image_url)
-    const currentHasImage = Boolean(event.image_url)
-
-    if (existingHasImage && !currentHasImage) {
-      unique.set(key, event)
-    }
+    merged.set(key, {
+      ...existing,
+      id: existing.id,
+      title: existing.title || event.title,
+      event_date: existing.event_date || event.event_date,
+      event_time: existing.event_time || event.event_time,
+      location: hasValue(existing.location) ? existing.location : event.location,
+      speakers: hasValue(existing.speakers) ? existing.speakers : event.speakers,
+      description: hasValue(existing.description) ? existing.description : event.description,
+      image_url: existing.image_url || event.image_url,
+      source_url: existing.source_url || event.source_url,
+      source_name: existing.source_name || event.source_name,
+      masjids: existing.masjids || event.masjids,
+    })
   }
 
-  return [...unique.values()]
+  return [...merged.values()].sort((a, b) =>
+    `${a.event_date || ''} ${a.event_time || ''}`.localeCompare(`${b.event_date || ''} ${b.event_time || ''}`)
+  )
 }
 
 export default async function UpdatesPage() {
@@ -84,7 +89,7 @@ export default async function UpdatesPage() {
     .order('event_date', { ascending: true })
     .limit(50)
 
-  const visibleEvents = removeDuplicateEvents(events)
+  const visibleEvents = mergeDuplicateEvents(events)
 
   return (
     <div
