@@ -21,9 +21,9 @@ export default function BottomNav() {
       <div
         className="pointer-events-auto flex w-full items-center justify-between rounded-full px-3 py-1.5 backdrop-blur-xl"
         style={{
-          background: 'rgba(255,255,255,0.56)',
-          border: '1px solid rgba(255,255,255,0.56)',
-          boxShadow: '0 -3px 16px rgba(123,138,119,0.04), 0 10px 28px rgba(93,109,90,0.07)',
+          background: 'rgba(255,255,255,0.62)',
+          border: '1px solid rgba(79,111,82,0.24)',
+          boxShadow: '0 -3px 16px rgba(79,111,82,0.08), 0 10px 28px rgba(93,109,90,0.08)',
         }}
       >
         {TABS.map(({ href, icon: Icon, label }) => {
