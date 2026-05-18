@@ -9,6 +9,7 @@ import AppHeader from './app-header'
 import PrayerFocusRail from './prayer-focus-rail'
 import SettingsSheet from './settings-sheet'
 import BottomNav from './bottom-nav'
+import FirstVisitGuide from './first-visit-guide'
 
 interface Props {
   data: MasjidWithPrayers[]
@@ -128,6 +129,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         onRefresh={handleRefresh}
       />
 
+      <FirstVisitGuide />
       <BottomNav />
     </main>
   )
