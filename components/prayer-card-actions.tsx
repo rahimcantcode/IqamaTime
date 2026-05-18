@@ -54,7 +54,7 @@ export default function PrayerCardActions({
   if (!adhanPast) {
     return (
       <p
-        className="text-center text-[0.58rem] font-medium tracking-wide"
+        className="text-center text-[0.58rem] font-medium tracking-wide opacity-55"
         style={{ color: '#9CA3AF' }}
       >
         Available after Adhan
