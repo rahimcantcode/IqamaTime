@@ -132,9 +132,9 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
               <input
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="rahim"
                 autoCapitalize="none"
                 autoCorrect="off"
+                autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none"
                 style={{ color: '#202124' }}
               />
@@ -150,9 +150,9 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
               <input
                 value={pin}
                 onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="4 to 6 digits"
                 inputMode="numeric"
                 type="password"
+                autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none"
                 style={{ color: '#202124' }}
               />
