@@ -24,21 +24,19 @@ export async function GET() {
     if (m) return NextResponse.json({ error: m.message }, { status: 500 })
 
     const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0]
-    const todayResult = await supabase
+    const { data: prayerTimes, error: ptErr } = await supabase
       .from('prayer_times')
       .select('*')
-      .eq('date', today)
-    let prayerTimes = todayResult.data
+      .in('date', [today, yesterday])
 
-    if (todayResult.error) return NextResponse.json({ error: todayResult.error.message }, { status: 500 })
-
-    if (!prayerTimes?.length) {
-      ;({ data: prayerTimes } = await supabase.from('prayer_times').select('*').eq('date', yesterday))
-    }
+    if (ptErr) return NextResponse.json({ error: ptErr.message }, { status: 500 })
 
     const merged = (masjids ?? []).map(masjid => ({
       ...masjid,
-      prayer_times: prayerTimes?.find(pt => pt.masjid_id === masjid.id) ?? null,
+      prayer_times:
+        prayerTimes?.find(pt => pt.masjid_id === masjid.id && pt.date === today) ??
+        prayerTimes?.find(pt => pt.masjid_id === masjid.id && pt.date === yesterday) ??
+        null,
     }))
 
     return NextResponse.json(merged, {

@@ -22,24 +22,22 @@ async function getPrayerData(): Promise<MasjidWithPrayers[]> {
 
     if (masjidErr || !masjids?.length) return MOCK_PRAYER_TIMES
 
-    // Primary: today's UTC date. Fallback: yesterday's, for the ~4h window
-    // between UTC midnight and when the scraper writes the new date's rows (11:15 PM CT).
+    // Fetch both today and yesterday in one query; prefer today per-masjid,
+    // fall back to yesterday for any masjid whose scraper hasn't run yet today.
     const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0]
-    const todayResult = await supabase
+    const { data: prayerTimes, error: ptErr } = await supabase
       .from('prayer_times')
       .select('*')
-      .eq('date', today)
-    let prayerTimes = todayResult.data
+      .in('date', [today, yesterday])
 
-    if (todayResult.error) return MOCK_PRAYER_TIMES
-
-    if (!prayerTimes?.length) {
-      ;({ data: prayerTimes } = await supabase.from('prayer_times').select('*').eq('date', yesterday))
-    }
+    if (ptErr) return MOCK_PRAYER_TIMES
 
     return masjids.map((masjid) => ({
       ...masjid,
-      prayer_times: prayerTimes?.find(pt => pt.masjid_id === masjid.id) ?? null,
+      prayer_times:
+        prayerTimes?.find(pt => pt.masjid_id === masjid.id && pt.date === today) ??
+        prayerTimes?.find(pt => pt.masjid_id === masjid.id && pt.date === yesterday) ??
+        null,
     }))
   } catch {
     return MOCK_PRAYER_TIMES
