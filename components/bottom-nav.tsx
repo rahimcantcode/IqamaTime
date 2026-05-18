@@ -16,12 +16,9 @@ export default function BottomNav() {
   const router   = useRouter()
 
   return (
-    <nav
-      className="fixed left-1/2 z-50 w-[90vw] max-w-[430px] -translate-x-1/2"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom) + 4px)' }}
-    >
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-[430px] justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div
-        className="flex h-[58px] items-center justify-around rounded-full px-2"
+        className="pointer-events-auto flex h-[58px] w-full items-center justify-around rounded-full px-2"
         style={{
           background: 'rgba(255,255,255,0.90)',
           backdropFilter: 'blur(24px) saturate(1.8)',
@@ -38,7 +35,7 @@ export default function BottomNav() {
               key={href}
               type="button"
               onClick={() => { if (!active) router.replace(href, { scroll: false }) }}
-              className="relative flex flex-col items-center gap-[3px] rounded-full px-3 py-2 transition-all duration-200"
+              className="relative flex min-w-0 flex-1 flex-col items-center gap-[3px] rounded-full px-2 py-2 transition-all duration-200 active:scale-[0.97]"
               style={{
                 color:      active ? '#4F6F52' : '#9CA3AF',
                 background: active ? 'rgba(79,111,82,0.10)' : 'transparent',
