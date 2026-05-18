@@ -17,13 +17,13 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-2xl justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-2xl justify-center px-4 pb-[max(0.45rem,env(safe-area-inset-bottom))]">
       <div
         className="pointer-events-auto flex w-full items-center justify-between rounded-full px-3 py-2 backdrop-blur-xl"
         style={{
-          background: 'rgba(255,255,255,0.68)',
-          border: '1px solid rgba(255,255,255,0.70)',
-          boxShadow: '0 -4px 22px rgba(123,138,119,0.06), 0 20px 52px rgba(93,109,90,0.10)',
+          background: 'rgba(255,255,255,0.58)',
+          border: '1px solid rgba(255,255,255,0.58)',
+          boxShadow: '0 -4px 22px rgba(123,138,119,0.05), 0 14px 38px rgba(93,109,90,0.08)',
         }}
       >
         {TABS.map(({ href, icon: Icon, label }) => {
@@ -35,13 +35,13 @@ export default function BottomNav() {
               key={href}
               href={href}
               className={`relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-full px-2 py-2 text-[11px] font-medium transition-[color,transform] duration-300 active:scale-[0.97] ${
-                active ? 'text-[#4F6F52]' : 'text-[rgba(122,122,122,0.9)]'
+                active ? 'text-[#4F6F52]' : 'text-[rgba(122,122,122,0.82)]'
               }`}
             >
               {active ? (
                 <motion.span
                   layoutId="iqamatime-bottom-nav-pill"
-                  className="absolute inset-0 rounded-full bg-[rgba(237,243,235,0.92)] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]"
+                  className="absolute inset-0 rounded-full bg-[rgba(237,243,235,0.76)] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)]"
                   transition={{ type: 'spring', stiffness: 340, damping: 28, mass: 0.6 }}
                 />
               ) : null}
