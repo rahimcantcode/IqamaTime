@@ -6,6 +6,7 @@ import {
   LogIn, LogOut, Compass, Shield, Plane, Mic, MessageCircle, Sunset,
   type LucideIcon,
 } from 'lucide-react'
+import BottomNav from '@/components/bottom-nav'
 import { DHIKR_HERO_CARD, DHIKR_SECTIONS, type DhikrCard } from '@/lib/dhikr-data'
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -46,11 +47,10 @@ export default function DhikrPage() {
   const HeroIcon = ICON_MAP[DHIKR_HERO_CARD.icon] ?? Sparkles
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#FAFAF7] scrollbar-none scroll-momentum"
+    <main
+      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
-      {/* Header */}
       <div className="px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Sparkles className="h-5 w-5" style={{ color: '#C8A951' }} />
@@ -60,9 +60,7 @@ export default function DhikrPage() {
         <p className="mt-0.5 text-[0.6rem]" style={{ color: '#9CA3AF' }}>Curated essentials for prayer, masjid, and daily remembrance.</p>
       </div>
 
-      <div className="flex-1 px-6 pb-32 pt-5">
-
-        {/* ── HERO CARD ─────────────────────────────────────── */}
+      <div className="px-6 pb-32 pt-5">
         <button
           type="button"
           onClick={() => router.push('/dhikr/post-salah')}
@@ -113,7 +111,6 @@ export default function DhikrPage() {
           </div>
         </button>
 
-        {/* ── SECTIONS ──────────────────────────────────────── */}
         {DHIKR_SECTIONS.map(section => (
           <section key={section.title} className="mb-7">
             <p
@@ -139,6 +136,8 @@ export default function DhikrPage() {
           </section>
         ))}
       </div>
-    </div>
+
+      <BottomNav />
+    </main>
   )
 }
