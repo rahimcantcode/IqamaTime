@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   TrendingUp,
   Flame,
@@ -9,6 +9,7 @@ import {
   ChevronDown,
   CalendarDays,
   Sparkles,
+  PencilLine,
 } from 'lucide-react'
 import BottomNav from '@/components/bottom-nav'
 import {
@@ -22,16 +23,37 @@ const PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
 const PRAYER_INITIALS = ['F', 'D', 'A', 'M', 'I'] as const
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
-const MOCK_GRID: boolean[][] = [
-  [true, true, true, true, true, false, true],
-  [false, true, true, true, false, true, true],
-  [true, true, false, true, true, true, true],
-  [true, true, true, true, true, true, false],
-  [true, false, true, false, true, true, true],
-]
+type PrayerName = typeof PRAYERS[number]
+type WeekLog = Record<string, Record<PrayerName, boolean>>
 
 function getPrayerKey(prayer: string) {
   return prayer.toLowerCase()
+}
+
+function formatLocalDate(date: Date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function getMondayStart(date = new Date()) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  return d
+}
+
+function emptyDayLog(): Record<PrayerName, boolean> {
+  return {
+    Fajr: false,
+    Dhuhr: false,
+    Asr: false,
+    Maghrib: false,
+    Isha: false,
+  }
 }
 
 function getPieBackground(count: number) {
@@ -51,10 +73,6 @@ function getPieBackground(count: number) {
   return `conic-gradient(${slices.join(', ')})`
 }
 
-function weekDayCount(dayIndex: number) {
-  return MOCK_GRID.reduce((total, row) => total + (row[dayIndex] ? 1 : 0), 0)
-}
-
 function getDayMood(count: number) {
   if (count === 5) return 'Complete'
   if (count >= 4) return 'Strong'
@@ -64,50 +82,80 @@ function getDayMood(count: number) {
 }
 
 export default function ProgressPage() {
-  const [todayLog, setTodayLog] = useState<Record<string, boolean>>({
-    Fajr: false,
-    Dhuhr: false,
-    Asr: false,
-    Maghrib: false,
-    Isha: false,
+  const weekDates = useMemo(() => {
+    const start = getMondayStart()
+    return DAYS.map((day, index) => {
+      const date = new Date(start)
+      date.setDate(start.getDate() + index)
+      return {
+        day,
+        dateKey: formatLocalDate(date),
+        shortDate: `${date.getMonth() + 1}/${date.getDate()}`,
+      }
+    })
+  }, [])
+
+  const todayKey = getLocalDate()
+
+  const [weekLog, setWeekLog] = useState<WeekLog>(() => {
+    const base: WeekLog = {}
+    weekDates.forEach(({ dateKey }) => {
+      base[dateKey] = emptyDayLog()
+    })
+    return base
   })
   const [editingToday, setEditingToday] = useState(false)
+  const [editingWeek, setEditingWeek] = useState(false)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const date = getLocalDate()
-      const checkins = getPrayerCheckins().filter(c => c.date === date)
-      if (checkins.length === 0) return
-      setTodayLog(prev => {
-        const next = { ...prev }
-        checkins.forEach(c => {
-          const label = c.prayerLabel
-          if (label in next) next[label] = true
-        })
-        return next
+      const checkins = getPrayerCheckins()
+      const next: WeekLog = {}
+
+      weekDates.forEach(({ dateKey }) => {
+        next[dateKey] = emptyDayLog()
       })
+
+      checkins.forEach(checkin => {
+        if (!next[checkin.date]) return
+        const label = checkin.prayerLabel as PrayerName
+        if (PRAYERS.includes(label)) {
+          next[checkin.date][label] = true
+        }
+      })
+
+      setWeekLog(next)
     }, 0)
 
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [weekDates])
 
-  const togglePrayer = (prayer: typeof PRAYERS[number]) => {
-    const date = getLocalDate()
+  const togglePrayerForDate = (dateKey: string, prayer: PrayerName) => {
+    const active = weekLog[dateKey]?.[prayer] ?? false
     const prayerKey = getPrayerKey(prayer)
 
-    if (todayLog[prayer]) {
-      removePrayerCheckin(date, prayerKey)
+    if (active) {
+      removePrayerCheckin(dateKey, prayerKey)
     } else {
-      savePrayerCheckin({ date, prayer: prayerKey, prayerLabel: prayer, adhanTime: '' })
+      savePrayerCheckin({ date: dateKey, prayer: prayerKey, prayerLabel: prayer, adhanTime: '' })
     }
 
-    setTodayLog(prev => ({ ...prev, [prayer]: !prev[prayer] }))
+    setWeekLog(prev => ({
+      ...prev,
+      [dateKey]: {
+        ...(prev[dateKey] ?? emptyDayLog()),
+        [prayer]: !active,
+      },
+    }))
   }
 
+  const todayLog = weekLog[todayKey] ?? emptyDayLog()
   const todayCount = Object.values(todayLog).filter(Boolean).length
   const streak = 12
-  const weeklyTotal = MOCK_GRID.flat().filter(Boolean).length
-  const weeklyMax = MOCK_GRID.flat().length
+  const weeklyTotal = weekDates.reduce((total, { dateKey }) => {
+    return total + Object.values(weekLog[dateKey] ?? emptyDayLog()).filter(Boolean).length
+  }, 0)
+  const weeklyMax = weekDates.length * PRAYERS.length
   const weekPercent = Math.round((weeklyTotal / weeklyMax) * 100)
   const completedPrayers = PRAYERS.filter(prayer => todayLog[prayer])
   const nextMissingPrayer = PRAYERS.find(prayer => !todayLog[prayer])
@@ -239,7 +287,7 @@ export default function ProgressPage() {
                 <button
                   key={prayer}
                   type="button"
-                  onClick={() => togglePrayer(prayer)}
+                  onClick={() => togglePrayerForDate(todayKey, prayer)}
                   className={`pressable flex w-full items-center justify-between px-4 py-3.5 ${index < PRAYERS.length - 1 ? 'border-b border-[#E7E2D8]' : ''}`}
                 >
                   <div className="flex items-center gap-3">
@@ -267,18 +315,24 @@ export default function ProgressPage() {
       </section>
 
       <section className="relative z-10 px-6 pb-32 pt-7">
-        <div className="mb-3 flex items-end justify-between">
+        <div className="mb-3 flex items-end justify-between gap-4">
           <div>
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
               Weekly Rhythm
             </p>
             <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
-              Each row is one day, each bead is one salah
+              Edit any day from this week
             </p>
           </div>
-          <div className="rounded-full px-3 py-1 text-xs font-semibold tabular-nums" style={{ background: 'rgba(79,111,82,0.10)', color: '#4F6F52' }}>
-            {weeklyTotal}/{weeklyMax}
-          </div>
+          <button
+            type="button"
+            onClick={() => setEditingWeek(open => !open)}
+            className="pressable inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold"
+            style={{ background: editingWeek ? 'rgba(79,111,82,0.14)' : 'rgba(79,111,82,0.08)', color: '#4F6F52' }}
+          >
+            <PencilLine className="h-3.5 w-3.5" />
+            {editingWeek ? 'Done' : 'Edit week'}
+          </button>
         </div>
 
         <div
@@ -295,25 +349,28 @@ export default function ProgressPage() {
                 Week completion
               </p>
               <p className="text-xs font-bold tabular-nums" style={{ color: '#4F6F52' }}>
-                {weekPercent}%
+                {weeklyTotal}/{weeklyMax} · {weekPercent}%
               </p>
             </div>
             <div className="h-2 overflow-hidden rounded-full" style={{ background: 'rgba(231,226,216,0.85)' }}>
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full transition-all duration-300"
                 style={{ width: `${weekPercent}%`, background: 'linear-gradient(90deg, rgba(79,111,82,0.78), rgba(143,174,147,0.88))' }}
               />
             </div>
           </div>
 
           <div className="border-t border-[#E7E2D8]/80">
-            {DAYS.map((day, dayIndex) => {
-              const count = weekDayCount(dayIndex)
+            {weekDates.map(({ day, dateKey, shortDate }, dayIndex) => {
+              const dayLog = weekLog[dateKey] ?? emptyDayLog()
+              const count = Object.values(dayLog).filter(Boolean).length
               const mood = getDayMood(count)
+              const isToday = dateKey === todayKey
+
               return (
                 <div
-                  key={day}
-                  className={`px-4 py-3 ${dayIndex < DAYS.length - 1 ? 'border-b border-[#E7E2D8]/70' : ''}`}
+                  key={dateKey}
+                  className={`px-4 py-3 ${dayIndex < weekDates.length - 1 ? 'border-b border-[#E7E2D8]/70' : ''}`}
                 >
                   <div className="mb-2 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -327,11 +384,18 @@ export default function ProgressPage() {
                         {day}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: '#202124' }}>
-                          {count}/5 prayers
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold" style={{ color: '#202124' }}>
+                            {count}/5 prayers
+                          </p>
+                          {isToday && (
+                            <span className="rounded-full px-2 py-0.5 text-[0.55rem] font-semibold" style={{ background: 'rgba(200,169,81,0.14)', color: '#C8A951' }}>
+                              Today
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[0.62rem]" style={{ color: '#9CA3AF' }}>
-                          {mood} day
+                          {mood} · {shortDate}
                         </p>
                       </div>
                     </div>
@@ -345,16 +409,9 @@ export default function ProgressPage() {
 
                   <div className="grid grid-cols-5 gap-2">
                     {PRAYERS.map((prayer, prayerIndex) => {
-                      const prayed = MOCK_GRID[prayerIndex][dayIndex]
-                      return (
-                        <div
-                          key={`${day}-${prayer}`}
-                          className="flex flex-col items-center gap-1 rounded-2xl px-1.5 py-2"
-                          style={{
-                            background: prayed ? 'rgba(79,111,82,0.10)' : 'rgba(231,226,216,0.42)',
-                            border: prayed ? '1px solid rgba(79,111,82,0.16)' : '1px solid rgba(231,226,216,0.76)',
-                          }}
-                        >
+                      const prayed = dayLog[prayer]
+                      const content = (
+                        <>
                           <div
                             className="flex h-6 w-6 items-center justify-center rounded-full text-[0.6rem] font-bold"
                             style={{
@@ -367,6 +424,33 @@ export default function ProgressPage() {
                           <p className="text-[0.52rem] font-semibold" style={{ color: prayed ? '#4F6F52' : '#9CA3AF' }}>
                             {PRAYER_INITIALS[prayerIndex]}
                           </p>
+                        </>
+                      )
+
+                      const sharedStyle = {
+                        background: prayed ? 'rgba(79,111,82,0.10)' : 'rgba(231,226,216,0.42)',
+                        border: editingWeek
+                          ? prayed ? '1px solid rgba(79,111,82,0.32)' : '1px solid rgba(200,169,81,0.32)'
+                          : prayed ? '1px solid rgba(79,111,82,0.16)' : '1px solid rgba(231,226,216,0.76)',
+                      }
+
+                      return editingWeek ? (
+                        <button
+                          key={`${dateKey}-${prayer}`}
+                          type="button"
+                          onClick={() => togglePrayerForDate(dateKey, prayer)}
+                          className="pressable flex flex-col items-center gap-1 rounded-2xl px-1.5 py-2"
+                          style={sharedStyle}
+                        >
+                          {content}
+                        </button>
+                      ) : (
+                        <div
+                          key={`${dateKey}-${prayer}`}
+                          className="flex flex-col items-center gap-1 rounded-2xl px-1.5 py-2"
+                          style={sharedStyle}
+                        >
+                          {content}
                         </div>
                       )
                     })}
