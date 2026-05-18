@@ -4,7 +4,6 @@ import Script from 'next/script'
 import './globals.css'
 import AppShell from '@/components/app-shell'
 import BottomNav from '@/components/bottom-nav'
-import ViewportFix from '@/components/viewport-fix'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'IqamaTime',
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
   },
   formatDetection: { telephone: false },
   manifest: '/manifest.json',
@@ -35,25 +34,23 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor:   '#131925',
-  width:        'device-width',
+  themeColor: '#FAFAF7',
+  colorScheme: 'light',
+  width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit:  'cover',
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} h-full`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icons/apple-icon-180.png" />
       </head>
-      <body>
-        <ViewportFix />
+      <body className="min-h-full bg-[#FAFAF7] text-[#202124]">
         <AppShell>{children}</AppShell>
         <BottomNav />
         <Script id="register-service-worker" strategy="afterInteractive">
