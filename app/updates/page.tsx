@@ -1,6 +1,25 @@
 import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
+function cleanDisplayDescription(description: string | null, title: string, sourceName: string) {
+  if (!description) return null
+
+  const lower = description.toLowerCase()
+  const titleWords = title.toLowerCase().split(/\s+/).filter(Boolean)
+  const sharedWords = titleWords.filter(word => word.length > 3 && lower.includes(word)).length
+
+  if (
+    lower.includes('min read') ||
+    sharedWords >= 4 ||
+    lower.includes('hilalz team') ||
+    description.trim().length < 18
+  ) {
+    return `Tap to view full event details from ${sourceName}.`
+  }
+
+  return description
+}
+
 export default async function UpdatesPage() {
   const supabase = await createServerSupabaseClient()
 
@@ -54,83 +73,87 @@ export default async function UpdatesPage() {
           </div>
         )}
 
-        {events?.map((event: any) => (
-          <a
-            key={event.id}
-            href={event.source_url}
-            target="_blank"
-            rel="noreferrer"
-            className="overflow-hidden rounded-[1.6rem] border border-[#E7E2D8] bg-white"
-            style={{ boxShadow: '0 6px 24px rgba(15,23,42,0.06)' }}
-          >
-            {event.image_url ? (
-              <div className="relative aspect-[1.35/1] w-full overflow-hidden bg-[#F3F4F6]">
-                <img
-                  src={event.image_url}
-                  alt={event.title}
-                  className="h-full w-full object-cover"
-                />
+        {events?.map((event: any) => {
+          const displayDescription = cleanDisplayDescription(event.description, event.title, event.source_name)
 
-                <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-[0.68rem] font-semibold text-white backdrop-blur-sm">
-                  {event.source_name}
+          return (
+            <a
+              key={event.id}
+              href={event.source_url}
+              target="_blank"
+              rel="noreferrer"
+              className="overflow-hidden rounded-[1.6rem] border border-[#E7E2D8] bg-white"
+              style={{ boxShadow: '0 6px 24px rgba(15,23,42,0.06)' }}
+            >
+              {event.image_url ? (
+                <div className="relative aspect-[1.35/1] w-full overflow-hidden bg-[#F3F4F6]">
+                  <img
+                    src={event.image_url}
+                    alt={event.title}
+                    className="h-full w-full object-cover"
+                  />
+
+                  <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/55 px-3 py-1 text-[0.68rem] font-semibold text-white backdrop-blur-sm">
+                    {event.source_name}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex h-28 items-center justify-center bg-[#EEF2ED]">
-                <div className="rounded-full bg-[#4F6F52]/10 px-4 py-2 text-sm font-medium text-[#4F6F52]">
-                  {event.source_name}
+              ) : (
+                <div className="flex h-28 items-center justify-center bg-[#EEF2ED]">
+                  <div className="rounded-full bg-[#4F6F52]/10 px-4 py-2 text-sm font-medium text-[#4F6F52]">
+                    {event.source_name}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="px-5 py-5">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-lg font-bold leading-tight text-[#202124]">
-                    {event.title}
-                  </p>
-
-                  {event.masjids?.name && (
-                    <p className="mt-1 text-sm font-medium text-[#4F6F52]">
-                      {event.masjids.name}
+              <div className="px-5 py-5">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-bold leading-tight text-[#202124]">
+                      {event.title}
                     </p>
+
+                    {event.masjids?.name && (
+                      <p className="mt-1 text-sm font-medium text-[#4F6F52]">
+                        {event.masjids.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mb-4 flex flex-col gap-2 text-sm text-[#6B7280]">
+                  {(event.event_date || event.event_time) && (
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-[#C8A951]" />
+                      <span>
+                        {[event.event_date, event.event_time].filter(Boolean).join(' • ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {event.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-[#C8A951]" />
+                      <span>{event.location}</span>
+                    </div>
+                  )}
+
+                  {event.speakers && (
+                    <div className="flex items-center gap-2">
+                      <Mic className="h-4 w-4 text-[#C8A951]" />
+                      <span>{event.speakers}</span>
+                    </div>
                   )}
                 </div>
-              </div>
 
-              <div className="mb-4 flex flex-col gap-2 text-sm text-[#6B7280]">
-                {(event.event_date || event.event_time) && (
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-[#C8A951]" />
-                    <span>
-                      {[event.event_date, event.event_time].filter(Boolean).join(' • ')}
-                    </span>
-                  </div>
-                )}
-
-                {event.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[#C8A951]" />
-                    <span>{event.location}</span>
-                  </div>
-                )}
-
-                {event.speakers && (
-                  <div className="flex items-center gap-2">
-                    <Mic className="h-4 w-4 text-[#C8A951]" />
-                    <span>{event.speakers}</span>
-                  </div>
+                {displayDescription && (
+                  <p className="line-clamp-3 text-sm leading-relaxed text-[#4B5563]">
+                    {displayDescription}
+                  </p>
                 )}
               </div>
-
-              {event.description && (
-                <p className="line-clamp-4 text-sm leading-relaxed text-[#4B5563]">
-                  {event.description}
-                </p>
-              )}
-            </div>
-          </a>
-        ))}
+            </a>
+          )
+        })}
       </section>
     </div>
   )
