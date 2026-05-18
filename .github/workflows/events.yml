@@ -2,6 +2,7 @@ name: Scrape Community Events
 
 on:
   schedule:
+    - cron: '35 14 18 5 *'
     - cron: '0 12 * * 1'
   workflow_dispatch:
 
