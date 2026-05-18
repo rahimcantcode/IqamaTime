@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ChevronLeft, Clock } from 'lucide-react'
 import { DHIKR_DETAIL_CONTENT } from '@/lib/dhikr-data'
 import DhikrLiquidCard from '@/components/dhikr-liquid-card'
+import DhikrTasbihGroupCard from '@/components/dhikr-tasbih-group-card'
 
 type Mode = 'simple' | 'interactive'
 
@@ -16,11 +17,12 @@ export default function DhikrDetailPage() {
 
   const [mode, setMode] = useState<Mode>('interactive')
 
-  // Derive a readable title for unknown slugs from the URL segment
   const fallbackTitle = useMemo(() =>
     slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
     [slug]
   )
+
+  const splitIndex = detail?.tasbihGroupIndex ?? detail?.items.length ?? 0
 
   return (
     <div
@@ -80,7 +82,22 @@ export default function DhikrDetailPage() {
 
             {/* Dhikr cards */}
             <div className="flex flex-col gap-4">
-              {detail.items.map(item => (
+              {/* Items before tasbih group */}
+              {detail.items.slice(0, splitIndex).map(item => (
+                <DhikrLiquidCard key={item.id} item={item} mode={mode} />
+              ))}
+
+              {/* Tasbih group card (when present) */}
+              {detail.tasbihGroup && (
+                <DhikrTasbihGroupCard
+                  key="tasbih-group"
+                  items={detail.tasbihGroup}
+                  mode={mode}
+                />
+              )}
+
+              {/* Items after tasbih group */}
+              {detail.items.slice(splitIndex).map(item => (
                 <DhikrLiquidCard key={item.id} item={item} mode={mode} />
               ))}
             </div>
