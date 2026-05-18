@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
 import { RepeatableItem } from '@/lib/dhikr-data'
@@ -15,6 +15,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [count, setCount]           = useState(0)
   const [advancing, setAdvancing]   = useState(false)
+  const advanceTimerRef             = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Simple mode state — parallel counts per item
   const [simpleCounts, setSimpleCounts] = useState<number[]>(() => items.map(() => 0))
@@ -26,21 +27,29 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
 
   const increment = useCallback(() => {
     if (allComplete || advancing || phaseComplete) return
-    setCount(c => c + 1)
-  }, [allComplete, advancing, phaseComplete])
 
-  useEffect(() => {
-    if (!phaseComplete || advancing) return
+    const nextCount = count + 1
+    setCount(nextCount)
+
+    if (nextCount < currentItem.targetCount) return
     setAdvancing(true)
-    const timer = setTimeout(() => {
+    advanceTimerRef.current = setTimeout(() => {
       setPhaseIndex(i => i + 1)
       setCount(0)
       setAdvancing(false)
+      advanceTimerRef.current = null
     }, 700)
-    return () => clearTimeout(timer)
-  }, [phaseComplete, advancing])
+  }, [allComplete, advancing, count, currentItem.targetCount, phaseComplete])
+
+  useEffect(() => () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current)
+  }, [])
 
   const reset = useCallback(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current)
+      advanceTimerRef.current = null
+    }
     setPhaseIndex(0)
     setCount(0)
     setAdvancing(false)

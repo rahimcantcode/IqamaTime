@@ -19,9 +19,17 @@ export interface RepeatableItem {
   accent: '#C8A951' | '#4F6F52'
 }
 
+export interface DhikrSequenceItem {
+  id: string
+  title: string
+  description: string
+  tag?: string
+}
+
 export interface DhikrDetail {
   title: string
   description: string
+  sequence?: DhikrSequenceItem[]
   items: RepeatableItem[]
   tasbihGroup?: RepeatableItem[]
   tasbihGroupIndex?: number
@@ -84,6 +92,37 @@ export const DHIKR_DETAIL_CONTENT: Record<string, DhikrDetail> = {
   'post-salah': {
     title: 'Post-Salah Dhikr',
     description: 'Remembrances after completing the prayer',
+    sequence: [
+      {
+        id: 'sequence-astaghfirullah',
+        title: 'Astaghfirullah',
+        description: 'Begin by seeking forgiveness three times.',
+        tag: '3x',
+      },
+      {
+        id: 'sequence-salam',
+        title: 'Allahumma antas-salam',
+        description: 'A short remembrance of peace after salam.',
+      },
+      {
+        id: 'sequence-tasbih',
+        title: 'Tasbih set',
+        description: 'SubhanAllah, Alhamdulillah, and Allahu Akbar with guided counters.',
+        tag: '33 / 33 / 34',
+      },
+      {
+        id: 'sequence-ayat-kursi',
+        title: 'Ayat al-Kursi',
+        description: 'Reviewed Arabic text will be added here later.',
+        tag: 'Coming soon',
+      },
+      {
+        id: 'sequence-three-quls',
+        title: 'Three Quls',
+        description: 'Reviewed Arabic text will be added here later.',
+        tag: 'Coming soon',
+      },
+    ],
     tasbihGroupIndex: 2,
     tasbihGroup: [
       {
