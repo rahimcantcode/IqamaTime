@@ -94,10 +94,7 @@ export default async function UpdatesPage() {
   const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
-    <div
-      className="fixed inset-0 overflow-y-auto bg-[#FAFAF7]"
-      style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
-    >
+    <main className="min-h-dvh bg-[#FAFAF7] pt-[max(env(safe-area-inset-top),16px)]">
       <div className="px-6 pb-4 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Bell className="h-5 w-5" style={{ color: '#4F6F52' }} />
@@ -206,6 +203,6 @@ export default async function UpdatesPage() {
           )
         })}
       </section>
-    </div>
+    </main>
   )
 }
