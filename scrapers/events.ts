@@ -71,22 +71,25 @@ function cleanText(value?: string | null): string | null {
 
 function cleanDescription(text: string, title: string, sourceName: string): string | null {
   let cleaned = text
+    .replace(/\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}\s*[•-]?\s*/gi, '')
     .replace(/\b\d+\s*min\s*read\b/gi, '')
     .replace(new RegExp(sourceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), '')
     .replace(/\bHilalz\s+Team\b/gi, '')
     .replace(/\bThe Weekend:?\s*/gi, '')
-    .replace(/\s*•\s*/g, ' • ')
+    .replace(/\s*•\s*/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
   const escapedTitle = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   cleaned = cleaned.replace(new RegExp(escapedTitle, 'gi'), '').replace(/\s+/g, ' ').trim()
 
-  if (!cleaned || cleaned.length < 20) {
-    return `Community event at ${title.includes('VRIC') ? 'Valley Ranch Islamic Center' : 'a supported masjid'}. Tap to view full event details.`
+  cleaned = cleaned.replace(/^[:\-•\s]+/, '').trim()
+
+  if (!cleaned || cleaned.length < 20 || cleaned.toLowerCase().includes(title.toLowerCase().slice(0, 24))) {
+    return `Tap to view full event details from ${sourceName}.`
   }
 
-  return cleaned.length > 170 ? `${cleaned.slice(0, 167).trim()}...` : cleaned
+  return cleaned.length > 140 ? `${cleaned.slice(0, 137).trim()}...` : cleaned
 }
 
 function findMasjidMatch(text: string): string | null {
