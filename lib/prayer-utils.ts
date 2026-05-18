@@ -113,30 +113,30 @@ export function getHijriDate(): string {
 
 /** Prayer gradient config — soft light tints fading to white */
 export const PRAYER_GRADIENTS: Record<PrayerKey, string> = {
-  fajr:    'from-teal-50 to-white',
-  dhuhr:   'from-emerald-50 to-white',
-  asr:     'from-amber-50 to-white',
+  fajr:    'from-orange-50 to-white',
+  dhuhr:   'from-orange-50 to-white',
+  asr:     'from-orange-50 to-white',
   maghrib: 'from-orange-50 to-white',
-  isha:    'from-slate-100 to-white',
-  jummah:  'from-emerald-50 to-white',
+  isha:    'from-orange-50 to-white',
+  jummah:  'from-orange-50 to-white',
 }
 
 /** Radial glow color behind each prayer card */
 export const PRAYER_GLOW: Record<PrayerKey, string> = {
-  fajr:    'rgba(143,174,147,0.22)',
-  dhuhr:   'rgba(79,111,82,0.18)',
-  asr:     'rgba(200,169,81,0.22)',
+  fajr:    'rgba(200,169,81,0.26)',
+  dhuhr:   'rgba(200,169,81,0.26)',
+  asr:     'rgba(200,169,81,0.26)',
   maghrib: 'rgba(200,169,81,0.26)',
-  isha:    'rgba(143,174,147,0.16)',
-  jummah:  'rgba(79,111,82,0.20)',
+  isha:    'rgba(200,169,81,0.26)',
+  jummah:  'rgba(200,169,81,0.26)',
 }
 
-/** Brand accent per prayer — forest green primary, gold for golden-hour prayers */
+/** Unified warm gold accent across all prayers */
 export const PRAYER_ACCENT: Record<PrayerKey, string> = {
-  fajr:    '#4F6F52',
-  dhuhr:   '#4F6F52',
+  fajr:    '#C8A951',
+  dhuhr:   '#C8A951',
   asr:     '#C8A951',
   maghrib: '#C8A951',
-  isha:    '#4F6F52',
-  jummah:  '#4F6F52',
+  isha:    '#C8A951',
+  jummah:  '#C8A951',
 }
