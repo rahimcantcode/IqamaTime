@@ -53,12 +53,12 @@ create or replace function public.create_private_session(p_user_id uuid)
 returns text
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_token text;
 begin
-  v_token := encode(gen_random_bytes(32), 'hex');
+  v_token := encode(extensions.gen_random_bytes(32), 'hex');
 
   insert into public.app_user_sessions(user_id, session_token)
   values (p_user_id, v_token);
@@ -86,8 +86,11 @@ begin
 end;
 $$;
 
+drop function if exists public.create_app_user(text, text);
+drop function if exists public.login_app_user(text, text);
+
 create or replace function public.create_app_user(p_username text, p_pin_hash text)
-returns table(user_id uuid, username text, session_token text)
+returns table(out_user_id uuid, out_username text, out_session_token text)
 language plpgsql
 security definer
 set search_path = public
@@ -125,7 +128,7 @@ end;
 $$;
 
 create or replace function public.login_app_user(p_username text, p_pin_hash text)
-returns table(user_id uuid, username text, session_token text)
+returns table(out_user_id uuid, out_username text, out_session_token text)
 language plpgsql
 security definer
 set search_path = public
@@ -137,17 +140,17 @@ declare
 begin
   v_username := public.normalize_app_username(p_username);
 
-  select id into v_user_id
-  from public.app_users
-  where username_lower = v_username and pin_hash = p_pin_hash;
+  select au.id into v_user_id
+  from public.app_users au
+  where au.username_lower = v_username and au.pin_hash = p_pin_hash;
 
   if v_user_id is null then
     raise exception 'Invalid username or PIN.';
   end if;
 
-  update public.app_users
+  update public.app_users au
   set last_login_at = now()
-  where id = v_user_id;
+  where au.id = v_user_id;
 
   insert into public.user_settings(user_id)
   values (v_user_id)
