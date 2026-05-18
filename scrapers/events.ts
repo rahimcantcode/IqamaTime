@@ -46,7 +46,7 @@ const SOURCES: SourceDef[] = [
   { name: 'Islamic Center of Irving', url: 'https://www.irvingmasjid.org', forcedMasjidName: 'Islamic Center of Irving' },
 ]
 
-const EVENT_PATHS = ['', '/events', '/event', '/calendar', '/programs', '/classes', '/announcements']
+const EVENT_PATHS = ['', '/events', '/calendar']
 
 const MASJID_ALIASES: Record<string, string[]> = {
   'Islamic Center of Rowlett': ['islamic center of rowlett', 'icr', 'rowlett masjid', 'masjid rowlett', 'rowlett'],
@@ -61,6 +61,29 @@ const MASJID_ALIASES: Record<string, string[]> = {
   'Islamic Center of Irving': ['islamic center of irving', 'ici', 'irving masjid'],
 }
 
+const BAD_TITLE_PATTERNS = [
+  /^no events?$/i,
+  /^events?$/i,
+  /^programs?$/i,
+  /^services?$/i,
+  /^registration$/i,
+  /^committees?$/i,
+  /^divisions?$/i,
+  /^get involved$/i,
+  /^volunteering$/i,
+  /^masjid$/i,
+  /^education$/i,
+  /^enter keyword/i,
+  /^search/i,
+  /advanced search/i,
+  /events? found/i,
+  /geo_placeholder/i,
+  /email-protection/i,
+  /protected]/i,
+]
+
+const EVENT_KEYWORDS = /lecture|seminar|workshop|halaqa|qiyam|iftar|dinner|fundraiser|conference|retreat|camp|market|hoops|class|series|program|youth night|family night|guest speaker|registration open/i
+
 function getSupabase() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -71,7 +94,7 @@ function getSupabase() {
 }
 
 function absoluteUrl(url: string | undefined, base: string): string | null {
-  if (!url) return null
+  if (!url || url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('#')) return null
   try { return new URL(url, base).toString() } catch { return null }
 }
 
@@ -79,6 +102,12 @@ function cleanText(value?: string | null): string | null {
   if (!value) return null
   const cleaned = value.replace(/\s+/g, ' ').trim()
   return cleaned.length ? cleaned : null
+}
+
+function isBadTitle(title: string): boolean {
+  const cleaned = title.trim()
+  if (cleaned.length < 4 || cleaned.length > 95) return true
+  return BAD_TITLE_PATTERNS.some(pattern => pattern.test(cleaned))
 }
 
 function cleanDescription(text: string, title: string, sourceName: string): string | null {
@@ -139,30 +168,37 @@ function contentHash(event: RawEvent): string {
   return crypto.createHash('sha256').update([event.sourceName, event.sourceUrl, event.title, event.eventDate, event.matchedMasjidName].join('|')).digest('hex')
 }
 
-function looksLikeEvent(text: string, source: SourceDef): boolean {
-  const normalized = text.toLowerCase()
-  if (source.forcedMasjidName) {
-    return /event|program|lecture|class|seminar|workshop|halaqa|youth|family|market|conference|qiyam|registration|friday night|weekend/i.test(text)
-  }
-  return Boolean(findMasjidMatch(text))
+function isLikelyRealEvent(title: string, text: string, source: SourceDef, href: string | null, imageUrl: string | null, eventDate: string | null): boolean {
+  if (isBadTitle(title)) return false
+  if (/geo_placeholder|location options|state\/county|distance units|search and views navigation/i.test(text)) return false
+  if (/no events?/i.test(title)) return false
+
+  const urlLooksEventSpecific = Boolean(href && /event|events|calendar|program|class|registration|newsletter|beehiiv/i.test(href))
+  const hasStrongSignal = Boolean(eventDate || imageUrl || EVENT_KEYWORDS.test(`${title} ${text}`))
+
+  if (!source.forcedMasjidName) return Boolean(findMasjidMatch(text) && hasStrongSignal)
+  return urlLooksEventSpecific && hasStrongSignal
 }
 
 function buildEvent($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: SourceDef, pageUrl: string): RawEvent | null {
   const imageAlt = node.find('img').map((_, img) => $(img).attr('alt') || '').get().join(' ')
   const hrefText = node.find('a').map((_, a) => $(a).text()).get().join(' ')
   const text = cleanText([node.text(), imageAlt, hrefText].filter(Boolean).join(' '))
-  if (!text || text.length < 8 || !looksLikeEvent(text, source)) return null
-
-  const masjidName = source.forcedMasjidName || findMasjidMatch(text)
-  if (!masjidName) return null
+  if (!text || text.length < 8) return null
 
   const title = cleanText(node.find('h1,h2,h3,h4,a').first().text()) || cleanText(node.find('img').first().attr('alt')) || text.slice(0, 90)
   const href = absoluteUrl(node.find('a[href]').first().attr('href'), pageUrl) || pageUrl
   const imageUrl = absoluteUrl(node.find('img').first().attr('src') || node.find('img').first().attr('data-src') || node.find('img').first().attr('data-lazy-src'), pageUrl)
+  const eventDate = extractDate(text)
+
+  if (!isLikelyRealEvent(title, text, source, href, imageUrl, eventDate)) return null
+
+  const masjidName = source.forcedMasjidName || findMasjidMatch(text)
+  if (!masjidName) return null
 
   return {
     title,
-    eventDate: extractDate(text),
+    eventDate,
     eventTime: extractTime(text),
     location: cleanText(node.find('[class*=location], [class*=venue], address').first().text()) || masjidName,
     speakers: extractSpeaker(text),
@@ -187,10 +223,38 @@ async function scrapePage(source: SourceDef, pageUrl: string): Promise<RawEvent[
   const candidates: RawEvent[] = []
   console.log(`${source.name}: scanned ${pageUrl}`)
 
-  const selectors = ['article', '.event', '[class*=event]', '.post', '.card', 'li', 'a[href]', 'img']
+  const selectors = ['article', '.event', '[class*=event]', '.tribe-events-calendar-list__event', '.post', '.card']
   $(selectors.join(',')).each((_, element) => {
     const event = buildEvent($, $(element), source, pageUrl)
     if (event) candidates.push(event)
+  })
+
+  $('script[type="application/ld+json"]').each((_, element) => {
+    const raw = $(element).text()
+    try {
+      const parsed = JSON.parse(raw)
+      const items = Array.isArray(parsed) ? parsed : [parsed]
+      for (const item of items) {
+        if (item?.['@type'] !== 'Event') continue
+        const title = cleanText(item.name)
+        if (!title || isBadTitle(title)) continue
+        const text = cleanText(`${item.name || ''} ${item.description || ''} ${item.location?.name || ''}`) || title
+        const masjidName = source.forcedMasjidName || findMasjidMatch(text)
+        if (!masjidName) continue
+        candidates.push({
+          title,
+          eventDate: item.startDate ? String(item.startDate).slice(0, 10) : extractDate(text),
+          eventTime: extractTime(String(item.startDate || text)),
+          location: cleanText(item.location?.name || item.location?.address?.streetAddress) || masjidName,
+          speakers: null,
+          description: cleanDescription(text, title, source.name),
+          imageUrl: Array.isArray(item.image) ? item.image[0] : item.image || null,
+          sourceUrl: item.url || pageUrl,
+          sourceName: source.name,
+          matchedMasjidName: masjidName,
+        })
+      }
+    } catch {}
   })
 
   return candidates
@@ -213,7 +277,7 @@ async function scrapeSource(source: SourceDef): Promise<RawEvent[]> {
 
   const unique = new Map<string, RawEvent>()
   for (const event of all) unique.set(contentHash(event), event)
-  return [...unique.values()].slice(0, 10)
+  return [...unique.values()].slice(0, 8)
 }
 
 async function upsertEvents(events: RawEvent[]) {
