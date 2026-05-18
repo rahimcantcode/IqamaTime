@@ -8,6 +8,7 @@ import { useSettings } from '@/hooks/useSettings'
 import AppHeader from './app-header'
 import PrayerFocusRail from './prayer-focus-rail'
 import SettingsSheet from './settings-sheet'
+import BottomNav from './bottom-nav'
 
 interface Props {
   data: MasjidWithPrayers[]
@@ -28,13 +29,11 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   const { settings, loaded } = useSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
 
-  // Filter masjids by selected IDs
   const visibleData = useMemo(() => {
     if (!loaded || settings.selectedMasjidIds.length === 0) return data
     return data.filter(d => settings.selectedMasjidIds.includes(d.id))
   }, [data, settings.selectedMasjidIds, loaded])
 
-  // First jummah iqamah time (no calculated adhan for jummah)
   const jummahTime = useMemo(() => {
     for (const entry of visibleData) {
       if (entry.prayer_times?.jummah1) return entry.prayer_times.jummah1
@@ -42,7 +41,6 @@ export default function Dashboard({ data, adhanTimes }: Props) {
     return null
   }, [visibleData])
 
-  // Time map for next-prayer index calculation
   const timesForIndex = useMemo<Record<PrayerKey, string | null>>(() => ({
     fajr:    adhanTimes.fajr,
     dhuhr:   adhanTimes.dhuhr,
@@ -52,13 +50,11 @@ export default function Dashboard({ data, adhanTimes }: Props) {
     jummah:  jummahTime,
   }), [adhanTimes, jummahTime])
 
-  // Determine initial card index = next prayer
   const initialIndex = useMemo(
     () => getNextPrayerIndex(timesForIndex, isFriday),
     [timesForIndex, isFriday]
   )
 
-  // Build card data for each prayer
   const cards: PrayerCardData[] = useMemo(() =>
     prayers.map(prayer => {
       const pKey = prayer.key
@@ -85,7 +81,6 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         }
       })
 
-      // Jummah has no calculated adhan — show first iqamah as the reference time
       const adhanTime = pKey === 'jummah'
         ? jummahTime
         : adhanTimes[pKey as keyof AdhanTimes] ?? null
@@ -111,21 +106,20 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   }, [])
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#FAFAF7]">
+    <main className="relative min-h-screen overflow-x-clip bg-[#FAFAF7]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(143,174,147,0.14),transparent_34rem)]" />
-      <AppHeader
-        nextPrayerName={nextPrayer?.displayName ?? ''}
-        nextPrayerTime={nextTime}
-        onSettingsOpen={() => setSettingsOpen(true)}
-      />
+      <div className="relative z-10">
+        <AppHeader
+          nextPrayerName={nextPrayer?.displayName ?? ''}
+          nextPrayerTime={nextTime}
+          onSettingsOpen={() => setSettingsOpen(true)}
+        />
 
-      {/* Scrollable body: FocusRail rail + countdown + masjid list */}
-      <main className="relative z-10 flex-1 overflow-y-auto scrollbar-none scroll-momentum">
         <PrayerFocusRail
           cards={cards}
           initialIndex={initialIndex}
         />
-      </main>
+      </div>
 
       <SettingsSheet
         open={settingsOpen}
@@ -133,6 +127,8 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         masjids={data.map(d => d)}
         onRefresh={handleRefresh}
       />
-    </div>
+
+      <BottomNav />
+    </main>
   )
 }
