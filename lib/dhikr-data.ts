@@ -44,12 +44,10 @@ export const DHIKR_HERO_CARD: DhikrCard = {
 
 export const DHIKR_SECTIONS: DhikrSection[] = [
   {
-    title: 'Prayer Moments',
+    title: 'Prayer / Salah',
     cards: [
       { id: 'before-salah',  title: 'Before Salah',  description: 'Opening duas and preparation for prayer', icon: 'Sunset' },
-      { id: 'inside-salah',  title: 'Inside Salah',  description: 'Recitations within the prayer',           icon: 'Heart'  },
-      { id: 'before-salam',  title: 'Before Salam',  description: 'Duas said before completing the prayer',  icon: 'Star'   },
-      { id: 'after-salah',   title: 'After Salah',   description: 'Post-prayer tasbih and remembrances',     icon: 'Sparkles' },
+      { id: 'tasbih',        title: 'Tasbih',        description: 'SubhanAllah, Alhamdulillah, Allahu Akbar', icon: 'Sparkles' },
     ],
   },
   {
@@ -81,8 +79,6 @@ export const DHIKR_SECTIONS: DhikrSection[] = [
     cards: [
       { id: 'istikhara',  title: 'Istikhara',     description: 'Prayer for seeking guidance',         icon: 'Compass' },
       { id: 'janazah',    title: 'Janazah Dua',   description: 'Supplication for the deceased',       icon: 'Shield'  },
-      { id: 'eid-takbir', title: 'Eid Takbir',    description: 'Takbir for Eid days',                 icon: 'Star'    },
-      { id: 'travel',     title: 'Travel Dua',    description: 'Dua when beginning a journey',        icon: 'Plane'   },
     ],
   },
 ]
@@ -176,6 +172,59 @@ export const DHIKR_DETAIL_CONTENT: Record<string, DhikrDetail> = {
         accent: '#C8A951',
       },
     ],
+  },
+
+  tasbih: {
+    title: 'Tasbih',
+    description: 'SubhanAllah, Alhamdulillah, Allahu Akbar',
+    sequence: [
+      {
+        id: 'tasbih-subhanallah-step',
+        title: 'SubhanAllah',
+        description: 'Begin with SubhanAllah.',
+        tag: '33x',
+      },
+      {
+        id: 'tasbih-alhamdulillah-step',
+        title: 'Alhamdulillah',
+        description: 'Continue with Alhamdulillah.',
+        tag: '33x',
+      },
+      {
+        id: 'tasbih-allahu-akbar-step',
+        title: 'Allahu Akbar',
+        description: 'Finish with Allahu Akbar.',
+        tag: '34x',
+      },
+    ],
+    tasbihGroupIndex: 0,
+    tasbihGroup: [
+      {
+        id: 'tasbih-subhanallah',
+        arabic: 'سُبْحَانَ اللهِ',
+        transliteration: 'SubhanAllah',
+        translation: 'Glory be to Allah',
+        targetCount: 33,
+        accent: '#C8A951',
+      },
+      {
+        id: 'tasbih-alhamdulillah',
+        arabic: 'الحَمْدُ للهِ',
+        transliteration: 'Alhamdulillah',
+        translation: 'All praise is due to Allah',
+        targetCount: 33,
+        accent: '#C8A951',
+      },
+      {
+        id: 'tasbih-allahu-akbar',
+        arabic: 'اللهُ أَكْبَرُ',
+        transliteration: 'Allahu Akbar',
+        translation: 'Allah is the Greatest',
+        targetCount: 34,
+        accent: '#C8A951',
+      },
+    ],
+    items: [],
   },
 
   'going-to-masjid': {
@@ -414,23 +463,33 @@ export const DHIKR_DETAIL_CONTENT: Record<string, DhikrDetail> = {
     items: [
       {
         id: 'morning-asbahna',
-        arabic: 'أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ',
+        arabic: 'أَصْبَحْنَا وَأَصْبَحَ المُلْكُ لِلَّهِ، وَالحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ',
         transliteration: 'Asbahna wa asbahal mulku lillah',
-        translation: 'We have entered the morning and all sovereignty belongs to Allah',
+        translation: 'We have entered the morning and all sovereignty belongs to Allah. All praise is for Allah; none has the right to be worshipped except Allah alone.',
         targetCount: 1,
         accent: '#4F6F52',
       },
       {
-        id: 'morning-placeholder-2',
-        transliteration: 'Morning dhikr · placeholder',
-        translation: 'Content being prepared with care',
+        id: 'morning-raditu',
+        arabic: 'رَضِيتُ بِاللهِ رَبًّا، وَبِالإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا',
+        transliteration: 'Raditu billahi rabban, wa bil-Islami dinan, wa bi Muhammadin nabiyya',
+        translation: 'I am pleased with Allah as my Lord, Islam as my religion, and Muhammad as my Prophet.',
         targetCount: 3,
         accent: '#4F6F52',
       },
       {
-        id: 'morning-placeholder-3',
-        transliteration: 'Morning dhikr · placeholder',
-        translation: 'Content being prepared with care',
+        id: 'morning-bismillah',
+        arabic: 'بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ العَلِيمُ',
+        transliteration: "Bismillahil-ladhi la yadurru ma'a ismihi shay'un fil-ardi wa la fis-sama'i, wa Huwas-Sami'ul-'Alim",
+        translation: 'In the name of Allah, with whose name nothing in the earth or sky can cause harm, and He is the All-Hearing, All-Knowing.',
+        targetCount: 3,
+        accent: '#4F6F52',
+      },
+      {
+        id: 'morning-hasbiyallah',
+        arabic: 'حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ العَرْشِ العَظِيمِ',
+        transliteration: "Hasbiyallahu la ilaha illa Huwa, 'alayhi tawakkaltu, wa Huwa Rabbul-'Arshil-'Azim",
+        translation: 'Allah is sufficient for me. None has the right to be worshipped except Him. Upon Him I rely, and He is Lord of the mighty throne.',
         targetCount: 7,
         accent: '#4F6F52',
       },
@@ -443,23 +502,33 @@ export const DHIKR_DETAIL_CONTENT: Record<string, DhikrDetail> = {
     items: [
       {
         id: 'evening-amsayna',
-        arabic: 'أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ',
+        arabic: 'أَمْسَيْنَا وَأَمْسَى المُلْكُ لِلَّهِ، وَالحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ',
         transliteration: 'Amsayna wa amsal mulku lillah',
-        translation: 'We have entered the evening and all sovereignty belongs to Allah',
+        translation: 'We have entered the evening and all sovereignty belongs to Allah. All praise is for Allah; none has the right to be worshipped except Allah alone.',
         targetCount: 1,
         accent: '#C8A951',
       },
       {
-        id: 'evening-placeholder-2',
-        transliteration: 'Evening dhikr · placeholder',
-        translation: 'Content being prepared with care',
+        id: 'evening-raditu',
+        arabic: 'رَضِيتُ بِاللهِ رَبًّا، وَبِالإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا',
+        transliteration: 'Raditu billahi rabban, wa bil-Islami dinan, wa bi Muhammadin nabiyya',
+        translation: 'I am pleased with Allah as my Lord, Islam as my religion, and Muhammad as my Prophet.',
         targetCount: 3,
         accent: '#C8A951',
       },
       {
-        id: 'evening-placeholder-3',
-        transliteration: 'Evening dhikr · placeholder',
-        translation: 'Content being prepared with care',
+        id: 'evening-bismillah',
+        arabic: 'بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيعُ العَلِيمُ',
+        transliteration: "Bismillahil-ladhi la yadurru ma'a ismihi shay'un fil-ardi wa la fis-sama'i, wa Huwas-Sami'ul-'Alim",
+        translation: 'In the name of Allah, with whose name nothing in the earth or sky can cause harm, and He is the All-Hearing, All-Knowing.',
+        targetCount: 3,
+        accent: '#C8A951',
+      },
+      {
+        id: 'evening-hasbiyallah',
+        arabic: 'حَسْبِيَ اللهُ لَا إِلَهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ العَرْشِ العَظِيمِ',
+        transliteration: "Hasbiyallahu la ilaha illa Huwa, 'alayhi tawakkaltu, wa Huwa Rabbul-'Arshil-'Azim",
+        translation: 'Allah is sufficient for me. None has the right to be worshipped except Him. Upon Him I rely, and He is Lord of the mighty throne.',
         targetCount: 7,
         accent: '#C8A951',
       },
@@ -518,12 +587,64 @@ export const DHIKR_DETAIL_CONTENT: Record<string, DhikrDetail> = {
         targetCount: 10,
         accent: '#C8A951',
       },
+    ],
+  },
+
+  istikhara: {
+    title: 'Istikhara',
+    description: 'Pray two rak‘ahs, then recite the Istikhara dua.',
+    sequence: [
       {
-        id: 'core-rabbana-atina',
-        arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً، وَفِي الآخِرَةِ حَسَنَةً، وَقِنَا عَذَابَ النَّارِ',
-        transliteration: "Rabbana atina fid-dunya hasanah, wa fil-akhirati hasanah, wa qina 'adhaban-nar",
-        translation: "Our Lord, give us good in this world and good in the Hereafter, and protect us from the punishment of the Fire.",
-        targetCount: 3,
+        id: 'istikhara-wudu',
+        title: 'Make wudu',
+        description: 'Begin in a state of purification.',
+      },
+      {
+        id: 'istikhara-pray',
+        title: 'Pray two rak‘ahs',
+        description: 'Pray two voluntary rak‘ahs with calm intention.',
+      },
+      {
+        id: 'istikhara-dua-step',
+        title: 'Recite the dua',
+        description: 'Ask Allah to guide the matter toward what is best.',
+      },
+      {
+        id: 'istikhara-trust',
+        title: 'Trust Allah',
+        description: 'Proceed with what becomes easy and beneficial.',
+      },
+    ],
+    items: [
+      {
+        id: 'istikhara-dua',
+        arabic: 'اللَّهُمَّ إِنِّي أَسْتَخِيرُكَ بِعِلْمِكَ، وَأَسْتَقْدِرُكَ بِقُدْرَتِكَ، وَأَسْأَلُكَ مِنْ فَضْلِكَ العَظِيمِ، فَإِنَّكَ تَقْدِرُ وَلَا أَقْدِرُ، وَتَعْلَمُ وَلَا أَعْلَمُ، وَأَنْتَ عَلَّامُ الغُيُوبِ. اللَّهُمَّ إِنْ كُنْتَ تَعْلَمُ أَنَّ هَذَا الأَمْرَ خَيْرٌ لِي فِي دِينِي وَمَعَاشِي وَعَاقِبَةِ أَمْرِي، فَاقْدُرْهُ لِي وَيَسِّرْهُ لِي ثُمَّ بَارِكْ لِي فِيهِ، وَإِنْ كُنْتَ تَعْلَمُ أَنَّ هَذَا الأَمْرَ شَرٌّ لِي فِي دِينِي وَمَعَاشِي وَعَاقِبَةِ أَمْرِي، فَاصْرِفْهُ عَنِّي وَاصْرِفْنِي عَنْهُ، وَاقْدُرْ لِيَ الخَيْرَ حَيْثُ كَانَ ثُمَّ أَرْضِنِي بِهِ',
+        transliteration: "Allahumma inni astakhiruka bi'ilmika, wa astaqdiruka biqudratika, wa as'aluka min fadlikal-'azim. Fa innaka taqdiru wa la aqdir, wa ta'lamu wa la a'lam, wa Anta 'Allamul-ghuyub. Allahumma in kunta ta'lamu anna hadhal-amra khayrun li fi dini wa ma'ashi wa 'aqibati amri, faqdurhu li wa yassirhu li thumma barik li fih. Wa in kunta ta'lamu anna hadhal-amra sharrun li fi dini wa ma'ashi wa 'aqibati amri, fasrifhu 'anni wasrifni 'anhu, waqdur liyal-khayra haythu kana thumma ardini bih.",
+        translation: 'O Allah, I seek Your guidance through Your knowledge, and ability through Your power, and I ask You from Your great bounty. If You know this matter is good for me in my religion, livelihood, and outcome, decree it for me, make it easy for me, and bless it for me. If You know it is bad for me, turn it away from me and turn me away from it, and decree good for me wherever it may be, then make me pleased with it.',
+        targetCount: 1,
+        accent: '#4F6F52',
+      },
+    ],
+  },
+
+  janazah: {
+    title: 'Janazah Dua',
+    description: 'Dua recited for the deceased in Janazah prayer.',
+    sequence: [
+      {
+        id: 'janazah-note',
+        title: 'V1 wording note',
+        description: 'This version uses the singular masculine wording. Female and plural wording can be added later.',
+        tag: 'Note',
+      },
+    ],
+    items: [
+      {
+        id: 'janazah-dua',
+        arabic: 'اللَّهُمَّ اغْفِرْ لَهُ وَارْحَمْهُ، وَعَافِهِ وَاعْفُ عَنْهُ، وَأَكْرِمْ نُزُلَهُ، وَوَسِّعْ مُدْخَلَهُ، وَاغْسِلْهُ بِالمَاءِ وَالثَّلْجِ وَالبَرَدِ، وَنَقِّهِ مِنَ الخَطَايَا كَمَا نَقَّيْتَ الثَّوْبَ الأَبْيَضَ مِنَ الدَّنَسِ، وَأَبْدِلْهُ دَارًا خَيْرًا مِنْ دَارِهِ، وَأَهْلًا خَيْرًا مِنْ أَهْلِهِ، وَزَوْجًا خَيْرًا مِنْ زَوْجِهِ، وَأَدْخِلْهُ الجَنَّةَ، وَأَعِذْهُ مِنْ عَذَابِ القَبْرِ وَمِنْ عَذَابِ النَّارِ',
+        transliteration: "Allahummaghfir lahu warhamhu, wa 'afihi wa'fu 'anhu, wa akrim nuzulahu, wa wassi' mudkhalahu, waghsilhu bil-ma'i wath-thalji wal-barad, wa naqqihi minal-khataya kama naqqaytath-thawbal-abyada minad-danas, wa abdilhu daran khayran min darihi, wa ahlan khayran min ahlihi, wa zawjan khayran min zawjihi, wa adkhilhul-jannah, wa a'idhhu min 'adhabil-qabri wa min 'adhabin-nar.",
+        translation: 'O Allah, forgive him and have mercy on him. Pardon him, honor his reception, widen his entrance, wash him with water, snow, and hail, cleanse him from sins as a white garment is cleansed from dirt, replace his home with a better home, his family with a better family, his spouse with a better spouse, admit him into Paradise, and protect him from the punishment of the grave and the Fire.',
+        targetCount: 1,
         accent: '#4F6F52',
       },
     ],
