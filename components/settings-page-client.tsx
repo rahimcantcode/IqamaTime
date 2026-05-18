@@ -1,18 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { RefreshCw, Bell, CheckCircle2, Circle, Settings } from 'lucide-react'
+import { RefreshCw, Bell, CheckCircle2, Circle, Settings, LogOut, UserRound } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
+import { usePrivateAuth } from '@/hooks/usePrivateAuth'
 import BottomNav from '@/components/bottom-nav'
+import PrivateAuthModal from '@/components/private-auth-modal'
 
 interface Props {
   masjids: Masjid[]
 }
 
 export default function SettingsPageClient({ masjids }: Props) {
-  const { settings, toggleMasjid } = useSettings()
+  const { settings, toggleMasjid, requiresLogin, clearLoginRequirement, syncPrivateSettings } = useSettings()
+  const { session, isLoggedIn, logout } = usePrivateAuth()
   const [refreshing, setRefreshing] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
 
   const allSelected = settings.selectedMasjidIds.length === 0
 
@@ -23,6 +27,27 @@ export default function SettingsPageClient({ masjids }: Props) {
       window.location.reload()
     } catch {}
     setTimeout(() => setRefreshing(false), 1500)
+  }
+
+  const handleToggleMasjid = (id: string) => {
+    if (!isLoggedIn) {
+      setAuthOpen(true)
+      return
+    }
+    toggleMasjid(id)
+  }
+
+  const handleShowAll = () => {
+    if (!isLoggedIn) {
+      setAuthOpen(true)
+      return
+    }
+    settings.selectedMasjidIds.forEach(id => toggleMasjid(id))
+  }
+
+  const handleCloseAuth = () => {
+    setAuthOpen(false)
+    clearLoginRequirement()
   }
 
   return (
@@ -39,6 +64,60 @@ export default function SettingsPageClient({ masjids }: Props) {
       </div>
 
       <div className="px-6 pb-32 pt-4">
+        <section className="mb-6">
+          <p
+            className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
+            style={{ color: '#9CA3AF' }}
+          >
+            Private Profile
+          </p>
+
+          <div
+            className="rounded-[1.2rem] p-4"
+            style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                  style={{ background: 'rgba(79,111,82,0.12)', color: '#4F6F52' }}
+                >
+                  <UserRound className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: '#202124' }}>
+                    {isLoggedIn ? `@${session?.username}` : 'Not logged in'}
+                  </p>
+                  <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                    {isLoggedIn ? 'Your preferences and progress can sync privately.' : 'Log in before saving favorites or progress.'}
+                  </p>
+                </div>
+              </div>
+
+              {isLoggedIn ? (
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="pressable rounded-full p-2"
+                  style={{ background: 'rgba(31,41,55,0.05)', color: '#6B7280' }}
+                  aria-label="Log out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAuthOpen(true)}
+                  className="pressable rounded-full px-3 py-1.5 text-xs font-semibold"
+                  style={{ background: '#4F6F52', color: '#FFFFFF' }}
+                >
+                  Log in
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
         <section className="mb-6">
           <p
             className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
@@ -93,7 +172,7 @@ export default function SettingsPageClient({ masjids }: Props) {
             </p>
             {!allSelected && (
               <button
-                onClick={() => settings.selectedMasjidIds.forEach(id => toggleMasjid(id))}
+                onClick={handleShowAll}
                 className="text-xs font-medium"
                 style={{ color: '#4F6F52' }}
               >
@@ -103,9 +182,11 @@ export default function SettingsPageClient({ masjids }: Props) {
           </div>
 
           <p className="mb-3 text-xs" style={{ color: '#9CA3AF' }}>
-            {allSelected
-              ? 'Showing all masjids. Tap to filter.'
-              : `${settings.selectedMasjidIds.length} selected`
+            {isLoggedIn
+              ? allSelected
+                ? 'Showing all masjids. Tap to filter.'
+                : `${settings.selectedMasjidIds.length} selected`
+              : 'Log in to save personal masjid preferences.'
             }
           </p>
 
@@ -115,7 +196,7 @@ export default function SettingsPageClient({ masjids }: Props) {
               return (
                 <button
                   key={masjid.id}
-                  onClick={() => toggleMasjid(masjid.id)}
+                  onClick={() => handleToggleMasjid(masjid.id)}
                   className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] p-4 transition-colors"
                   style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
                 >
@@ -123,7 +204,7 @@ export default function SettingsPageClient({ masjids }: Props) {
                     <p className="truncate text-sm font-medium" style={{ color: '#202124' }}>{masjid.name}</p>
                     <p className="text-xs" style={{ color: '#6B7280' }}>{masjid.city}</p>
                   </div>
-                  {selected
+                  {selected && isLoggedIn
                     ? <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#4F6F52' }} />
                     : <Circle className="w-5 h-5 shrink-0" style={{ color: '#9CA3AF' }} />
                   }
@@ -137,6 +218,13 @@ export default function SettingsPageClient({ masjids }: Props) {
           <p className="text-xs" style={{ color: '#9CA3AF' }}>IqamaTime · Updated daily at 11:15 PM CT</p>
         </div>
       </div>
+
+      <PrivateAuthModal
+        open={authOpen || requiresLogin}
+        reason="Create a private username and PIN before saving masjid preferences."
+        onClose={handleCloseAuth}
+        onSuccess={() => syncPrivateSettings()}
+      />
 
       <BottomNav />
     </main>
