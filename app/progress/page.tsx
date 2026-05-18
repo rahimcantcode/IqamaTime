@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, Flame, CheckCircle2, Circle } from 'lucide-react'
+import BottomNav from '@/components/bottom-nav'
 import {
   getLocalDate,
   getPrayerCheckins,
@@ -25,7 +26,6 @@ export default function ProgressPage() {
     Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false,
   })
 
-  // Hydrate from localStorage after mount
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const date = getLocalDate()
@@ -34,7 +34,7 @@ export default function ProgressPage() {
       setTodayLog(prev => {
         const next = { ...prev }
         checkins.forEach(c => {
-          const label = c.prayerLabel // "Fajr", "Dhuhr", etc.
+          const label = c.prayerLabel
           if (label in next) next[label] = true
         })
         return next
@@ -50,11 +50,10 @@ export default function ProgressPage() {
   const weeklyMax   = MOCK_GRID.flat().length
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#FAFAF7] scrollbar-none scroll-momentum"
+    <main
+      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
-      {/* Header */}
       <div className="px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" style={{ color: '#4F6F52' }} />
@@ -63,7 +62,6 @@ export default function ProgressPage() {
         <p className="text-xs" style={{ color: '#6B7280' }}>Track your prayer consistency</p>
       </div>
 
-      {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 px-6 pb-2 pt-4">
         {[
           { label: 'Streak',    value: streak,                        unit: 'days',    accent: '#C8A951' },
@@ -85,7 +83,6 @@ export default function ProgressPage() {
         ))}
       </div>
 
-      {/* Today's prayers */}
       <section className="px-6 pb-2 pt-6">
         <p className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
           Today
@@ -116,7 +113,6 @@ export default function ProgressPage() {
         </div>
       </section>
 
-      {/* Weekly grid */}
       <section className="px-6 pb-32 pt-6">
         <p className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
           This Week
@@ -125,14 +121,12 @@ export default function ProgressPage() {
           className="overflow-hidden rounded-[1.2rem] p-4"
           style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
         >
-          {/* Day headers */}
           <div className="mb-3 grid grid-cols-8">
             <div />
             {DAYS.map(d => (
               <p key={d} className="text-center text-[0.6rem] font-semibold" style={{ color: '#9CA3AF' }}>{d}</p>
             ))}
           </div>
-          {/* Grid rows */}
           {PRAYERS.map((prayer, pi) => (
             <div key={prayer} className="mb-2 grid grid-cols-8 items-center">
               <p className="truncate pr-1 text-[0.6rem] font-medium" style={{ color: '#9CA3AF' }}>{prayer}</p>
@@ -156,6 +150,8 @@ export default function ProgressPage() {
           Tap a prayer above to log it · Full sync coming soon
         </p>
       </section>
-    </div>
+
+      <BottomNav />
+    </main>
   )
 }
