@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { Bell, CalendarDays, Filter, MapPin, Mic } from 'lucide-react'
+import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { epicRecurringEvents } from '@/data/epic-recurring-events'
 
@@ -32,12 +31,6 @@ function normalizeEventTitle(title: string) {
 
 function hasValue(value: unknown) {
   return typeof value === 'string' && value.trim().length > 0
-}
-
-function eventMatchesFilter(event: any, filter: string) {
-  if (filter === 'iant') return event.source_name === 'IANT'
-  if (filter === 'epic') return event.source_name === 'EPIC Masjid'
-  return true
 }
 
 function mergeDuplicateEvents(events: any[] | null | undefined) {
@@ -75,11 +68,7 @@ function mergeDuplicateEvents(events: any[] | null | undefined) {
   )
 }
 
-export default async function UpdatesPage({ searchParams }: { searchParams?: { masjid?: string } }) {
-  const selectedFilter = searchParams?.masjid === 'iant' || searchParams?.masjid === 'epic'
-    ? searchParams.masjid
-    : 'all'
-
+export default async function UpdatesPage() {
   const supabase = await createServerSupabaseClient()
 
   const { data: events } = await supabase
@@ -102,13 +91,7 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
     .limit(50)
 
   const combinedEvents = [...(events || []), ...epicRecurringEvents]
-  const visibleEvents = mergeDuplicateEvents(combinedEvents).filter(event => eventMatchesFilter(event, selectedFilter))
-
-  const filters = [
-    { label: 'All', value: 'all', href: '/updates' },
-    { label: 'IANT', value: 'iant', href: '/updates?masjid=iant' },
-    { label: 'EPIC', value: 'epic', href: '/updates?masjid=epic' },
-  ]
+  const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
     <div
@@ -124,29 +107,6 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
         <p className="text-xs text-[#6B7280]">
           Community lectures, seminars, and gatherings from supported masjids.
         </p>
-
-        <div className="mt-3 flex w-fit items-center gap-1 rounded-full border border-[#E7E2D8] bg-white p-1 shadow-sm">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#EEF2ED]">
-            <Filter className="h-3 w-3 text-[#4F6F52]" />
-          </div>
-
-          {filters.map(filter => {
-            const active = selectedFilter === filter.value
-            return (
-              <Link
-                key={filter.value}
-                href={filter.href}
-                className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold transition ${
-                  active
-                    ? 'bg-[#4F6F52] text-white'
-                    : 'text-[#6B7280] active:bg-[#EEF2ED]'
-                }`}
-              >
-                {filter.label}
-              </Link>
-            )
-          })}
-        </div>
       </div>
 
       <section className="flex flex-col gap-5 px-5 pb-24">
