@@ -1,7 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TrendingUp, Flame, CheckCircle2, Circle } from 'lucide-react'
+import {
+  getLocalDate,
+  getPrayerCheckins,
+  savePrayerCheckin,
+  removePrayerCheckin,
+} from '@/lib/prayer-checkins'
 
 const PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
 const DAYS    = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -16,8 +22,23 @@ const MOCK_GRID: boolean[][] = [
 
 export default function ProgressPage() {
   const [todayLog, setTodayLog] = useState<Record<string, boolean>>({
-    Fajr: true, Dhuhr: true, Asr: false, Maghrib: false, Isha: false,
+    Fajr: false, Dhuhr: false, Asr: false, Maghrib: false, Isha: false,
   })
+
+  // Hydrate from localStorage after mount
+  useEffect(() => {
+    const date = getLocalDate()
+    const checkins = getPrayerCheckins().filter(c => c.date === date)
+    if (checkins.length === 0) return
+    setTodayLog(prev => {
+      const next = { ...prev }
+      checkins.forEach(c => {
+        const label = c.prayerLabel // "Fajr", "Dhuhr", etc.
+        if (label in next) next[label] = true
+      })
+      return next
+    })
+  }, [])
 
   const todayCount  = Object.values(todayLog).filter(Boolean).length
   const streak      = 12
@@ -69,7 +90,15 @@ export default function ProgressPage() {
           {PRAYERS.map(prayer => (
             <button
               key={prayer}
-              onClick={() => setTodayLog(p => ({ ...p, [prayer]: !p[prayer] }))}
+              onClick={() => {
+                const date = getLocalDate()
+                if (todayLog[prayer]) {
+                  removePrayerCheckin(date, prayer.toLowerCase())
+                } else {
+                  savePrayerCheckin({ date, prayer: prayer.toLowerCase(), prayerLabel: prayer, adhanTime: '' })
+                }
+                setTodayLog(p => ({ ...p, [prayer]: !p[prayer] }))
+              }}
               className="pressable flex min-h-[62px] items-center justify-between rounded-[1.2rem] px-4 py-3.5 transition-colors"
               style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
             >

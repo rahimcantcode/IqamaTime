@@ -5,6 +5,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import MasjidList from './masjid-list'
 import CountdownDisplay from './countdown-display'
+import PrayerCardActions from './prayer-card-actions'
 import { PrayerCardData } from '@/types'
 import { PRAYER_ACCENT, PRAYER_GRADIENTS, PRAYER_GLOW, timeStrToDate } from '@/lib/prayer-utils'
 import { useCurrentTime } from '@/hooks/useCountdown'
@@ -67,10 +68,20 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      {/* ── AMBIENT GLOW ──────────────────────────────────── */}
-      <div
+      {/* ── AMBIENT GLOW + DRAG CAPTURE ───────────────────── */}
+      {/*
+        drag="x" lives here (not on a separate overlay) so buttons
+        inside the center card can receive pointer events normally.
+        dragElastic=0 keeps the container visually stationary while
+        onDragEnd still receives full gesture offset/velocity.
+      */}
+      <motion.div
         className="relative flex h-[318px] items-center justify-center overflow-hidden sm:h-[340px]"
         style={{ perspective: '1200px' }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0}
+        onDragEnd={onDragEnd}
       >
         {/* Glow layer */}
         <AnimatePresence mode="wait">
@@ -89,16 +100,6 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Drag overlay */}
-        <motion.div
-          className="absolute inset-0 z-30 cursor-grab active:cursor-grabbing"
-          data-page-swipe-ignore="true"
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.15}
-          onDragEnd={onDragEnd}
-        />
-
         {/* ── 3D CARD RAIL ──────────────────────────────────── */}
         {[-2, -1, 0, 1, 2].map(offset => {
           const idx      = wrap(0, count, active + offset)
@@ -109,8 +110,9 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
           return (
             <motion.div
               key={active + offset}
-              className="absolute h-[252px] w-[184px] overflow-hidden rounded-[1.4rem] md:h-[290px] md:w-[218px]"
+              className="absolute w-[184px] overflow-hidden rounded-[1.4rem] md:w-[218px]"
               style={{
+                height: isCenter ? 276 : 252,
                 transformStyle: 'preserve-3d',
                 zIndex: isCenter ? 20 : 10 - dist,
                 boxShadow: isCenter
@@ -144,51 +146,105 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               {/* Top rim highlight */}
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
 
-              {/* Content */}
-              <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2 px-5">
-                <p
-                  className="text-[1.65rem] leading-none"
-                  style={{
-                    fontFamily: 'Georgia, serif',
-                    direction: 'rtl',
-                    color: 'rgba(32,33,36,0.32)',
-                  }}
-                >
-                  {c.prayer.arabicName}
-                </p>
-
-                <p
-                  className="text-[1.45rem] font-bold leading-none tracking-tight"
-                  style={{ color: '#202124' }}
-                >
-                  {c.prayer.displayName}
-                </p>
-
-                {c.adhanTime && (
-                  <div className="mt-3 flex flex-col items-center gap-1">
+              {/* Content — center card uses justify-between to fit actions at bottom */}
+              {isCenter ? (
+                <div className="relative z-10 flex h-full flex-col items-center justify-between px-4 py-5">
+                  {/* Names */}
+                  <div className="flex flex-col items-center gap-1.5">
                     <p
-                      className="text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
-                      style={{ color: '#9CA3AF' }}
-                    >
-                      Adhan Time
-                    </p>
-                    <p
-                      className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.10em]"
+                      className="text-[1.65rem] leading-none"
                       style={{
-                        color: PRAYER_ACCENT[c.prayer.key],
-                        background: `${PRAYER_ACCENT[c.prayer.key]}14`,
-                        border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}30`,
+                        fontFamily: 'Georgia, serif',
+                        direction: 'rtl',
+                        color: 'rgba(32,33,36,0.32)',
                       }}
                     >
-                      {c.adhanTime}
+                      {c.prayer.arabicName}
+                    </p>
+                    <p
+                      className="text-[1.45rem] font-bold leading-none tracking-tight"
+                      style={{ color: '#202124' }}
+                    >
+                      {c.prayer.displayName}
                     </p>
                   </div>
-                )}
-              </div>
+
+                  {/* Adhan time */}
+                  {c.adhanTime && (
+                    <div className="flex flex-col items-center gap-1">
+                      <p
+                        className="text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: '#9CA3AF' }}
+                      >
+                        Adhan Time
+                      </p>
+                      <p
+                        className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.10em]"
+                        style={{
+                          color: PRAYER_ACCENT[c.prayer.key],
+                          background: `${PRAYER_ACCENT[c.prayer.key]}14`,
+                          border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}30`,
+                        }}
+                      >
+                        {c.adhanTime}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <PrayerCardActions
+                    prayerKey={c.prayer.key}
+                    prayerLabel={c.prayer.displayName}
+                    adhanTime={c.adhanTime}
+                    adhanPast={adhanPast}
+                  />
+                </div>
+              ) : (
+                <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2 px-5">
+                  <p
+                    className="text-[1.65rem] leading-none"
+                    style={{
+                      fontFamily: 'Georgia, serif',
+                      direction: 'rtl',
+                      color: 'rgba(32,33,36,0.32)',
+                    }}
+                  >
+                    {c.prayer.arabicName}
+                  </p>
+
+                  <p
+                    className="text-[1.45rem] font-bold leading-none tracking-tight"
+                    style={{ color: '#202124' }}
+                  >
+                    {c.prayer.displayName}
+                  </p>
+
+                  {c.adhanTime && (
+                    <div className="mt-3 flex flex-col items-center gap-1">
+                      <p
+                        className="text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: '#9CA3AF' }}
+                      >
+                        Adhan Time
+                      </p>
+                      <p
+                        className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.10em]"
+                        style={{
+                          color: PRAYER_ACCENT[c.prayer.key],
+                          background: `${PRAYER_ACCENT[c.prayer.key]}14`,
+                          border: `1px solid ${PRAYER_ACCENT[c.prayer.key]}30`,
+                        }}
+                      >
+                        {c.adhanTime}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* ── DOT INDICATORS + CHEVRONS ─────────────────────── */}
       <div className="mx-auto flex w-[82vw] max-w-[420px] items-center justify-between pb-1 pt-1">
