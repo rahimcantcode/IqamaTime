@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { AppSettings } from '@/types'
+import {
+  getPrivateSession,
+  getPrivateUserSettings,
+  savePrivateUserSettings,
+  subscribeToPrivateAuth,
+} from '@/lib/private-auth'
 
 const STORAGE_KEY = 'iqamatime:settings'
 
@@ -11,7 +17,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 }
 
 export function useSettings() {
-  const readSettings = useCallback((): AppSettings => {
+  const readLocalSettings = useCallback((): AppSettings => {
     if (typeof window === 'undefined') return DEFAULT_SETTINGS
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
@@ -22,37 +28,89 @@ export function useSettings() {
     return DEFAULT_SETTINGS
   }, [])
 
-  const [settings, setSettings] = useState<AppSettings>(readSettings)
+  const [settings, setSettings] = useState<AppSettings>(readLocalSettings)
   const [loaded, setLoaded] = useState(false)
+  const [requiresLogin, setRequiresLogin] = useState(false)
+
+  const persistSettings = useCallback(async (next: AppSettings) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    } catch {}
+
+    const session = getPrivateSession()
+    if (session) {
+      try {
+        await savePrivateUserSettings(next.selectedMasjidIds, session)
+      } catch {}
+    }
+  }, [])
+
+  const syncPrivateSettings = useCallback(async () => {
+    const session = getPrivateSession()
+    if (!session) {
+      setSettings(readLocalSettings())
+      setLoaded(true)
+      return
+    }
+
+    try {
+      const selectedMasjidIds = await getPrivateUserSettings(session)
+      const next = { ...DEFAULT_SETTINGS, selectedMasjidIds }
+      setSettings(next)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+    } catch {
+      setSettings(readLocalSettings())
+    } finally {
+      setLoaded(true)
+    }
+  }, [readLocalSettings])
 
   useEffect(() => {
-    const id = window.requestAnimationFrame(() => setLoaded(true))
-    return () => window.cancelAnimationFrame(id)
-  }, [])
+    syncPrivateSettings()
+    return subscribeToPrivateAuth(syncPrivateSettings)
+  }, [syncPrivateSettings])
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {
+    const session = getPrivateSession()
+    if (!session && updates.selectedMasjidIds !== undefined) {
+      setRequiresLogin(true)
+      return
+    }
+
     setSettings(prev => {
       const next = { ...prev, ...updates }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      } catch {}
+      persistSettings(next)
       return next
     })
-  }, [])
+  }, [persistSettings])
 
   const toggleMasjid = useCallback((masjidId: string) => {
+    const session = getPrivateSession()
+    if (!session) {
+      setRequiresLogin(true)
+      return
+    }
+
     setSettings(prev => {
       const ids = prev.selectedMasjidIds
-      const next = ids.includes(masjidId)
+      const nextIds = ids.includes(masjidId)
         ? ids.filter(id => id !== masjidId)
         : [...ids, masjidId]
-      const updated = { ...prev, selectedMasjidIds: next }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      } catch {}
-      return updated
+      const next = { ...prev, selectedMasjidIds: nextIds }
+      persistSettings(next)
+      return next
     })
-  }, [])
+  }, [persistSettings])
 
-  return { settings, updateSettings, toggleMasjid, loaded }
+  const clearLoginRequirement = useCallback(() => setRequiresLogin(false), [])
+
+  return {
+    settings,
+    updateSettings,
+    toggleMasjid,
+    loaded,
+    requiresLogin,
+    clearLoginRequirement,
+    syncPrivateSettings,
+  }
 }
