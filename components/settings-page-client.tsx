@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { RefreshCw, Bell, CheckCircle2, Circle, Settings } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
+import BottomNav from '@/components/bottom-nav'
 
 interface Props {
   masjids: Masjid[]
@@ -25,11 +26,10 @@ export default function SettingsPageClient({ masjids }: Props) {
   }
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-y-auto bg-[#FAFAF7] scrollbar-none scroll-momentum"
+    <main
+      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
-      {/* Header */}
       <div className="px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Settings className="w-5 h-5" style={{ color: '#4F6F52' }} />
@@ -38,8 +38,7 @@ export default function SettingsPageClient({ masjids }: Props) {
         <p className="text-xs" style={{ color: '#6B7280' }}>Customize your experience</p>
       </div>
 
-      <div className="flex-1 px-6 pb-32 pt-4">
-        {/* Data section */}
+      <div className="px-6 pb-32 pt-4">
         <section className="mb-6">
           <p
             className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
@@ -87,7 +86,6 @@ export default function SettingsPageClient({ masjids }: Props) {
           </div>
         </section>
 
-        {/* Masjid selection */}
         <section className="mb-8">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
@@ -135,11 +133,12 @@ export default function SettingsPageClient({ masjids }: Props) {
           </div>
         </section>
 
-        {/* App info */}
         <div className="text-center">
           <p className="text-xs" style={{ color: '#9CA3AF' }}>IqamaTime · Updated daily at 11:15 PM CT</p>
         </div>
       </div>
-    </div>
+
+      <BottomNav />
+    </main>
   )
 }
