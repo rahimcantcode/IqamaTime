@@ -2,7 +2,6 @@ name: Scrape Community Events
 
 on:
   schedule:
-    - cron: '35 14 18 5 *'
     - cron: '0 12 * * 1'
   workflow_dispatch:
 
@@ -22,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run community events scraper
+      - name: Run IANT events scraper
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scrapers/events.ts
+        run: npx tsx scrapers/iant_events.ts
