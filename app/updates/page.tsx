@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Bell, CalendarDays, Filter, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { epicRecurringEvents } from '@/data/epic-recurring-events'
@@ -103,6 +104,12 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
   const combinedEvents = [...(events || []), ...epicRecurringEvents]
   const visibleEvents = mergeDuplicateEvents(combinedEvents).filter(event => eventMatchesFilter(event, selectedFilter))
 
+  const filters = [
+    { label: 'All', value: 'all', href: '/updates' },
+    { label: 'IANT', value: 'iant', href: '/updates?masjid=iant' },
+    { label: 'EPIC', value: 'epic', href: '/updates?masjid=epic' },
+  ]
+
   return (
     <div
       className="fixed inset-0 overflow-y-auto bg-[#FAFAF7] pb-28"
@@ -118,19 +125,28 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
           Community lectures, seminars, and gatherings from supported masjids.
         </p>
 
-        <form className="mt-3 flex w-fit items-center gap-2 rounded-full border border-[#E7E2D8] bg-white px-3 py-1.5 shadow-sm">
-          <Filter className="h-3.5 w-3.5 text-[#4F6F52]" />
-          <select
-            name="masjid"
-            defaultValue={selectedFilter}
-            className="bg-transparent text-[0.72rem] font-semibold text-[#4F6F52] outline-none"
-            onChange="this.form.requestSubmit()"
-          >
-            <option value="all">All Masajid</option>
-            <option value="iant">IANT</option>
-            <option value="epic">EPIC</option>
-          </select>
-        </form>
+        <div className="mt-3 flex w-fit items-center gap-1 rounded-full border border-[#E7E2D8] bg-white p-1 shadow-sm">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#EEF2ED]">
+            <Filter className="h-3 w-3 text-[#4F6F52]" />
+          </div>
+
+          {filters.map(filter => {
+            const active = selectedFilter === filter.value
+            return (
+              <Link
+                key={filter.value}
+                href={filter.href}
+                className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold transition ${
+                  active
+                    ? 'bg-[#4F6F52] text-white'
+                    : 'text-[#6B7280] active:bg-[#EEF2ED]'
+                }`}
+              >
+                {filter.label}
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
       <section className="flex flex-col gap-5 px-5 pb-24">
