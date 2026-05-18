@@ -112,7 +112,7 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
       className="fixed inset-0 overflow-y-auto bg-[#FAFAF7] pb-28"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
-      <div className="px-6 pb-4 pt-2">
+      <div className="relative z-30 px-6 pb-4 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Bell className="h-5 w-5" style={{ color: '#4F6F52' }} />
           <h1 className="text-xl font-bold text-[#202124]">Updates</h1>
@@ -122,25 +122,25 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
           Community lectures, seminars, and gatherings from supported masjids.
         </p>
 
-        <div className="relative mt-4 w-fit">
+        <div className="relative z-40 mt-4 w-fit">
           <Link
             href={filterOpen ? `/updates${selectedFilter === 'all' ? '' : `?masjid=${selectedFilter}`}` : `/updates?filter=open${selectedFilter === 'all' ? '' : `&masjid=${selectedFilter}`}`}
-            className="flex items-center gap-2 rounded-full border border-[#E7E2D8] bg-white px-3 py-2 text-[0.72rem] font-semibold text-[#4F6F52] shadow-sm"
+            className="flex min-h-[44px] min-w-[132px] items-center justify-center gap-2 rounded-full border border-[#E7E2D8] bg-white px-4 py-2 text-[0.78rem] font-semibold text-[#4F6F52] shadow-sm active:scale-[0.98]"
           >
-            <Filter className="h-3.5 w-3.5" />
+            <Filter className="h-4 w-4" />
             <span>{selectedLabel}</span>
-            <ChevronDown className={`h-3.5 w-3.5 transition ${filterOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 transition ${filterOpen ? 'rotate-180' : ''}`} />
           </Link>
 
           {filterOpen && (
-            <div className="absolute left-0 top-11 z-20 w-36 overflow-hidden rounded-2xl border border-[#E7E2D8] bg-white py-1 text-sm shadow-lg">
-              <Link href="/updates" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'all' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+            <div className="absolute left-0 top-12 z-50 w-44 overflow-hidden rounded-2xl border border-[#E7E2D8] bg-white py-1 text-sm shadow-xl">
+              <Link href="/updates" className={`block min-h-[44px] px-4 py-3 text-[0.8rem] font-medium ${selectedFilter === 'all' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
                 All Masajid
               </Link>
-              <Link href="/updates?masjid=iant" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'iant' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+              <Link href="/updates?masjid=iant" className={`block min-h-[44px] px-4 py-3 text-[0.8rem] font-medium ${selectedFilter === 'iant' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
                 IANT
               </Link>
-              <Link href="/updates?masjid=epic" className={`block px-4 py-2 text-[0.75rem] font-medium ${selectedFilter === 'epic' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
+              <Link href="/updates?masjid=epic" className={`block min-h-[44px] px-4 py-3 text-[0.8rem] font-medium ${selectedFilter === 'epic' ? 'bg-[#EEF2ED] text-[#4F6F52]' : 'text-[#6B7280]'}`}>
                 EPIC
               </Link>
             </div>
@@ -148,7 +148,7 @@ export default async function UpdatesPage({ searchParams }: { searchParams?: { m
         </div>
       </div>
 
-      <section className="flex flex-col gap-5 px-5 pb-24">
+      <section className="relative z-10 flex flex-col gap-5 px-5 pb-24">
         {!visibleEvents.length && (
           <div
             className="rounded-[1.5rem] border border-[#E7E2D8] bg-white px-5 py-8 text-center"
