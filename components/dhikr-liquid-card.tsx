@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
+import { RotateCcw } from 'lucide-react'
 import { RepeatableItem } from '@/lib/dhikr-data'
 
 interface Props {
@@ -114,9 +115,9 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
         border: `1px solid ${completed ? item.accent + '35' : '#E7E2D8'}`,
         boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
       }}
-      onClick={completed ? reset : increment}
+      onClick={completed ? undefined : increment}
       onKeyDown={handleKeyDown}
-      aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed. ${completed ? 'Tap to reset.' : 'Tap to increment.'}`}
+      aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed.`}
     >
       {/* Liquid fill layer */}
       <motion.div
@@ -178,9 +179,26 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
         </div>
 
         {completed ? (
-          <div className="flex items-center gap-1.5">
-            <span style={{ color: item.accent }} className="text-sm font-bold">✓</span>
-            <span className="text-xs font-semibold" style={{ color: item.accent }}>Complete</span>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span style={{ color: item.accent }} className="text-sm font-bold">✓</span>
+              <span className="text-xs font-semibold" style={{ color: item.accent }}>Complete</span>
+            </div>
+            <button
+              type="button"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); reset() }}
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.58rem] font-medium transition-all active:scale-95"
+              style={{
+                background: 'rgba(31,41,55,0.06)',
+                border: '1px solid rgba(31,41,55,0.10)',
+                color: '#9CA3AF',
+              }}
+              aria-label="Reset counter"
+            >
+              <RotateCcw className="h-2.5 w-2.5" />
+              Reset
+            </button>
           </div>
         ) : (
           <p
