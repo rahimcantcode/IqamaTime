@@ -17,7 +17,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-2xl justify-center px-4 pb-[max(0.42rem,env(safe-area-inset-bottom))]">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-2xl justify-center px-4 pb-[max(0.12rem,calc(env(safe-area-inset-bottom)-0.35rem))]">
       <div
         className="pointer-events-auto flex w-full items-center justify-between rounded-full px-3 py-1.5 backdrop-blur-xl"
         style={{
