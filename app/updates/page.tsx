@@ -1,5 +1,6 @@
 import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { epicRecurringEvents } from '@/data/epic-recurring-events'
 
 function cleanDisplayDescription(description: string | null, title: string, sourceName: string) {
   if (!description) return null
@@ -89,7 +90,8 @@ export default async function UpdatesPage() {
     .order('event_date', { ascending: true })
     .limit(50)
 
-  const visibleEvents = mergeDuplicateEvents(events)
+  const combinedEvents = [...(events || []), ...epicRecurringEvents]
+  const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
     <div
