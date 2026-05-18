@@ -175,14 +175,25 @@ export async function savePrivatePrayerCheckin(
 ) {
   if (!session) throw new Error('Not logged in.')
   const supabase = createClient()
-  const { error } = await supabase.rpc('upsert_private_prayer_checkin', {
+  const payload = {
     p_user_id: session.userId,
     p_session_token: session.sessionToken,
     p_prayer_date: data.date,
     p_prayer: data.prayer,
     p_prayer_label: data.prayerLabel,
     p_adhan_time: data.adhanTime ?? '',
-  })
+  }
+
+  const { error: stableError } = await supabase.rpc('save_private_prayer_checkin_v2', payload)
+
+  if (!stableError) return
+
+  const functionMissing = stableError.message?.toLowerCase().includes('function') &&
+    stableError.message?.toLowerCase().includes('does not exist')
+
+  if (!functionMissing) throw new Error(stableError.message)
+
+  const { error } = await supabase.rpc('upsert_private_prayer_checkin', payload)
   if (error) throw new Error(error.message)
 }
 
