@@ -21,6 +21,7 @@ import { scrapeIACC   } from './iacc'
 import { scrapeYaseen } from './yaseen'
 import { scrapeIANT   } from './iant'
 import { scrapeICI    } from './ici'
+import { scrapeMAS    } from './mas'
 import { logger } from './logger'
 
 interface ScraperDef {
@@ -39,6 +40,7 @@ const SCRAPERS: ScraperDef[] = [
   { name: 'Yaseen', fn: scrapeYaseen },
   { name: 'IANT',   fn: scrapeIANT   },
   { name: 'ICI',    fn: scrapeICI    },
+  { name: 'MAS',    fn: scrapeMAS    },
 ]
 
 const MAX_RETRIES = 2
