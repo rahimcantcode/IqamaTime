@@ -11,6 +11,8 @@ import {
   Lock,
   ChevronRight,
   Check,
+  Clock,
+  Sparkles,
 } from 'lucide-react'
 import { getPrivateSession, subscribeToPrivateAuth } from '@/lib/private-auth'
 
@@ -18,16 +20,29 @@ const ONBOARDING_KEY = 'iqamatime:first-visit-guide-complete'
 
 const steps = [
   {
-    eyebrow: 'First step',
+    eyebrow: 'Welcome',
+    title: 'IqamaTime helps you pray at the masjid',
+    description:
+      'Use the app to check iqama times, read dhikr, discover masjid updates, and track your masjid prayer progress in a simple personal dashboard.',
+    icon: Sparkles,
+    accent: '#4F6F52',
+    details: [
+      { icon: Clock, text: 'See prayer and iqama times quickly' },
+      { icon: MapPin, text: 'Follow masjid updates and events' },
+      { icon: BarChart3, text: 'Track your progress when you pray at the masjid' },
+    ],
+  },
+  {
+    eyebrow: 'Best setup',
     title: 'Add it to your iPhone Home Screen',
     description:
-      'This app works best when it feels like a real app. Open it in Safari, tap Share, then choose Add to Home Screen.',
+      'Since this is shared as a link, it works best when you save it like a real app. Open it in Safari, tap Share, then choose Add to Home Screen.',
     icon: Home,
     accent: '#C8A951',
     details: [
       { icon: Share, text: 'Tap the Share button in Safari' },
       { icon: SquarePlus, text: 'Choose Add to Home Screen' },
-      { icon: Home, text: 'Open it like a normal app' },
+      { icon: Home, text: 'Open it from your Home Screen' },
     ],
   },
   {
@@ -40,7 +55,7 @@ const steps = [
     details: [
       { icon: MapPin, text: 'Check nearby iqama times' },
       { icon: Check, text: 'Tap “I prayed at the masjid” after salah' },
-      { icon: BarChart3, text: 'Watch your progress build over time' },
+      { icon: BarChart3, text: 'Watch your consistency build over time' },
     ],
   },
   {
