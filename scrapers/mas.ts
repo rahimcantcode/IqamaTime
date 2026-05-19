@@ -12,6 +12,13 @@ const PROGRAMS_URL = 'https://masdfw.org/adults/'
 const LOCATION = 'MAS Dallas, 1515 Blake Dr, Richardson, TX 75081'
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' }
 
+const EVENT_IMAGE_FALLBACKS: Record<string, string> = {
+  'Live, Learn, Love': 'https://masdfw.org/wp-content/uploads/2024/12/WednesdayTafseerHalaqa2024EamanAttia-e1736198216424.jpeg',
+  'Finjan Qahwa Book Club': 'https://masdfw.org/wp-content/uploads/2023/09/Finjan-Qahwa1.png',
+  'Quran Circles for Brothers': 'https://masdfw.org/wp-content/uploads/2023/09/Brothers-Quran-Circles.png',
+  'Qur’an Institute for Ladies': 'https://masdfw.org/wp-content/uploads/2023/09/quran-institute.jpeg',
+}
+
 function clean(value: string) {
   return value.replace(/\s+/g, ' ').trim()
 }
@@ -26,9 +33,30 @@ function eventHash(event: ScrapedCommunityEvent) {
   ].join('|')).digest('hex')
 }
 
-function absoluteUrl(src: string | undefined | null) {
+function absoluteUrl(src: string | undefined | null, base = PROGRAMS_URL) {
   if (!src) return null
-  try { return new URL(src, PROGRAMS_URL).toString() } catch { return null }
+  const firstSrc = src.split(',')[0]?.trim().split(' ')[0]
+  if (!firstSrc) return null
+  try { return new URL(firstSrc, base).toString() } catch { return null }
+}
+
+function imageFromElement($: cheerio.CheerioAPI, element: cheerio.Cheerio<any>) {
+  const img = element.is('img') ? element : element.find('img').first()
+  const directSrc =
+    img.attr('src') ||
+    img.attr('data-src') ||
+    img.attr('data-lazy-src') ||
+    img.attr('data-original') ||
+    img.attr('data-orig-file') ||
+    img.attr('srcset') ||
+    img.attr('data-srcset')
+
+  const directUrl = absoluteUrl(directSrc)
+  if (directUrl) return directUrl
+
+  const style = element.attr('style') || element.find('[style*="background-image"]').first().attr('style')
+  const styleMatch = style?.match(/url\(["']?([^"')]+)["']?\)/i)
+  return absoluteUrl(styleMatch?.[1])
 }
 
 function parsePrayerTimes(text: string): TimesOnly {
@@ -57,22 +85,41 @@ function collectTextAfter($: cheerio.CheerioAPI, heading: cheerio.Element) {
   return parts.join(' ')
 }
 
-function nearbyImage($: cheerio.CheerioAPI, heading: cheerio.Element) {
-  const img = $(heading).prevAll('img').first().length ? $(heading).prevAll('img').first() : $(heading).parent().find('img').first()
-  return absoluteUrl(img.attr('src') || img.attr('data-src') || img.attr('data-lazy-src'))
+function collectImagesBeforeHeadings($: cheerio.CheerioAPI) {
+  const imagesByHeading = new Map<string, string>()
+  let lastImage: string | null = null
+
+  $('body').find('img, [style*="background-image"], h2').each((_, element) => {
+    const node = $(element)
+    const tag = element.tagName?.toLowerCase()
+
+    if (tag === 'h2') {
+      const title = clean(node.text()).toLowerCase()
+      if (lastImage && title) imagesByHeading.set(title, lastImage)
+      return
+    }
+
+    const imageUrl = imageFromElement($, node)
+    if (imageUrl && !/logo|icon|facebook|twitter|youtube|instagram|muhsen|apple|google-play/i.test(imageUrl)) {
+      lastImage = imageUrl
+    }
+  })
+
+  return imagesByHeading
 }
 
 function fallbackEvents(): ScrapedCommunityEvent[] {
   return [
-    { title: 'Live, Learn, Love', eventDate: null, eventTime: 'Weekly sisters class', location: LOCATION, speakers: null, description: 'Weekly class for sisters of all ages at MAS Dallas. Tap here to view full event details.', imageUrl: null, sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
-    { title: 'Finjan Qahwa Book Club', eventDate: null, eventTime: 'Recurring program', location: LOCATION, speakers: null, description: 'A community book club and gathering. Tap here to view full event details.', imageUrl: null, sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
-    { title: 'Quran Circles for Brothers', eventDate: null, eventTime: 'Thursdays', location: LOCATION, speakers: 'Imam Dr. Ahmed Rashad', description: 'Weekly Quran recitation and tajweed halaqa for brothers. Tap here to view full event details.', imageUrl: null, sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
-    { title: 'Qur’an Institute for Ladies', eventDate: null, eventTime: 'Tuesdays, Thursdays, and Saturdays', location: LOCATION, speakers: null, description: 'Ladies program for learning Quran recitation, Tajweed, memorization, and certification. Tap here to view full event details.', imageUrl: null, sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
+    { title: 'Live, Learn, Love', eventDate: null, eventTime: 'Weekly sisters class', location: LOCATION, speakers: null, description: 'Weekly class for sisters of all ages at MAS Dallas. Tap here to view full event details.', imageUrl: EVENT_IMAGE_FALLBACKS['Live, Learn, Love'], sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
+    { title: 'Finjan Qahwa Book Club', eventDate: null, eventTime: 'Recurring program', location: LOCATION, speakers: null, description: 'A community book club and gathering. Tap here to view full event details.', imageUrl: EVENT_IMAGE_FALLBACKS['Finjan Qahwa Book Club'], sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
+    { title: 'Quran Circles for Brothers', eventDate: null, eventTime: 'Thursdays', location: LOCATION, speakers: 'Imam Dr. Ahmed Rashad', description: 'Weekly Quran recitation and tajweed halaqa for brothers. Tap here to view full event details.', imageUrl: EVENT_IMAGE_FALLBACKS['Quran Circles for Brothers'], sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
+    { title: 'Qur’an Institute for Ladies', eventDate: null, eventTime: 'Tuesdays, Thursdays, and Saturdays', location: LOCATION, speakers: null, description: 'Ladies program for learning Quran recitation, Tajweed, memorization, and certification. Tap here to view full event details.', imageUrl: EVENT_IMAGE_FALLBACKS['Qur’an Institute for Ladies'], sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME },
   ]
 }
 
 function parseProgramEvents(html: string): ScrapedCommunityEvent[] {
   const $ = cheerio.load(html)
+  const imagesByHeading = collectImagesBeforeHeadings($)
   const meta: Record<string, { title: string; time: string | null; speakers: string | null }> = {
     'live, learn, love': { title: 'Live, Learn, Love', time: 'Weekly sisters class', speakers: null },
     'finjan qahwa (book club)': { title: 'Finjan Qahwa Book Club', time: 'Recurring program', speakers: null },
@@ -86,7 +133,8 @@ function parseProgramEvents(html: string): ScrapedCommunityEvent[] {
     const item = meta[key]
     if (!item) return
     const description = collectTextAfter($, heading).replace(/To learn more, please contact the program staff at:.*/i, 'Tap here to view full event details.').trim() || 'Tap here to view full event details.'
-    events.push({ title: item.title, eventDate: null, eventTime: item.time, location: LOCATION, speakers: item.speakers, description, imageUrl: nearbyImage($, heading), sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME })
+    const imageUrl = imagesByHeading.get(key) || EVENT_IMAGE_FALLBACKS[item.title] || null
+    events.push({ title: item.title, eventDate: null, eventTime: item.time, location: LOCATION, speakers: item.speakers, description, imageUrl, sourceUrl: PROGRAMS_URL, sourceName: SOURCE_NAME })
   })
   return events.length ? events : fallbackEvents()
 }
@@ -104,7 +152,7 @@ async function upsertMasEvents(events: ScrapedCommunityEvent[]) {
     location: event.location,
     speakers: event.speakers,
     description: event.description,
-    image_url: event.imageUrl,
+    image_url: event.imageUrl || EVENT_IMAGE_FALLBACKS[event.title] || null,
     source_url: event.sourceUrl,
     source_name: event.sourceName,
     content_hash: eventHash(event),
