@@ -1,9 +1,10 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, RefreshCw, Bell, CheckCircle2, Circle } from 'lucide-react'
+import { X, RefreshCw, Bell, CheckCircle2, Circle, Moon, Sun, Monitor } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
+import { useTheme, type AppTheme } from '@/components/theme-provider'
 import { useState } from 'react'
 
 interface Props {
@@ -13,8 +14,15 @@ interface Props {
   onRefresh: () => void
 }
 
+const themeOptions: { value: AppTheme; label: string; icon: typeof Sun }[] = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'system', label: 'Auto', icon: Monitor },
+]
+
 export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Props) {
   const { settings, toggleMasjid } = useSettings()
+  const { theme, setTheme } = useTheme()
   const [refreshing, setRefreshing] = useState(false)
 
   const handleRefresh = async () => {
@@ -73,6 +81,41 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto px-6 pb-safe scroll-momentum">
+
+              {/* Appearance */}
+              <section className="mb-6">
+                <p
+                  className="mb-3 text-xs font-semibold uppercase tracking-widest"
+                  style={{ color: '#9CA3AF' }}
+                >
+                  Appearance
+                </p>
+                <div
+                  className="grid grid-cols-3 gap-2 rounded-[1.25rem] p-1.5"
+                  style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}
+                >
+                  {themeOptions.map(option => {
+                    const Icon = option.icon
+                    const selected = theme === option.value
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setTheme(option.value)}
+                        className="pressable flex items-center justify-center gap-1.5 rounded-[1rem] px-2 py-2 text-xs font-semibold"
+                        style={selected
+                          ? { background: '#FFFFFF', color: '#4F6F52', boxShadow: '0 1px 4px rgba(31,41,55,0.08)' }
+                          : { background: 'transparent', color: '#9CA3AF' }
+                        }
+                        aria-pressed={selected}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {option.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </section>
 
               {/* Actions */}
               <section className="mb-6">
