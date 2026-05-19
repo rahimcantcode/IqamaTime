@@ -40,21 +40,23 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
   if (mode === 'simple') {
     return (
       <div
-        className="flex flex-col gap-3 rounded-[1.2rem] p-4"
+        className="flex flex-col gap-4 rounded-[1.2rem] p-5"
         style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
         aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed`}
       >
         {item.arabic && (
           <p
-            className="text-center text-xl leading-snug"
-            style={{ fontFamily: 'Georgia, serif', direction: 'rtl', color: 'rgba(32,33,36,0.75)' }}
+            lang="ar"
+            dir="rtl"
+            className="dhikr-arabic"
+            style={{ color: 'rgba(32,33,36,0.78)' }}
           >
             {item.arabic}
           </p>
         )}
         <div className="text-center">
-          <p className="text-sm font-semibold" style={{ color: '#202124' }}>{item.transliteration}</p>
-          <p className="mt-0.5 text-[0.6rem]" style={{ color: '#9CA3AF' }}>{item.translation}</p>
+          <p className="text-sm font-semibold leading-relaxed" style={{ color: '#202124' }}>{item.transliteration}</p>
+          <p className="mt-1 text-[0.68rem] leading-relaxed" style={{ color: '#9CA3AF' }}>{item.translation}</p>
         </div>
 
         {/* Counter row */}
@@ -155,25 +157,23 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2 p-4 text-center">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-5 text-center">
         {item.arabic && (
           <p
-            className="text-xl leading-snug"
-            style={{
-              fontFamily: 'Georgia, serif',
-              direction: 'rtl',
-              color: completed ? item.accent : 'rgba(32,33,36,0.80)',
-            }}
+            lang="ar"
+            dir="rtl"
+            className="dhikr-arabic"
+            style={{ color: completed ? item.accent : 'rgba(32,33,36,0.80)' }}
           >
             {item.arabic}
           </p>
         )}
 
         <div>
-          <p className="text-sm font-semibold" style={{ color: completed ? item.accent : '#202124' }}>
+          <p className="text-sm font-semibold leading-relaxed" style={{ color: completed ? item.accent : '#202124' }}>
             {item.transliteration}
           </p>
-          <p className="mt-0.5 text-[0.6rem]" style={{ color: '#9CA3AF' }}>
+          <p className="mt-1 text-[0.68rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
             {item.translation}
           </p>
         </div>
