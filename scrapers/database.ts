@@ -16,10 +16,22 @@ export interface ScrapedPrayerTimes {
   sourceUrl?: string
 }
 
+export interface ScrapedCommunityEvent {
+  title: string
+  eventDate: string | null
+  eventTime: string | null
+  location: string | null
+  speakers: string | null
+  description: string | null
+  imageUrl: string | null
+  sourceUrl: string
+  sourceName: string
+}
+
 /** Convenience type for time fields only */
 export type TimesOnly = Pick<ScrapedPrayerTimes, 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha' | 'jummah1' | 'jummah2'>
 
-function getSupabase() {
+export function getSupabase() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -30,6 +42,99 @@ function getSupabase() {
   return createClient(url, key, {
     realtime: { transport: WebSocket as unknown as WebSocketLikeConstructor },
   })
+}
+
+export async function ensureMasjid(input: {
+  name: string
+  city: string
+  websiteUrl: string
+}): Promise<string | null> {
+  const supabase = getSupabase()
+
+  const { data: existing, error: findError } = await supabase
+    .from('masjids')
+    .select('id')
+    .eq('name', input.name)
+    .maybeSingle()
+
+  if (findError) {
+    logger.error(input.name, `Masjid lookup failed: ${findError.message}`)
+    throw findError
+  }
+
+  if (existing?.id) return existing.id
+
+  const { data: created, error: insertError } = await supabase
+    .from('masjids')
+    .insert({
+      name: input.name,
+      city: input.city,
+      website_url: input.websiteUrl,
+      active: true,
+    })
+    .select('id')
+    .single()
+
+  if (insertError) {
+    logger.error(input.name, `Masjid insert failed: ${insertError.message}`)
+    throw insertError
+  }
+
+  return created?.id ?? null
+}
+
+export async function replaceCommunityEventsForSource(input: {
+  masjidName: string
+  sourceName: string
+  events: ScrapedCommunityEvent[]
+}): Promise<void> {
+  const supabase = getSupabase()
+
+  const { data: masjid, error: masjidErr } = await supabase
+    .from('masjids')
+    .select('id')
+    .eq('name', input.masjidName)
+    .maybeSingle()
+
+  if (masjidErr || !masjid) {
+    logger.error(input.masjidName, `Masjid not found for events: ${masjidErr?.message}`)
+    return
+  }
+
+  const { error: deleteErr } = await supabase
+    .from('community_events')
+    .delete()
+    .eq('source_name', input.sourceName)
+
+  if (deleteErr) {
+    logger.error(input.sourceName, `Event cleanup failed: ${deleteErr.message}`)
+    throw deleteErr
+  }
+
+  if (!input.events.length) return
+
+  const rows = input.events.map(event => ({
+    masjid_id: masjid.id,
+    title: event.title,
+    event_date: event.eventDate,
+    event_time: event.eventTime,
+    location: event.location,
+    speakers: event.speakers,
+    description: event.description,
+    image_url: event.imageUrl,
+    source_url: event.sourceUrl,
+    source_name: event.sourceName,
+    active: true,
+  }))
+
+  const { error: insertErr } = await supabase
+    .from('community_events')
+    .insert(rows)
+
+  if (insertErr) {
+    logger.error(input.sourceName, `Event insert failed: ${insertErr.message}`)
+    throw insertErr
+  }
 }
 
 export async function upsertPrayerTimes(data: ScrapedPrayerTimes): Promise<void> {
