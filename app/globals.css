@@ -74,8 +74,29 @@ select {
 }
 
 [lang="ar"], .arabic {
-  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', Georgia, serif;
+  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Times New Roman', serif;
   direction: rtl;
+}
+
+.dhikr-arabic {
+  direction: rtl;
+  unicode-bidi: plaintext;
+  white-space: pre-line;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-align: center;
+  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Times New Roman', serif;
+  font-size: clamp(1.55rem, 6.2vw, 2.05rem);
+  line-height: 2.15;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+@supports (font: -apple-system-body) {
+  .dhikr-arabic {
+    line-height: 2.25;
+  }
 }
 
 .glass {
