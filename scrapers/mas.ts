@@ -24,12 +24,13 @@ function clean(value: string) {
 }
 
 function eventHash(event: ScrapedCommunityEvent) {
-  return crypto.createHash('sha256').update([
-    event.sourceName,
-    event.sourceUrl,
-    event.title,
+  // Keep this stable with the original manual SQL seed so future scraper runs
+  // update the existing MAS rows instead of creating new rows or leaving old rows unchanged.
+  return crypto.createHash('md5').update([
+    event.title ?? '',
     event.eventTime ?? '',
     event.location ?? '',
+    event.sourceUrl ?? '',
   ].join('|')).digest('hex')
 }
 
