@@ -10,6 +10,8 @@ interface Props {
   mode: 'simple' | 'interactive'
 }
 
+const NEXT_CARD_TOP_VIEWPORT_RATIO = 0.25
+
 export default function DhikrLiquidCard({ item, mode }: Props) {
   const [count, setCount] = useState(0)
   const cardRef = useRef<HTMLDivElement | null>(null)
@@ -30,9 +32,13 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
       const nextCard = currentCard?.nextElementSibling as HTMLElement | null
       if (!nextCard) return
 
-      nextCard.scrollIntoView({
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+      const targetTopFromScreenTop = viewportHeight * NEXT_CARD_TOP_VIEWPORT_RATIO
+      const nextCardPageTop = nextCard.getBoundingClientRect().top + window.scrollY
+
+      window.scrollTo({
+        top: Math.max(nextCardPageTop - targetTopFromScreenTop, 0),
         behavior: 'smooth',
-        block: 'start',
       })
     }, 240)
   }, [])
@@ -63,7 +69,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
     return (
       <div
         ref={cardRef}
-        className="flex scroll-mt-5 flex-col gap-3.5 rounded-[1.15rem] p-4"
+        className="flex scroll-mt-[25vh] flex-col gap-3.5 rounded-[1.15rem] p-4"
         style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
         aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed`}
       >
@@ -134,7 +140,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
       ref={cardRef}
       role="button"
       tabIndex={0}
-      className="relative scroll-mt-5 overflow-hidden rounded-[1.15rem] cursor-pointer select-none"
+      className="relative scroll-mt-[25vh] overflow-hidden rounded-[1.15rem] cursor-pointer select-none"
       style={{
         minHeight: 132,
         background: '#FFFFFF',
