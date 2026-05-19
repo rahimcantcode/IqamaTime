@@ -86,8 +86,8 @@ select {
   word-break: normal;
   text-align: center;
   font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Times New Roman', serif;
-  font-size: clamp(1.55rem, 6.2vw, 2.05rem);
-  line-height: 2.15;
+  font-size: clamp(1.42rem, 5.55vw, 1.86rem);
+  line-height: 2.02;
   letter-spacing: 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -95,7 +95,7 @@ select {
 
 @supports (font: -apple-system-body) {
   .dhikr-arabic {
-    line-height: 2.25;
+    line-height: 2.08;
   }
 }
 
