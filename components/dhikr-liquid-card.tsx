@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
 import { RepeatableItem } from '@/lib/dhikr-data'
@@ -12,6 +12,7 @@ interface Props {
 
 export default function DhikrLiquidCard({ item, mode }: Props) {
   const [count, setCount] = useState(0)
+  const cardRef = useRef<HTMLDivElement | null>(null)
 
   const completed = count >= item.targetCount
   const progress  = Math.min(count / item.targetCount, 1)
@@ -23,9 +24,30 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
     ? 'rgba(200,169,81,0.30)'
     : 'rgba(79,111,82,0.24)'
 
+  const scrollToNextCard = useCallback(() => {
+    window.setTimeout(() => {
+      const currentCard = cardRef.current
+      const nextCard = currentCard?.nextElementSibling as HTMLElement | null
+      if (!nextCard) return
+
+      nextCard.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 240)
+  }, [])
+
   const increment = useCallback(() => {
-    if (!completed) setCount(c => c + 1)
-  }, [completed])
+    if (completed) return
+
+    setCount(current => {
+      const next = Math.min(current + 1, item.targetCount)
+      if (next >= item.targetCount && current < item.targetCount) {
+        scrollToNextCard()
+      }
+      return next
+    })
+  }, [completed, item.targetCount, scrollToNextCard])
 
   const reset = useCallback(() => setCount(0), [])
 
@@ -40,7 +62,8 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
   if (mode === 'simple') {
     return (
       <div
-        className="flex flex-col gap-4 rounded-[1.2rem] p-5"
+        ref={cardRef}
+        className="flex scroll-mt-5 flex-col gap-3.5 rounded-[1.15rem] p-4"
         style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
         aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed`}
       >
@@ -55,8 +78,8 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
           </p>
         )}
         <div className="text-center">
-          <p className="text-sm font-semibold leading-relaxed" style={{ color: '#202124' }}>{item.transliteration}</p>
-          <p className="mt-1 text-[0.68rem] leading-relaxed" style={{ color: '#9CA3AF' }}>{item.translation}</p>
+          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: '#202124' }}>{item.transliteration}</p>
+          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: '#9CA3AF' }}>{item.translation}</p>
         </div>
 
         {/* Counter row */}
@@ -108,11 +131,12 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
   // ── INTERACTIVE MODE (liquid fill) ───────────────────────────
   return (
     <div
+      ref={cardRef}
       role="button"
       tabIndex={0}
-      className="relative overflow-hidden rounded-[1.2rem] cursor-pointer select-none"
+      className="relative scroll-mt-5 overflow-hidden rounded-[1.15rem] cursor-pointer select-none"
       style={{
-        minHeight: 148,
+        minHeight: 132,
         background: '#FFFFFF',
         border: `1px solid ${completed ? item.accent + '35' : '#E7E2D8'}`,
         boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
@@ -157,7 +181,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-5 text-center">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2.5 p-4 text-center">
         {item.arabic && (
           <p
             lang="ar"
@@ -170,10 +194,10 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
         )}
 
         <div>
-          <p className="text-sm font-semibold leading-relaxed" style={{ color: completed ? item.accent : '#202124' }}>
+          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: completed ? item.accent : '#202124' }}>
             {item.transliteration}
           </p>
-          <p className="mt-1 text-[0.68rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
+          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
             {item.translation}
           </p>
         </div>
