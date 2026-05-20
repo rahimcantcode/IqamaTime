@@ -73,7 +73,7 @@ function parsePrayerTimes(text: string): TimesOnly {
   return times
 }
 
-function collectTextAfter($: cheerio.CheerioAPI, heading: cheerio.Element) {
+function collectTextAfter($: cheerio.CheerioAPI, heading: unknown) {
   const parts: string[] = []
   let node = $(heading).next()
   while (node.length) {
