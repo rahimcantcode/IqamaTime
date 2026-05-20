@@ -22,12 +22,15 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
       { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
+    shortcut: ['/favicon.ico'],
     apple: [
-      { url: '/apple-touch-icon.png?v=3', sizes: '180x180', type: 'image/png' },
-      { url: '/icons/apple-icon-180.png?v=3', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/apple-icon-180.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/icon-152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
     ],
   },
 }
@@ -47,8 +50,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3" />
-        <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon.png?v=3" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
       </head>
       <body className="min-h-full bg-[#FAFAF7] text-[#202124]">
         {children}
