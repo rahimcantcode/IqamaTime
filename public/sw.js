@@ -1,4 +1,4 @@
-const CACHE_NAME     = 'iqamatime-v1'
+const CACHE_NAME     = 'iqamatime-v2'
 const OFFLINE_URL    = '/offline.html'
 const STATIC_ASSETS  = [
   '/',
