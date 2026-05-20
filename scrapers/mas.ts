@@ -12,6 +12,8 @@ const PROGRAMS_URL = 'https://masdfw.org/adults/'
 const LOCATION = 'MAS Dallas, 1515 Blake Dr, Richardson, TX 75081'
 const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' }
 
+type CheerioNode = Parameters<cheerio.CheerioAPI>[0]
+
 const EVENT_IMAGE_FALLBACKS: Record<string, string> = {
   'Live, Learn, Love': 'https://masdfw.org/wp-content/uploads/2024/12/WednesdayTafseerHalaqa2024EamanAttia-e1736198216424.jpeg',
   'Finjan Qahwa Book Club': 'https://masdfw.org/wp-content/uploads/2023/09/Finjan-Qahwa1.png',
@@ -24,8 +26,6 @@ function clean(value: string) {
 }
 
 function eventHash(event: ScrapedCommunityEvent) {
-  // Keep this stable with the original manual SQL seed so future scraper runs
-  // update the existing MAS rows instead of creating new rows or leaving old rows unchanged.
   return crypto.createHash('md5').update([
     event.title ?? '',
     event.eventTime ?? '',
@@ -73,7 +73,7 @@ function parsePrayerTimes(text: string): TimesOnly {
   return times
 }
 
-function collectTextAfter($: cheerio.CheerioAPI, heading: unknown) {
+function collectTextAfter($: cheerio.CheerioAPI, heading: CheerioNode) {
   const parts: string[] = []
   let node = $(heading).next()
   while (node.length) {
