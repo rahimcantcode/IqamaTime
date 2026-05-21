@@ -60,16 +60,33 @@ function imageFromElement($: cheerio.CheerioAPI, element: cheerio.Cheerio<any>) 
   return absoluteUrl(styleMatch?.[1])
 }
 
+function extractTimesFromBlock(block: string | undefined | null) {
+  return block?.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/gi) ?? []
+}
+
 function parsePrayerTimes(text: string): TimesOnly {
   const times: TimesOnly = { fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null, jummah1: null, jummah2: null }
-  const iqamah = text.match(/Iqamah\s+([0-9:APMapm\s]+?)(?:\s+\*|\s+Home|\s+Adults|$)/)?.[1]?.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/gi) ?? []
-  const adhaan = text.match(/Adhaan\s+([0-9:APMapm\s]+?)(?:\s+Iqamah|\s+\*)/)?.[1]?.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/gi) ?? []
+  const normalizedText = clean(text)
+
+  // MAS exposes two rows: Adhaan and Iqamah. The Iqamah row has five daily times.
+  const iqamahBlock =
+    normalizedText.match(/Iqamah\s+((?:\d{1,2}:\d{2}\s*(?:AM|PM)\s*){5})/i)?.[1] ||
+    normalizedText.match(/Fajr\s+Thuhr\s+Asr\s+Maghrib\s+Isha\s+Friday[\s\S]*?Iqamah\s+([\d:APMapm\s]{30,})/i)?.[1]
+
+  const adhaanBlock =
+    normalizedText.match(/Adhaan\s+((?:\d{1,2}:\d{2}\s*(?:AM|PM)\s*){6})/i)?.[1] ||
+    normalizedText.match(/Fajr\s+Thuhr\s+Asr\s+Maghrib\s+Isha\s+Friday\s+([\d:APMapm\s]{35,})\s+Iqamah/i)?.[1]
+
+  const iqamah = extractTimesFromBlock(iqamahBlock)
+  const adhaan = extractTimesFromBlock(adhaanBlock)
+
   times.fajr = normalizeTime(iqamah[0])
   times.dhuhr = normalizeTime(iqamah[1])
   times.asr = normalizeTime(iqamah[2])
   times.maghrib = normalizeTime(iqamah[3])
   times.isha = normalizeTime(iqamah[4])
   times.jummah1 = normalizeTime(adhaan[5])
+
   return times
 }
 
