@@ -28,18 +28,20 @@ export async function POST(req: NextRequest) {
     const { scrapeYaseen } = await import('@/scrapers/yaseen')
     const { scrapeIANT   } = await import('@/scrapers/iant')
     const { scrapeICI    } = await import('@/scrapers/ici')
+    const { scrapeMAS    } = await import('@/scrapers/mas')
 
-    const scrapers = [
+    const lightScrapers = [
       { name: 'ICR',    fn: scrapeICR    },
       { name: 'EPIC',   fn: scrapeEPIC   },
-      { name: 'AIA',    fn: scrapeAIA    },
       { name: 'SMS',    fn: scrapeSMS    },
-      { name: 'VRIC',   fn: scrapeVRIC   },
       { name: 'Qalam',  fn: scrapeQalam  },
       { name: 'IACC',   fn: scrapeIACC   },
+      { name: 'MAS',    fn: scrapeMAS    },
     ]
 
     const heavyScrapers = [
+      { name: 'AIA',    fn: scrapeAIA    },
+      { name: 'VRIC',   fn: scrapeVRIC   },
       { name: 'Yaseen', fn: scrapeYaseen },
       { name: 'IANT',   fn: scrapeIANT   },
       { name: 'ICI',    fn: scrapeICI    },
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     // Light scrapers: parallel
     await Promise.all(
-      scrapers.map(async s => {
+      lightScrapers.map(async s => {
         try {
           await s.fn()
           results[s.name] = 'ok'
