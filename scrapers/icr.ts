@@ -1,9 +1,10 @@
 /**
  * Scraper: Islamic Center of Rowlett
  * URL: https://icrmasjid.org
- * Method: axios + cheerio (Elementor icon-box structure)
+ * Method: axios + regex against prayer section markup/text
  */
 import axios from 'axios'
+import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
@@ -11,6 +12,55 @@ import { sunsetPlus } from './sunsetUtils'
 
 const MASJID_NAME = 'Islamic Center of Rowlett'
 const URL = 'https://icrmasjid.org'
+
+function stripTags(value: string) {
+  return value.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
+function firstTime(value: string | null | undefined) {
+  const match = value?.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/i)?.[0]
+  return normalizeTime(match ?? null)
+}
+
+function setByName(times: TimesOnly, name: string, raw: string) {
+  const label = name.toLowerCase()
+  const parsed = firstTime(raw)
+  if (!parsed) return
+
+  if (label.includes('fajr')) times.fajr = parsed
+  else if (label.includes('dhuhr') || label.includes('duhur') || label.includes('zuhr')) times.dhuhr = parsed
+  else if (label.includes('asr') || label.includes('asar')) times.asr = parsed
+  else if (label.includes('maghrib')) times.maghrib = parsed
+  else if (label.includes('isha')) times.isha = parsed
+  else if (label.includes('jumu') || label.includes('jumma') || label.includes('jummah') || label.includes('friday')) {
+    if (!times.jummah1) times.jummah1 = parsed
+    else times.jummah2 = parsed
+  }
+}
+
+function parseTimes(html: string): TimesOnly {
+  const times: TimesOnly = {
+    fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
+    jummah1: null, jummah2: null,
+  }
+
+  // Main ICR layout: Elementor icon-box widgets, h3 span is name and h5 is iqama time.
+  const nameTimeRe = /<h3[^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/h3>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/gi
+  let m: RegExpExecArray | null
+  while ((m = nameTimeRe.exec(html)) !== null) {
+    setByName(times, stripTags(m[1]), stripTags(m[2]))
+  }
+
+  // Fallback: use plain text if website markup changes.
+  const text = stripTags(cheerio.load(html).text())
+  const labels = ['Fajr', 'Dhuhr', 'Duhur', 'Zuhr', 'Asr', 'Maghrib', 'Isha', 'Jummah', 'Jumuah', 'Friday']
+  for (const label of labels) {
+    const match = text.match(new RegExp(`${label}[^0-9]{0,40}(\\d{1,2}:\\d{2}\\s*(?:AM|PM))`, 'i'))
+    if (match) setByName(times, label, match[1])
+  }
+
+  return times
+}
 
 export async function scrapeICR(): Promise<void> {
   const start = logger.scrapeStart(MASJID_NAME)
@@ -32,35 +82,9 @@ export async function scrapeICR(): Promise<void> {
       },
     })
 
-    const times: TimesOnly = {
-      fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
-    }
+    const times = parseTimes(html as string)
 
-    // ICR uses Elementor icon-box widgets: h3 span = name, h5 = time
-    // Also handles inline h3→h5 pairs via regex for safety
-    const nameTimeRe = /<h3[^>]*>[\s\S]*?<span[^>]*>([\s\S]*?)<\/span>[\s\S]*?<\/h3>[\s\S]*?<h5[^>]*>([\s\S]*?)<\/h5>/gi
-    let m: RegExpExecArray | null
-    while ((m = nameTimeRe.exec(html)) !== null) {
-      const name = m[1].trim().toLowerCase()
-      const raw  = m[2].trim()
-      // Skip if there's no recognizable time in the h5
-      const timeVal = raw.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/i)?.[0] ?? null
-
-      if (name.includes('fajr'))                             times.fajr    = normalizeTime(timeVal ?? raw)
-      if (name.includes('dhuhr') || name.includes('duhur') || name.includes('zuhr'))
-                                                              times.dhuhr   = normalizeTime(timeVal ?? raw)
-      if (name.includes('asr')  || name.includes('asar'))   times.asr     = normalizeTime(timeVal ?? raw)
-      if (name.includes('maghrib'))                          times.maghrib  = normalizeTime(timeVal ?? raw)
-      if (name.includes('isha'))                             times.isha    = normalizeTime(timeVal ?? raw)
-      if (name.includes('jumu') || name.includes('jumma') || name.includes('jummah')) {
-        // "Khutba 1:35PM" – extract the time part
-        if (!times.jummah1) times.jummah1 = normalizeTime(timeVal ?? raw)
-        else                times.jummah2 = normalizeTime(timeVal ?? raw)
-      }
-    }
-
-    // ICR Maghrib iqamah is sunset + 10 min (no fixed time on website)
+    // ICR Maghrib iqamah is sunset + 10 min when no fixed time is listed.
     if (!times.maghrib) times.maghrib = await sunsetPlus(10)
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
