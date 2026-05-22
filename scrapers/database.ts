@@ -51,36 +51,23 @@ export async function ensureMasjid(input: {
 }): Promise<string | null> {
   const supabase = getSupabase()
 
-  const { data: existing, error: findError } = await supabase
+  // Upsert on name (requires masjids_name_unique constraint).
+  // Always sets active=true so a previously-deactivated masjid is restored.
+  const { data, error } = await supabase
     .from('masjids')
-    .select('id')
-    .eq('name', input.name)
-    .maybeSingle()
-
-  if (findError) {
-    logger.error(input.name, `Masjid lookup failed: ${findError.message}`)
-    throw findError
-  }
-
-  if (existing?.id) return existing.id
-
-  const { data: created, error: insertError } = await supabase
-    .from('masjids')
-    .insert({
-      name: input.name,
-      city: input.city,
-      website_url: input.websiteUrl,
-      active: true,
-    })
+    .upsert(
+      { name: input.name, city: input.city, website_url: input.websiteUrl, active: true },
+      { onConflict: 'name', ignoreDuplicates: false }
+    )
     .select('id')
     .single()
 
-  if (insertError) {
-    logger.error(input.name, `Masjid insert failed: ${insertError.message}`)
-    throw insertError
+  if (error) {
+    logger.error(input.name, `Masjid upsert failed: ${error.message}`)
+    throw error
   }
 
-  return created?.id ?? null
+  return data?.id ?? null
 }
 
 export async function replaceCommunityEventsForSource(input: {
@@ -155,8 +142,9 @@ export async function upsertPrayerTimes(data: ScrapedPrayerTimes): Promise<void>
     .single()
 
   if (masjidErr || !masjid) {
-    logger.error(data.masjidName, `Masjid not found in DB: ${masjidErr?.message}`)
-    return
+    const msg = `Masjid not found in DB: ${masjidErr?.message ?? 'no row returned'}`
+    logger.error(data.masjidName, msg)
+    throw new Error(msg)
   }
 
   const { error } = await supabase.from('prayer_times').upsert(
