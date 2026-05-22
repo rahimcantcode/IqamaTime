@@ -8,6 +8,7 @@
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { launchBrowser } from './browser'
 
 const MASJID_NAME = 'American Imams Academy'
 const URL = 'https://themasjidapp.org/129401/prayers'
@@ -17,8 +18,7 @@ export async function scrapeAIA(): Promise<void> {
   const date  = todayDate()
 
   try {
-    const { chromium } = await import('playwright')
-    const browser = await chromium.launch({ headless: true })
+    const browser = await launchBrowser()
     const page    = await browser.newPage()
 
     await page.goto(URL, { waitUntil: 'networkidle', timeout: 45000 })

@@ -6,6 +6,7 @@
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { launchBrowser } from './browser'
 
 const MASJID_NAME = 'Valley Ranch Islamic Center'
 const PAGE_URL    = 'https://vric.org/prayertimes'
@@ -16,8 +17,7 @@ export async function scrapeVRIC(): Promise<void> {
   const date  = todayDate()
 
   try {
-    const { chromium } = await import('playwright')
-    const browser = await chromium.launch({ headless: true })
+    const browser = await launchBrowser()
     const page    = await browser.newPage()
 
     // Navigate directly to the iframe SPA
