@@ -9,7 +9,7 @@ function todayCT(): string {
     .replace(/\//g, '-')
 }
 
-/** Returns "~H:MM PM" (approximate) by adding offsetMinutes to today's Richardson sunset. */
+/** Returns "H:MM PM" by adding offsetMinutes to today's Richardson sunset. */
 export async function sunsetPlus(offsetMinutes: number): Promise<string | null> {
   try {
     const url = `https://api.aladhan.com/v1/timingsByCity/${todayCT()}?city=Richardson&country=US&method=2`
@@ -25,7 +25,7 @@ export async function sunsetPlus(offsetMinutes: number): Promise<string | null> 
     const period = h24 >= 12 ? 'PM' : 'AM'
     let h = h24 % 12
     if (h === 0) h = 12
-    return `~${h}:${m.toString().padStart(2, '0')} ${period}`
+    return `${h}:${m.toString().padStart(2, '0')} ${period}`
   } catch {
     return null
   }

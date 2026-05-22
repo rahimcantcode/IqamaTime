@@ -10,7 +10,11 @@ const SOURCE_NAME = 'MAS Dallas'
 const HOME_URL = 'https://masdfw.org'
 const PROGRAMS_URL = 'https://masdfw.org/adults/'
 const LOCATION = 'MAS Dallas, 1515 Blake Dr, Richardson, TX 75081'
-const HEADERS = { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' }
+const HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+}
 
 type CheerioNode = Parameters<cheerio.CheerioAPI>[0]
 
@@ -60,32 +64,35 @@ function imageFromElement($: cheerio.CheerioAPI, element: cheerio.Cheerio<any>) 
   return absoluteUrl(styleMatch?.[1])
 }
 
-function extractTimesFromBlock(block: string | undefined | null) {
-  return block?.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/gi) ?? []
-}
-
-function parsePrayerTimes(text: string): TimesOnly {
+function parsePrayerTimes(html: string): TimesOnly {
   const times: TimesOnly = { fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null, jummah1: null, jummah2: null }
-  const normalizedText = clean(text)
 
-  // MAS exposes two rows: Adhaan and Iqamah. The Iqamah row has five daily times.
-  const iqamahBlock =
-    normalizedText.match(/Iqamah\s+((?:\d{1,2}:\d{2}\s*(?:AM|PM)\s*){5})/i)?.[1] ||
-    normalizedText.match(/Fajr\s+Thuhr\s+Asr\s+Maghrib\s+Isha\s+Friday[\s\S]*?Iqamah\s+([\d:APMapm\s]{30,})/i)?.[1]
+  // WordPress madinaapps plugin injects <script> blocks inside each <td>, corrupting plain text extraction.
+  // Strip all script tags first, then traverse the table DOM directly.
+  const cleanHtml = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+  const $ = cheerio.load(cleanHtml)
 
-  const adhaanBlock =
-    normalizedText.match(/Adhaan\s+((?:\d{1,2}:\d{2}\s*(?:AM|PM)\s*){6})/i)?.[1] ||
-    normalizedText.match(/Fajr\s+Thuhr\s+Asr\s+Maghrib\s+Isha\s+Friday\s+([\d:APMapm\s]{35,})\s+Iqamah/i)?.[1]
+  let iqamahCells: (string | null)[] = []
+  let adhaanCells: (string | null)[] = []
 
-  const iqamah = extractTimesFromBlock(iqamahBlock)
-  const adhaan = extractTimesFromBlock(adhaanBlock)
+  $('table').first().find('tr').each((_, row) => {
+    const cells: string[] = []
+    $(row).find('td, th').each((_, cell) => {
+      cells.push(clean($(cell).text()))
+    })
+    if (!cells.length) return
+    const label = cells[0].toLowerCase()
+    const extracted = cells.slice(1).map(c => c.match(/\d{1,2}:\d{2}\s*(?:AM|PM)/i)?.[0] ?? null)
+    if (label.includes('iqamah')) iqamahCells = extracted
+    if (label.includes('adhaan') || label.includes('adhan')) adhaanCells = extracted
+  })
 
-  times.fajr = normalizeTime(iqamah[0])
-  times.dhuhr = normalizeTime(iqamah[1])
-  times.asr = normalizeTime(iqamah[2])
-  times.maghrib = normalizeTime(iqamah[3])
-  times.isha = normalizeTime(iqamah[4])
-  times.jummah1 = normalizeTime(adhaan[5])
+  times.fajr    = normalizeTime(iqamahCells[0] ?? null)
+  times.dhuhr   = normalizeTime(iqamahCells[1] ?? null)
+  times.asr     = normalizeTime(iqamahCells[2] ?? null)
+  times.maghrib = normalizeTime(iqamahCells[3] ?? null)
+  times.isha    = normalizeTime(iqamahCells[4] ?? null)
+  times.jummah1 = normalizeTime(adhaanCells[5] ?? null)
 
   return times
 }
@@ -191,7 +198,7 @@ export async function scrapeMAS(): Promise<void> {
       axios.get(HOME_URL, { timeout: 15000, headers: HEADERS }),
       axios.get(PROGRAMS_URL, { timeout: 15000, headers: HEADERS }),
     ])
-    const times = parsePrayerTimes(clean(cheerio.load(homeHtml as string).text()))
+    const times = parsePrayerTimes(homeHtml as string)
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: HOME_URL, ...times })
     await upsertMasEvents(parseProgramEvents(programsHtml as string))
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)
