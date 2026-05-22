@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { Navigation } from 'lucide-react'
 import { MasjidIqamaTime } from '@/types'
 import { compareTimesAsc } from '@/scrapers/normalizeTime'
 import { cn } from '@/lib/utils'
@@ -119,6 +120,17 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
               >
                 {entry.masjid.city}
               </span>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${entry.masjid.name}, ${entry.masjid.city}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="inline-flex items-center gap-0.5 mt-0.5"
+                style={{ color: '#4F6F52' }}
+              >
+                <Navigation className="h-2.5 w-2.5" />
+                <span className="text-[0.65rem] font-medium">Directions</span>
+              </a>
             </div>
 
             {/* Time(s) */}
