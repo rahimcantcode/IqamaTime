@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
     const { scrapeIANT   } = await import('@/scrapers/iant')
     const { scrapeICI    } = await import('@/scrapers/ici')
     const { scrapeMAS    } = await import('@/scrapers/mas')
+    const { scrapeAllen  } = await import('@/scrapers/allen')
+    const { scrapeMIA    } = await import('@/scrapers/mia')
+    const { scrapeFrisco } = await import('@/scrapers/frisco')
 
     const lightScrapers = [
       { name: 'ICR',    fn: scrapeICR    },
@@ -38,6 +41,8 @@ export async function POST(req: NextRequest) {
       { name: 'Qalam',  fn: scrapeQalam  },
       { name: 'IACC',   fn: scrapeIACC   },
       { name: 'MAS',    fn: scrapeMAS    },
+      { name: 'Allen',  fn: scrapeAllen  },
+      { name: 'MIA',    fn: scrapeMIA    },
     ]
 
     const heavyScrapers = [
@@ -46,6 +51,7 @@ export async function POST(req: NextRequest) {
       { name: 'Yaseen', fn: scrapeYaseen },
       { name: 'IANT',   fn: scrapeIANT   },
       { name: 'ICI',    fn: scrapeICI    },
+      { name: 'Frisco', fn: scrapeFrisco },
     ]
 
     const results: Record<string, 'ok' | string> = {}

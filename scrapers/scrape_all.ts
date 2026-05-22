@@ -22,6 +22,9 @@ import { scrapeYaseen } from './yaseen'
 import { scrapeIANT   } from './iant'
 import { scrapeICI    } from './ici'
 import { scrapeMAS    } from './mas'
+import { scrapeAllen  } from './allen'
+import { scrapeMIA    } from './mia'
+import { scrapeFrisco } from './frisco'
 import { logger } from './logger'
 
 interface ScraperDef {
@@ -41,6 +44,9 @@ const SCRAPERS: ScraperDef[] = [
   { name: 'IANT',   fn: scrapeIANT   },
   { name: 'ICI',    fn: scrapeICI    },
   { name: 'MAS',    fn: scrapeMAS    },
+  { name: 'Allen',  fn: scrapeAllen  },
+  { name: 'MIA',    fn: scrapeMIA    },
+  { name: 'Frisco', fn: scrapeFrisco },
 ]
 
 const MAX_RETRIES = 2
@@ -77,8 +83,8 @@ async function runAll() {
   const results: { name: string; status: 'success' | 'failed' }[] = []
 
   // Run scrapers concurrently (light ones) but rate-limit heavy ones
-  const lightScrapers  = SCRAPERS.filter(s => !['VRIC', 'AIA'].includes(s.name))
-  const heavyScrapers  = SCRAPERS.filter(s =>  ['VRIC', 'AIA'].includes(s.name))
+  const lightScrapers  = SCRAPERS.filter(s => !['VRIC', 'AIA', 'Frisco'].includes(s.name))
+  const heavyScrapers  = SCRAPERS.filter(s =>  ['VRIC', 'AIA', 'Frisco'].includes(s.name))
 
   // Light scrapers: run concurrently
   const lightResults = await Promise.all(

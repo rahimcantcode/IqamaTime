@@ -9,7 +9,10 @@ insert into masjids (name, city, website_url, active) values
   ('Islamic Association of Collin County', 'Plano',  'https://planomasjid.org',       true),
   ('Masjid Yaseen',                    'Garland',    'https://masjidyaseen.org',      true),
   ('IANT',                             'Richardson', 'https://iant.com',              true),
-  ('Islamic Center of Irving',         'Irving',     'https://www.irvingmasjid.org',  true)
+  ('Islamic Center of Irving',         'Irving',     'https://www.irvingmasjid.org',  true),
+  ('Islamic Association of Allen',     'Allen',      'https://allenmasjid.com',        true),
+  ('McKinney Islamic Association',     'McKinney',   'https://us.mohid.co/tx/dallas/mia', true),
+  ('Islamic Center of Frisco',         'Frisco',     'https://friscomasjid.org',        true)
 on conflict do nothing;
 
 -- Sample prayer times for today (update dates as needed)
