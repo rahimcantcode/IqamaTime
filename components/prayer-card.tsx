@@ -27,10 +27,22 @@ export default function PrayerCard({ data, isActive }: Props) {
   const headerOpacity = useTransform(scrollY, [0, 100], [1, 0])
 
   return (
-    <div className={`w-full h-full flex flex-col bg-gradient-to-b ${gradient} overflow-hidden`}>
+    <div className={`relative w-full h-full flex flex-col bg-gradient-to-b ${gradient} overflow-hidden`}>
+      {/* Calligraphy background */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'url(/calligraphy-bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.08,
+          mixBlendMode: 'luminosity',
+        }}
+      />
+
       {/* Ambient glow */}
       <div
-        className="absolute inset-x-0 top-0 h-64 pointer-events-none"
+        className="absolute inset-x-0 top-0 h-64 pointer-events-none z-0"
         style={{ background: `radial-gradient(ellipse at 50% 0%, ${glow} 0%, transparent 70%)` }}
       />
 
