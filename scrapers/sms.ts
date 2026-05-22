@@ -56,6 +56,7 @@ export async function scrapeSMS(): Promise<void> {
       isha:    normalizeTime(today.isha?.iqamahTime    ?? null),
       jummah1: normalizeTime(today.jumaTimes?.[0]?.iqamahTime ?? null),
       jummah2: normalizeTime(today.jumaTimes?.[1]?.iqamahTime ?? null),
+      jummah3: normalizeTime(today.jumaTimes?.[2]?.iqamahTime ?? null),
     }
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })

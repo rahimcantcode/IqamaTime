@@ -25,7 +25,7 @@ export async function scrapeIACC(): Promise<void> {
     const $ = cheerio.load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
     $('table tr').each((_, row) => {

@@ -33,7 +33,7 @@ export async function scrapeAIA(): Promise<void> {
     const $ = load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
     // Table: Prayer Name (col 0) | Begins/Adhan (col 1) | Iqama (col 2)
@@ -50,9 +50,11 @@ export async function scrapeAIA(): Promise<void> {
       if (name.includes('maghrib'))                            times.maghrib  = normalizeTime(iqama)
       if (name.includes('isha'))                               times.isha    = normalizeTime(iqama)
       if (name.includes('jumu') || name.includes('jumua') || name.includes('friday')) {
-        const jumTimes = (cells[1] ?? '').split(/,|\n/).map(t => t.trim()).filter(t => /\d/.test(t))
-        times.jummah1 = normalizeTime(jumTimes[0] ?? null)
-        times.jummah2 = normalizeTime(jumTimes[1] ?? null)
+        // Accumulate across multiple Jummah rows; use begins/adhan time (col 1)
+        const timeStr = normalizeTime(cells[1] ?? null)
+        if      (!times.jummah1) times.jummah1 = timeStr
+        else if (!times.jummah2) times.jummah2 = timeStr
+        else if (!times.jummah3) times.jummah3 = timeStr
       }
     })
 

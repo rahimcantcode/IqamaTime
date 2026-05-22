@@ -27,7 +27,7 @@ export async function scrapeICI(): Promise<void> {
     const $ = cheerio.load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
     // Daily prayer iqamah: the dpt plugin wraps each prayer in an <li>
@@ -45,13 +45,14 @@ export async function scrapeICI(): Promise<void> {
     })
 
     // Jummah: .rm-namaz-jumu li → spans: [0]=label, [1]=khutbah, [2]=iqamah
+    // Use khutbah time (when imam starts the khutbah), not iqamah
     let jumaIndex = 0
     $('.rm-namaz-jumu li, ul.rm-namaz-jumu li').each((_, li) => {
       const spans = $(li).find('span').map((_, s) => $(s).text().trim()).get()
-      const iqamahTime = spans[2] ?? spans[1] ?? null  // prefer 3rd span (iqamah)
-      if (!iqamahTime || !/\d/.test(iqamahTime)) return
-      if (jumaIndex === 0) times.jummah1 = normalizeTime(iqamahTime)
-      else                 times.jummah2 = normalizeTime(iqamahTime)
+      const khutbahTime = spans[1] ?? null
+      if (!khutbahTime || !/\d/.test(khutbahTime)) return
+      if (jumaIndex === 0) times.jummah1 = normalizeTime(khutbahTime)
+      else                 times.jummah2 = normalizeTime(khutbahTime)
       jumaIndex++
     })
 

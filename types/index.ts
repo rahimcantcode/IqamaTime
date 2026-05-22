@@ -18,6 +18,7 @@ export interface PrayerTimes {
   isha: string | null
   jummah1: string | null
   jummah2: string | null
+  jummah3: string | null
   scraped_at: string
   source_url: string | null
 }
@@ -38,6 +39,7 @@ export interface MasjidIqamaTime {
   masjid: Masjid
   iqama: string | null
   iqama2?: string | null
+  iqama3?: string | null
   adhan?: string | null
   isPast: boolean
 }

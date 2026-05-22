@@ -36,25 +36,30 @@ export async function scrapeVRIC(): Promise<void> {
     const $ = load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
-    // MasjidApps table: Prayer Name | Adhan | Iqamah — take the LAST time in the row
+    // MasjidApps table: Prayer Name | Adhan | Iqamah
+    // Daily prayers: take last time (iqamah); Jummah: take first time (adhan/khutbah)
     $('tr, [class*="salah-row"], [class*="prayer-row"]').each((_, el) => {
       const text  = $(el).text().toLowerCase()
       const cells = $(el).find('td, span, div').map((_, c) => $(c).text().trim()).get()
       const timeCells = cells.filter(c => /\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(c))
-      const timeVal = timeCells[timeCells.length - 1] ?? null
 
-      if (text.includes('fajr'))                           times.fajr    = normalizeTime(timeVal)
-      if (text.includes('dhuhr') || text.includes('zuhr')) times.dhuhr   = normalizeTime(timeVal)
-      if (text.includes('asr'))                            times.asr     = normalizeTime(timeVal)
-      if (text.includes('maghrib'))                        times.maghrib  = normalizeTime(timeVal)
-      if (text.includes('isha'))                           times.isha    = normalizeTime(timeVal)
       if (text.includes('jumu') || text.includes('jumma')) {
-        if (!times.jummah1) times.jummah1 = normalizeTime(timeVal)
-        else                times.jummah2 = normalizeTime(timeVal)
+        const khutbahTime = timeCells[0] ?? null
+        if      (!times.jummah1) times.jummah1 = normalizeTime(khutbahTime)
+        else if (!times.jummah2) times.jummah2 = normalizeTime(khutbahTime)
+        else if (!times.jummah3) times.jummah3 = normalizeTime(khutbahTime)
+        return
       }
+
+      const iqamaTime = timeCells[timeCells.length - 1] ?? null
+      if (text.includes('fajr'))                           times.fajr    = normalizeTime(iqamaTime)
+      if (text.includes('dhuhr') || text.includes('zuhr')) times.dhuhr   = normalizeTime(iqamaTime)
+      if (text.includes('asr'))                            times.asr     = normalizeTime(iqamaTime)
+      if (text.includes('maghrib'))                        times.maghrib  = normalizeTime(iqamaTime)
+      if (text.includes('isha'))                           times.isha    = normalizeTime(iqamaTime)
     })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: PAGE_URL, ...times })

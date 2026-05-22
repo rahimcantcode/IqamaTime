@@ -13,6 +13,7 @@ export interface ScrapedPrayerTimes {
   isha:    string | null
   jummah1: string | null
   jummah2: string | null
+  jummah3: string | null
   sourceUrl?: string
 }
 
@@ -29,7 +30,7 @@ export interface ScrapedCommunityEvent {
 }
 
 /** Convenience type for time fields only */
-export type TimesOnly = Pick<ScrapedPrayerTimes, 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha' | 'jummah1' | 'jummah2'>
+export type TimesOnly = Pick<ScrapedPrayerTimes, 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha' | 'jummah1' | 'jummah2' | 'jummah3'>
 
 export function getSupabase() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -158,6 +159,7 @@ export async function upsertPrayerTimes(data: ScrapedPrayerTimes): Promise<void>
       isha:       data.isha,
       jummah1:    data.jummah1,
       jummah2:    data.jummah2,
+      jummah3:    data.jummah3,
       scraped_at: new Date().toISOString(),
       source_url: data.sourceUrl ?? null,
     },

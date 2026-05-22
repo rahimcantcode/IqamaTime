@@ -1,5 +1,5 @@
 /**
- * Scraper: Qalam Institute
+ * Scraper: Qalam Masjid
  * URL: https://qalamcampus.org
  * Method: Parse text-based schedule with date-range columns ("From M/D")
  *         Must convert <br> to \n before text extraction (schedule uses <br> for rows)
@@ -11,7 +11,7 @@ import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 import { sunsetPlus } from './sunsetUtils'
 
-const MASJID_NAME = 'Qalam Institute'
+const MASJID_NAME = 'Qalam Masjid'
 const URL = 'https://qalamcampus.org'
 
 function pickActiveTime(line: string, activeIdx: number): string | null {
@@ -33,7 +33,7 @@ export async function scrapeQalam(): Promise<void> {
     const $ = cheerio.load(html)
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
     // Find the schedule <p> that contains "From M/D" date headers and prayer names
@@ -81,8 +81,8 @@ export async function scrapeQalam(): Promise<void> {
       const salahMatch   = text.match(/Salah[:\s]*(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
       const khutbahMatch = text.match(/Khutbah[:\s]*(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
 
-      if (salahMatch)        times.jummah1 = normalizeTime(salahMatch[1])
-      else if (khutbahMatch) times.jummah1 = normalizeTime(khutbahMatch[1])
+      if (khutbahMatch)     times.jummah1 = normalizeTime(khutbahMatch[1])
+      else if (salahMatch)  times.jummah1 = normalizeTime(salahMatch[1])
     })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })

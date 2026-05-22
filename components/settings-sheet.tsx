@@ -1,27 +1,18 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, RefreshCw, Bell, CheckCircle2, Circle } from 'lucide-react'
+import { X, Bell, CheckCircle2, Circle } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
-import { useState } from 'react'
 
 interface Props {
   open: boolean
   onClose: () => void
   masjids: Masjid[]
-  onRefresh: () => void
 }
 
-export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Props) {
+export default function SettingsSheet({ open, onClose, masjids }: Props) {
   const { settings, toggleMasjid } = useSettings()
-  const [refreshing, setRefreshing] = useState(false)
-
-  const handleRefresh = async () => {
-    setRefreshing(true)
-    await onRefresh()
-    setTimeout(() => setRefreshing(false), 1500)
-  }
 
   const allSelected = settings.selectedMasjidIds.length === 0
 
@@ -83,27 +74,6 @@ export default function SettingsSheet({ open, onClose, masjids, onRefresh }: Pro
                   Data
                 </p>
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                    className="pressable flex items-center gap-3 rounded-[1.2rem] p-4 transition-colors disabled:opacity-60"
-                    style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}
-                  >
-                    <div
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                      style={{ background: 'rgba(79,111,82,0.12)', border: '1px solid rgba(79,111,82,0.20)' }}
-                    >
-                      <RefreshCw
-                        className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}
-                        style={{ color: '#4F6F52' }}
-                      />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-medium" style={{ color: '#202124' }}>Refresh Times</p>
-                      <p className="text-xs" style={{ color: '#9CA3AF' }}>Fetch latest prayer times</p>
-                    </div>
-                  </button>
-
                   <div
                     className="flex items-center gap-3 rounded-[1.2rem] p-4 opacity-50"
                     style={{ background: '#F4F1EA', border: '1px solid #E7E2D8' }}

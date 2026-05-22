@@ -41,7 +41,7 @@ function setByName(times: TimesOnly, name: string, raw: string) {
 function parseTimes(html: string): TimesOnly {
   const times: TimesOnly = {
     fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-    jummah1: null, jummah2: null,
+    jummah1: null, jummah2: null, jummah3: null,
   }
 
   // Main ICR layout: Elementor icon-box widgets, h3 span is name and h5 is iqama time.
@@ -51,9 +51,17 @@ function parseTimes(html: string): TimesOnly {
     setByName(times, stripTags(m[1]), stripTags(m[2]))
   }
 
-  // Fallback: use plain text if website markup changes.
+  // ICR shows "Khutba H:MMpm" and "Iqamah H:MM PM" in the Jummah card.
+  // Prefer khutbah time for jummah — search for it directly in raw html text.
   const text = stripTags(cheerio.load(html).text())
-  const labels = ['Fajr', 'Dhuhr', 'Duhur', 'Zuhr', 'Asr', 'Maghrib', 'Isha', 'Jummah', 'Jumuah', 'Friday']
+  const khutbMatch = text.match(/Khutb[ae][^0-9]{0,20}(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
+  if (khutbMatch) {
+    times.jummah1 = normalizeTime(khutbMatch[1])
+    times.jummah2 = null  // single khutbah; iqamah time is not displayed
+  }
+
+  // Fallback: use plain text for daily prayers only if primary regex missed them.
+  const labels = ['Fajr', 'Dhuhr', 'Duhur', 'Zuhr', 'Asr', 'Maghrib', 'Isha']
   for (const label of labels) {
     const match = text.match(new RegExp(`${label}[^0-9]{0,40}(\\d{1,2}:\\d{2}\\s*(?:AM|PM))`, 'i'))
     if (match) setByName(times, label, match[1])

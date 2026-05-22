@@ -65,7 +65,7 @@ function imageFromElement($: cheerio.CheerioAPI, element: cheerio.Cheerio<any>) 
 }
 
 function parsePrayerTimes(html: string): TimesOnly {
-  const times: TimesOnly = { fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null, jummah1: null, jummah2: null }
+  const times: TimesOnly = { fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null, jummah1: null, jummah2: null, jummah3: null }
 
   // WordPress madinaapps plugin injects <script> blocks inside each <td>, corrupting plain text extraction.
   // Strip all script tags first, then traverse the table DOM directly.

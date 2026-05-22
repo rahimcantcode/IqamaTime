@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { MasjidWithPrayers, PrayerCardData, MasjidIqamaTime, PrayerKey, AdhanTimes } from '@/types'
 import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-utils'
 import { isFridayToday } from '@/lib/utils'
@@ -64,11 +64,13 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         const pt = entry.prayer_times
         let iqama: string | null = null
         let iqama2: string | null = null
+        let iqama3: string | null = null
 
         if (pt) {
           if (pKey === 'jummah') {
             iqama  = pt.jummah1 ?? null
             iqama2 = pt.jummah2 ?? null
+            iqama3 = pt.jummah3 ?? null
           } else {
             iqama = pt[pKey as keyof typeof pt] as string | null
           }
@@ -78,6 +80,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
           masjid: entry,
           iqama,
           iqama2,
+          iqama3,
           isPast: isPast(iqama),
         }
       })
@@ -99,12 +102,6 @@ export default function Dashboard({ data, adhanTimes }: Props) {
   const nextPrayer = prayers[initialIndex]
   const nextTime   = timesForIndex[nextPrayer?.key === 'jummah' ? 'jummah' : nextPrayer?.key] ?? null
 
-  const handleRefresh = useCallback(async () => {
-    try {
-      await fetch('/api/prayers', { cache: 'no-store' })
-      window.location.reload()
-    } catch {}
-  }, [])
 
   return (
     <main className="relative min-h-screen overflow-x-clip bg-[#FAFAF7]">
@@ -126,7 +123,6 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         masjids={data.map(d => d)}
-        onRefresh={handleRefresh}
       />
 
       <FirstVisitGuide />

@@ -29,7 +29,7 @@ export async function scrapeYaseen(): Promise<void> {
 
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
-      jummah1: null, jummah2: null,
+      jummah1: null, jummah2: null, jummah3: null,
     }
 
     // Each prayer block: <h2>PrayerName</h2> ... Iqamah: ... TIME
@@ -51,12 +51,13 @@ export async function scrapeYaseen(): Promise<void> {
       if (name.includes('maghrib'))                          times.maghrib  = normalizeTime(iqamahTime)
       if (name.includes('isha'))                             times.isha    = normalizeTime(iqamahTime)
       if (name.includes('jumu') || name.includes("jumu'ah")) {
-        // Jummah block: "1st Jumu'ah: TIME" and "2nd Jumu'ah: TIME"
-        const j1 = block.match(/1st[^:]*:\s*[\s\S]{0,100}?(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
-        const j2 = block.match(/2nd[^:]*:\s*[\s\S]{0,100}?(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
-        if (j1) times.jummah1 = normalizeTime(j1[1])
-        if (j2) times.jummah2 = normalizeTime(j2[1])
-        // Fallback: if no numbered format, use iqamah time as jummah1
+        // madinaapps injects large <script> blocks between label text and the time value.
+        // Strip scripts before matching so the window stays small and reliable.
+        const cleanBlock = block.replace(/<script[\s\S]*?<\/script>/gi, '')
+        const j1 = cleanBlock.match(/1st[^:]*:\s*([\s\S]{0,30}?)(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
+        const j2 = cleanBlock.match(/2nd[^:]*:\s*([\s\S]{0,30}?)(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
+        if (j1) times.jummah1 = normalizeTime(j1[2])
+        if (j2) times.jummah2 = normalizeTime(j2[2])
         if (!times.jummah1 && iqamahTime) times.jummah1 = normalizeTime(iqamahTime)
       }
     }

@@ -77,6 +77,8 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
       {sorted.map((entry) => {
         const hasBoth = isJummah && entry.iqama2
 
+        const hasThird = isJummah && entry.iqama3
+
         return (
           <motion.div
             key={entry.masjid.id}
@@ -116,6 +118,9 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
               )}
               {hasBoth && entry.iqama2 && (
                 <TimePill time={entry.iqama2} isPast={false} accent={accentColor} />
+              )}
+              {hasThird && entry.iqama3 && (
+                <TimePill time={entry.iqama3} isPast={false} accent={accentColor} />
               )}
             </div>
           </motion.div>

@@ -21,7 +21,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '1', masjid_id: '1', date: today,
       fajr: '5:47 AM', dhuhr: '1:30 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: '3:00 PM', scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: '3:00 PM', jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -29,7 +29,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '2', masjid_id: '2', date: today,
       fajr: '5:45 AM', dhuhr: '1:45 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:45 PM', jummah2: '3:15 PM', scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:45 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -37,7 +37,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '3', masjid_id: '3', date: today,
       fajr: '5:50 AM', dhuhr: '1:30 PM', asr: '5:20 PM', maghrib: '8:06 PM', isha: '9:35 PM',
-      jummah1: '1:30 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -45,7 +45,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '4', masjid_id: '4', date: today,
       fajr: '5:52 AM', dhuhr: '1:30 PM', asr: '5:15 PM', maghrib: '8:05 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -53,7 +53,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '5', masjid_id: '5', date: today,
       fajr: '5:48 AM', dhuhr: '1:30 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: '3:00 PM', scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: '3:00 PM', jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -61,7 +61,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '6', masjid_id: '6', date: today,
       fajr: '5:45 AM', dhuhr: '2:00 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:45 PM',
-      jummah1: '2:00 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '2:00 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -69,7 +69,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '7', masjid_id: '7', date: today,
       fajr: '5:47 AM', dhuhr: '1:45 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:45 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:45 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -77,7 +77,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '8', masjid_id: '8', date: today,
       fajr: '5:50 AM', dhuhr: '1:30 PM', asr: '5:20 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -85,7 +85,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '9', masjid_id: '9', date: today,
       fajr: '5:45 AM', dhuhr: '1:30 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: '3:00 PM', scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: '3:00 PM', jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
   {
@@ -93,7 +93,7 @@ export const MOCK_PRAYER_TIMES: MasjidWithPrayers[] = [
     prayer_times: {
       id: '10', masjid_id: '10', date: today,
       fajr: '5:47 AM', dhuhr: '1:30 PM', asr: '5:15 PM', maghrib: '8:06 PM', isha: '9:30 PM',
-      jummah1: '1:30 PM', jummah2: null, scraped_at: new Date().toISOString(), source_url: null,
+      jummah1: '1:30 PM', jummah2: null, jummah3: null, scraped_at: new Date().toISOString(), source_url: null,
     },
   },
 ]
