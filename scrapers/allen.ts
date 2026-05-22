@@ -14,6 +14,23 @@ import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 const MASJID_NAME = 'Islamic Association of Allen'
 const URL = 'https://allenmasjid.com'
 
+function addMinutes(timeStr: string | null | undefined, mins: number): string | null {
+  if (!timeStr) return null
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
+  if (!match) return null
+  let h = parseInt(match[1], 10)
+  let m = parseInt(match[2], 10)
+  const period = match[3].toUpperCase()
+  if (period === 'PM' && h !== 12) h += 12
+  if (period === 'AM' && h === 12) h = 0
+  const total = h * 60 + m + mins
+  const nh = Math.floor(total / 60) % 24
+  const nm = total % 60
+  const np = nh >= 12 ? 'PM' : 'AM'
+  const fh = nh > 12 ? nh - 12 : nh === 0 ? 12 : nh
+  return `${fh}:${String(nm).padStart(2, '0')} ${np}`
+}
+
 export async function scrapeAllen(): Promise<void> {
   const start = logger.scrapeStart(MASJID_NAME)
   const date  = todayDate()
@@ -44,12 +61,13 @@ export async function scrapeAllen(): Promise<void> {
       }
 
       // iqama is in the 2nd p.btn (index 1); adhan is index 0
-      const iqama = btns[1] ?? btns[0] ?? null
+      const adhan = btns[0] ?? null
+      const iqama = btns[1] ?? adhan
 
       if (label.includes('fajr'))                                                    times.fajr    = normalizeTime(iqama)
       if (label.includes('duhr') || label.includes('dhuhr') || label.includes('duhar') || label.includes('zuhr')) times.dhuhr   = normalizeTime(iqama)
       if (label.includes('asr'))                                                     times.asr     = normalizeTime(iqama)
-      if (label.includes('maghrib'))                                                 times.maghrib  = normalizeTime(iqama)
+      if (label.includes('maghrib'))                                                 times.maghrib  = normalizeTime(iqama) ?? addMinutes(adhan, 5)
       if (label.includes('isha'))                                                    times.isha    = normalizeTime(iqama)
     })
 
