@@ -49,14 +49,27 @@ export async function scrapeAIA(): Promise<void> {
       if (name.includes('asr'))                                times.asr     = normalizeTime(iqama)
       if (name.includes('maghrib'))                            times.maghrib  = normalizeTime(iqama)
       if (name.includes('isha'))                               times.isha    = normalizeTime(iqama)
-      if (name.includes('jumu') || name.includes('jumua') || name.includes('friday')) {
-        // Accumulate across multiple Jummah rows; use begins/adhan time (col 1)
-        const timeStr = normalizeTime(cells[1] ?? null)
-        if      (!times.jummah1) times.jummah1 = timeStr
-        else if (!times.jummah2) times.jummah2 = timeStr
-        else if (!times.jummah3) times.jummah3 = timeStr
-      }
     })
+
+    // Jummah: parse from __NEXT_DATA__ events (isJuma:true) — more reliable than
+    // the merged table cell which contains multiple times concatenated with Arabic text.
+    const nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>(\{[\s\S]*?\})<\/script>/)
+    if (nextDataMatch) {
+      try {
+        const nextData = JSON.parse(nextDataMatch[1])
+        const events: Array<{ timeDesc?: string; isJuma?: boolean }> =
+          nextData?.props?.pageProps?.masjid?.events ?? []
+        for (const ev of events) {
+          if (!ev.isJuma || !ev.timeDesc) continue
+          const t = normalizeTime(ev.timeDesc.replace(/\s*(am|pm)/i, ' $1').trim())
+          if      (!times.jummah1) times.jummah1 = t
+          else if (!times.jummah2) times.jummah2 = t
+          else if (!times.jummah3) times.jummah3 = t
+        }
+      } catch {
+        // __NEXT_DATA__ parse failed — jummah times stay null
+      }
+    }
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)
