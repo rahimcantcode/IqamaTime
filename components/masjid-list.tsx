@@ -134,7 +134,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
                 }}
               >
                 <Navigation className="h-3 w-3" />
-                <span className="text-xs font-semibold">Directions</span>
+                <span className="text-xs font-semibold">Get Directions</span>
               </a>
             </div>
 
