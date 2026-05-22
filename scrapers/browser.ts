@@ -2,7 +2,7 @@ import type { Browser } from 'playwright-core'
 
 // Sparticuz chromium pack — exact match for playwright-core 1.60 / Chromium 148
 const CHROMIUM_URL =
-  'https://github.com/Sparticuz/chromium/releases/download/v148.0.0/chromium-v148.0.0-pack.tar'
+  'https://github.com/Sparticuz/chromium/releases/download/v148.0.0/chromium-v148.0.0-pack.x64.tar'
 
 /**
  * Launch a browser appropriate for the current environment.
