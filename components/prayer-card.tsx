@@ -35,7 +35,7 @@ export default function PrayerCard({ data, isActive }: Props) {
           backgroundImage: 'url(/calligraphy-bg.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.13,
+          opacity: 0.5,
         }}
       />
 
