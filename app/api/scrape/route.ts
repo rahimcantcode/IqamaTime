@@ -9,10 +9,11 @@ export const maxDuration = 300 // 5 min (Vercel Pro)
  * Called by Vercel cron at 23:15 America/Chicago daily.
  */
 export async function POST(req: NextRequest) {
+  const isVercelCron = req.headers.get('x-vercel-cron') === '1'
   const secret = process.env.SCRAPE_SECRET
   const auth   = req.headers.get('authorization')
 
-  if (secret && auth !== `Bearer ${secret}`) {
+  if (!isVercelCron && secret && auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
