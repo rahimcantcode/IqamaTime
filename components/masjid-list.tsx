@@ -51,6 +51,18 @@ function TimePill({
   )
 }
 
+function isTimePast(timeStr: string | null | undefined): boolean {
+  if (!timeStr) return false
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
+  if (!match) return false
+  let h = parseInt(match[1], 10)
+  const m = parseInt(match[2], 10)
+  if (match[3].toUpperCase() === 'PM' && h !== 12) h += 12
+  if (match[3].toUpperCase() === 'AM' && h === 12) h = 0
+  const now = new Date()
+  return h * 60 + m < now.getHours() * 60 + now.getMinutes()
+}
+
 export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }: Props) {
   const sorted = [...iqamaTimes].sort((a, b) =>
     compareTimesAsc(a.iqama ?? null, b.iqama ?? null)
@@ -117,10 +129,10 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
                 <span className="text-xs" style={{ color: '#9CA3AF' }}>—</span>
               )}
               {hasBoth && entry.iqama2 && (
-                <TimePill time={entry.iqama2} isPast={false} accent={accentColor} />
+                <TimePill time={entry.iqama2} isPast={isTimePast(entry.iqama2)} accent={accentColor} />
               )}
               {hasThird && entry.iqama3 && (
-                <TimePill time={entry.iqama3} isPast={false} accent={accentColor} />
+                <TimePill time={entry.iqama3} isPast={isTimePast(entry.iqama3)} accent={accentColor} />
               )}
             </div>
           </motion.div>
