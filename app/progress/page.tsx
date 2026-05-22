@@ -133,6 +133,12 @@ export default function ProgressPage() {
 
       checkins.forEach(checkin => {
         if (!next[checkin.date]) return
+        // Jumu'ah check-in counts as Dhuhr on Fridays
+        if (checkin.prayer === 'jummah') {
+          const day = new Date(checkin.date + 'T00:00:00').getDay()
+          if (day === 5) next[checkin.date]['Dhuhr'] = true
+          return
+        }
         const label = checkin.prayerLabel as PrayerName
         if (PRAYERS.includes(label)) {
           next[checkin.date][label] = true
