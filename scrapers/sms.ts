@@ -16,6 +16,7 @@ interface MnPrayerEntry {
   iqamahTime?: string
 }
 interface MnJumaEntry {
+  khutbaTime?: string
   iqamahTime?: string
 }
 interface MnDay {
@@ -54,9 +55,9 @@ export async function scrapeSMS(): Promise<void> {
       asr:     normalizeTime(today.asr?.iqamahTime     ?? null),
       maghrib: normalizeTime(today.maghrib?.iqamahTime ?? null),
       isha:    normalizeTime(today.isha?.iqamahTime    ?? null),
-      jummah1: normalizeTime(today.jumaTimes?.[0]?.iqamahTime ?? null),
-      jummah2: normalizeTime(today.jumaTimes?.[1]?.iqamahTime ?? null),
-      jummah3: normalizeTime(today.jumaTimes?.[2]?.iqamahTime ?? null),
+      jummah1: normalizeTime(today.jumaTimes?.[0]?.khutbaTime ?? null),
+      jummah2: normalizeTime(today.jumaTimes?.[1]?.khutbaTime ?? null),
+      jummah3: normalizeTime(today.jumaTimes?.[2]?.khutbaTime ?? null),
     }
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
