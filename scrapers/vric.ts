@@ -47,10 +47,11 @@ export async function scrapeVRIC(): Promise<void> {
       const timeCells = cells.filter(c => /\d{1,2}:\d{2}\s*(?:AM|PM)/i.test(c))
 
       if (text.includes('jumu') || text.includes('jumma')) {
-        const khutbahTime = timeCells[0] ?? null
-        if      (!times.jummah1) times.jummah1 = normalizeTime(khutbahTime)
-        else if (!times.jummah2) times.jummah2 = normalizeTime(khutbahTime)
-        else if (!times.jummah3) times.jummah3 = normalizeTime(khutbahTime)
+        const khutbahTime = normalizeTime(timeCells[0] ?? null)
+        if (!khutbahTime) return  // skip rows with no parseable time
+        if      (!times.jummah1) times.jummah1 = khutbahTime
+        else if (!times.jummah2 && khutbahTime !== times.jummah1) times.jummah2 = khutbahTime
+        // VRIC has 2 Jumu'ah prayers; jummah3 stays null
         return
       }
 
