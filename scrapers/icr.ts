@@ -7,7 +7,7 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
-import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { upsertPrayerTimes, logScrape, todayDate, TimesOnly, ensureMasjid } from './database'
 import { sunsetPlus } from './sunsetUtils'
 
 const MASJID_NAME = 'Islamic Center of Rowlett'
@@ -67,6 +67,7 @@ export async function scrapeICR(): Promise<void> {
   const date  = todayDate()
 
   try {
+    await ensureMasjid({ name: MASJID_NAME, city: 'Rowlett', websiteUrl: URL })
     const { data: html } = await axios.get(URL, {
       timeout: 15000,
       headers: {
