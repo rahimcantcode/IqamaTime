@@ -125,11 +125,15 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                className="inline-flex items-center gap-0.5 mt-0.5"
-                style={{ color: '#4F6F52' }}
+                className="pressable inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5 mt-1"
+                style={{
+                  color: '#4F6F52',
+                  background: 'rgba(79,111,82,0.10)',
+                  border: '1px solid rgba(79,111,82,0.22)',
+                }}
               >
                 <Navigation className="h-2.5 w-2.5" />
-                <span className="text-[0.65rem] font-medium">Directions</span>
+                <span className="text-[0.65rem] font-semibold">Directions</span>
               </a>
             </div>
 
