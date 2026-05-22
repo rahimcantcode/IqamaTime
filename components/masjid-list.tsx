@@ -97,7 +97,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             key={entry.masjid.id}
             variants={item}
             className={cn(
-              'pressable flex min-h-[68px] items-center justify-between rounded-[1.2rem] px-4 py-3.5',
+              'pressable flex min-h-[80px] items-center justify-between rounded-[1.2rem] px-4 py-3.5',
               entry.isPast ? 'opacity-50' : 'opacity-100'
             )}
             style={{
@@ -125,15 +125,16 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={e => e.stopPropagation()}
-                className="pressable inline-flex items-center gap-1 self-start rounded-full px-2 py-0.5 mt-1"
+                className="pressable inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 mt-2"
                 style={{
-                  color: '#4F6F52',
-                  background: 'rgba(79,111,82,0.10)',
-                  border: '1px solid rgba(79,111,82,0.22)',
+                  color: '#3F6F55',
+                  background: '#EAF4EC',
+                  border: '1px solid #B9D6C2',
+                  boxShadow: '0 1px 3px rgba(63,111,85,0.12)',
                 }}
               >
-                <Navigation className="h-2.5 w-2.5" />
-                <span className="text-[0.65rem] font-semibold">Directions</span>
+                <Navigation className="h-3 w-3" />
+                <span className="text-xs font-semibold">Directions</span>
               </a>
             </div>
 
