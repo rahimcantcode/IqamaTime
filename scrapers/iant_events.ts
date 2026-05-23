@@ -198,7 +198,7 @@ async function upsertEvents(events: EventRow[]) {
   const supabase = getSupabase()
   const { data: masjid, error: masjidError } = await supabase.from('masjids').select('id').eq('name', MASJID_NAME).maybeSingle()
   if (masjidError) throw masjidError
-  await supabase.from('community_events').update({ active: false }).eq('active', true)
+  await supabase.from('community_events').update({ active: false }).eq('source_name', SOURCE_NAME)
   if (!events.length) {
     logger.warn('IANT', 'No IANT events found for the upcoming week. Feed will show empty state.')
     return
@@ -223,14 +223,17 @@ async function upsertEvents(events: EventRow[]) {
   if (error) throw error
 }
 
-async function run() {
+export async function scrapeIANTEvents(): Promise<void> {
   console.log('\nIqamaTime Events Scraper: IANT upcoming week')
   const events = await scrapeUpcomingWeek()
   events.forEach(event => console.log(`- ${event.eventDate} ${event.eventTime || ''}: ${event.title}`))
   await upsertEvents(events)
 }
 
-run().catch(error => {
-  console.error('Fatal error in IANT events scraper:', error)
-  process.exit(1)
-})
+// CLI entry point
+if (process.argv[1]?.endsWith('iant_events.ts') || process.argv[1]?.endsWith('iant_events.js')) {
+  scrapeIANTEvents().catch(error => {
+    console.error('Fatal error in IANT events scraper:', error)
+    process.exit(1)
+  })
+}

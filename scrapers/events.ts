@@ -292,7 +292,8 @@ async function upsertEvents(events: RawEvent[]) {
   if (masjidError) throw masjidError
   const masjidByName = new Map((masjids || []).map((m: { id: string; name: string }) => [m.name, m.id]))
 
-  await supabase.from('community_events').update({ active: false }).eq('active', true)
+  const sourceNames = SOURCES.map(s => s.name)
+  await supabase.from('community_events').update({ active: false }).in('source_name', sourceNames)
 
   if (!events.length) {
     logger.warn('Events', 'No clean EPIC, Sachse, or Qalam events found. Feed will show empty state.')
@@ -320,7 +321,7 @@ async function upsertEvents(events: RawEvent[]) {
   if (error) throw error
 }
 
-async function run() {
+export async function scrapeAllCommunityEvents(): Promise<void> {
   const started = Date.now()
   console.log('\nIqamaTime Events Scraper: EPIC, Sachse, Qalam only')
   const allEvents: RawEvent[] = []
@@ -340,7 +341,10 @@ async function run() {
   console.log(`Events scrape finished in ${((Date.now() - started) / 1000).toFixed(1)}s`)
 }
 
-run().catch(error => {
-  console.error('Fatal error in events scraper:', error)
-  process.exit(1)
-})
+// CLI entry point
+if (process.argv[1]?.endsWith('events.ts') || process.argv[1]?.endsWith('events.js')) {
+  scrapeAllCommunityEvents().catch(error => {
+    console.error('Fatal error in events scraper:', error)
+    process.exit(1)
+  })
+}
