@@ -134,6 +134,17 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               {/* Gradient base */}
               <div className={`absolute inset-0 bg-gradient-to-b ${PRAYER_GRADIENTS[c.prayer.key]}`} />
 
+              {/* Calligraphy background */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: 'url(/calligraphy-bg.jpg)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: 0.5,
+                }}
+              />
+
               {/* Subtle surface tint */}
               <div className="absolute inset-0 bg-white/30" />
 
