@@ -41,7 +41,7 @@ export default function DhikrDetailPage() {
 
   return (
     <main
-      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
+      className="min-h-screen bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="flex items-center gap-2 px-4 pb-1 pt-2">
@@ -49,7 +49,7 @@ export default function DhikrDetailPage() {
           type="button"
           onClick={() => router.back()}
           className="pressable flex items-center gap-1 rounded-full px-2 py-1.5"
-          style={{ color: '#6B7280' }}
+          style={{ color: 'var(--text-secondary)' }}
           aria-label="Go back"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -59,11 +59,11 @@ export default function DhikrDetailPage() {
 
       <div className="px-6 pb-32 pt-3">
         <div className="mb-5">
-          <h1 className="text-xl font-bold" style={{ color: '#202124' }}>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
             {detail?.title ?? fallbackTitle}
           </h1>
           {detail?.description && (
-            <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
+            <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
               {detail.description}
             </p>
           )}
@@ -84,8 +84,8 @@ export default function DhikrDetailPage() {
                   className="rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-all duration-200"
                   style={
                     mode === m
-                      ? { background: '#FFFFFF', color: '#202124', boxShadow: '0 1px 4px rgba(31,41,55,0.10)' }
-                      : { background: 'transparent', color: '#9CA3AF' }
+                      ? { background: '#FFFFFF', color: 'var(--text-primary)', boxShadow: '0 1px 4px rgba(31,41,55,0.10)' }
+                      : { background: 'transparent', color: 'var(--text-muted)' }
                   }
                 >
                   {m}
@@ -97,7 +97,7 @@ export default function DhikrDetailPage() {
               <section className="mb-5">
                 <p
                   className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-                  style={{ color: '#9CA3AF' }}
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   Suggested Sequence
                 </p>
@@ -119,7 +119,7 @@ export default function DhikrDetailPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-semibold leading-snug" style={{ color: '#202124' }}>
+                          <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
                             {step.title}
                           </p>
                           {step.tag && (
@@ -131,7 +131,7 @@ export default function DhikrDetailPage() {
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
+                        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                           {step.description}
                         </p>
                       </div>
@@ -149,7 +149,7 @@ export default function DhikrDetailPage() {
                 style={{
                   background: 'linear-gradient(135deg, rgba(200,169,81,0.20), rgba(79,111,82,0.14))',
                   border: '1px solid rgba(200,169,81,0.28)',
-                  color: '#202124',
+                  color: 'var(--text-primary)',
                 }}
               >
                 <Sparkles className="h-4 w-4" style={{ color: '#C8A951' }} />
@@ -178,7 +178,7 @@ export default function DhikrDetailPage() {
             {mode === 'interactive' && (
               <p
                 className="mt-6 text-center text-[0.6rem]"
-                style={{ color: '#9CA3AF' }}
+                style={{ color: 'var(--text-muted)' }}
               >
                 Tap a card to count · use reset when needed
               </p>
@@ -195,10 +195,10 @@ export default function DhikrDetailPage() {
             >
               <Clock className="h-5 w-5" style={{ color: '#C8A951' }} />
             </div>
-            <p className="mb-1 text-sm font-semibold" style={{ color: '#202124' }}>
+            <p className="mb-1 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               Content coming soon
             </p>
-            <p className="max-w-[220px] text-xs leading-relaxed" style={{ color: '#9CA3AF' }}>
+            <p className="max-w-[220px] text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               This section is being prepared with care. Check back soon.
             </p>
           </div>

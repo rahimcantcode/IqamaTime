@@ -35,8 +35,8 @@ function SectionCard({ card, onClick }: { card: DhikrCard; onClick: () => void }
         <Icon className="h-4 w-4" style={{ color: '#C8A951' }} />
       </div>
       <div>
-        <p className="text-sm font-semibold leading-snug" style={{ color: '#202124' }}>{card.title}</p>
-        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: '#9CA3AF' }}>{card.description}</p>
+        <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>{card.title}</p>
+        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{card.description}</p>
       </div>
     </button>
   )
@@ -48,16 +48,16 @@ export default function DhikrPage() {
 
   return (
     <main
-      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
+      className="min-h-screen bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Sparkles className="h-5 w-5" style={{ color: '#C8A951' }} />
-          <h1 className="text-xl font-bold" style={{ color: '#202124' }}>Dhikr</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Dhikr</h1>
         </div>
-        <p className="text-xs" style={{ color: '#6B7280' }}>A quiet space for remembrance around salah.</p>
-        <p className="mt-0.5 text-[0.6rem]" style={{ color: '#9CA3AF' }}>Curated essentials for prayer, masjid, and daily remembrance.</p>
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>A quiet space for remembrance around salah.</p>
+        <p className="mt-0.5 text-[0.6rem]" style={{ color: 'var(--text-muted)' }}>Curated essentials for prayer, masjid, and daily remembrance.</p>
       </div>
 
       <div className="px-6 pb-32 pt-5">
@@ -79,10 +79,10 @@ export default function DhikrPage() {
               >
                 Featured
               </p>
-              <h2 className="mb-1 text-xl font-bold leading-tight" style={{ color: '#202124' }}>
+              <h2 className="mb-1 text-xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
                 {DHIKR_HERO_CARD.title}
               </h2>
-              <p className="text-xs leading-relaxed" style={{ color: '#6B7280' }}>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {DHIKR_HERO_CARD.description}
               </p>
             </div>
@@ -115,7 +115,7 @@ export default function DhikrPage() {
           <section key={section.title} className="mb-7">
             <p
               className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-              style={{ color: '#9CA3AF' }}
+              style={{ color: 'var(--text-muted)' }}
             >
               {section.title}
             </p>

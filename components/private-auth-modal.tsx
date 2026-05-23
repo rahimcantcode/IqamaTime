@@ -72,7 +72,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
 
       <div
         className="relative z-10 w-full max-w-sm overflow-hidden rounded-[1.8rem] border bg-white"
-        style={{ borderColor: '#E7E2D8', boxShadow: '0 20px 60px rgba(31,41,55,0.22)' }}
+        style={{ borderColor: 'var(--border)', boxShadow: '0 20px 60px rgba(31,41,55,0.22)' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5">
@@ -83,10 +83,10 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             >
               <Lock className="h-5 w-5" />
             </div>
-            <h2 className="text-lg font-bold" style={{ color: '#202124' }}>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
               {mode === 'create' ? 'Create your private profile' : 'Log in to your profile'}
             </h2>
-            <p className="mt-1 text-xs leading-relaxed" style={{ color: '#6B7280' }}>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {reason ?? 'Use a username and private PIN to save your personal progress.'}
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             type="button"
             onClick={onClose}
             className="pressable rounded-full p-2"
-            style={{ background: 'rgba(31,41,55,0.05)', color: '#6B7280' }}
+            style={{ background: 'rgba(31,41,55,0.05)', color: 'var(--text-secondary)' }}
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -113,8 +113,8 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
               className="rounded-full px-3 py-2 text-xs font-semibold transition-all"
               style={
                 mode === value
-                  ? { background: '#FFFFFF', color: '#202124', boxShadow: '0 1px 4px rgba(31,41,55,0.10)' }
-                  : { color: '#9CA3AF' }
+                  ? { background: '#FFFFFF', color: 'var(--text-primary)', boxShadow: '0 1px 4px rgba(31,41,55,0.10)' }
+                  : { color: 'var(--text-muted)' }
               }
             >
               {value === 'login' ? 'Log in' : 'Create'}
@@ -124,11 +124,11 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
 
         <form onSubmit={handleSubmit} className="px-5 pb-5">
           <label className="mb-3 block">
-            <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>
+            <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
               Username
             </span>
-            <div className="flex items-center gap-2 rounded-2xl border px-3 py-3" style={{ borderColor: '#E7E2D8', background: '#FAFAF7' }}>
-              <UserRound className="h-4 w-4" style={{ color: '#9CA3AF' }} />
+            <div className="flex items-center gap-2 rounded-2xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--background)' }}>
+              <UserRound className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 value={username}
                 onChange={e => setUsername(e.target.value)}
@@ -136,17 +136,17 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
                 autoCorrect="off"
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                style={{ color: '#202124' }}
+                style={{ color: 'var(--text-primary)' }}
               />
             </div>
           </label>
 
           <label className="mb-3 block">
-            <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>
+            <span className="mb-1 block text-[0.65rem] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
               Private PIN
             </span>
-            <div className="flex items-center gap-2 rounded-2xl border px-3 py-3" style={{ borderColor: '#E7E2D8', background: '#FAFAF7' }}>
-              <Lock className="h-4 w-4" style={{ color: '#9CA3AF' }} />
+            <div className="flex items-center gap-2 rounded-2xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--background)' }}>
+              <Lock className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 value={pin}
                 onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -154,7 +154,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
                 type="password"
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                style={{ color: '#202124' }}
+                style={{ color: 'var(--text-primary)' }}
               />
             </div>
           </label>
@@ -174,7 +174,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             {loading ? 'Please wait...' : mode === 'create' ? 'Create profile' : 'Log in'}
           </button>
 
-          <p className="mt-3 text-center text-[0.62rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
+          <p className="mt-3 text-center text-[0.62rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             No email needed for now. Your username and PIN keep your progress separate from other users.
           </p>
         </form>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, CheckCircle2, Circle, Settings, LogOut, UserRound } from 'lucide-react'
+import { Bell, CheckCircle2, Circle, Settings, LogOut, UserRound, BookOpen } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
 import { usePrivateAuth } from '@/hooks/usePrivateAuth'
@@ -42,22 +42,22 @@ export default function SettingsPageClient({ masjids }: Props) {
 
   return (
     <main
-      className="min-h-screen bg-[#FAFAF7] scrollbar-none"
+      className="min-h-screen bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Settings className="w-5 h-5" style={{ color: '#4F6F52' }} />
-          <h1 className="text-xl font-bold" style={{ color: '#202124' }}>Settings</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Settings</h1>
         </div>
-        <p className="text-xs" style={{ color: '#6B7280' }}>Customize your experience</p>
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Customize your experience</p>
       </div>
 
       <div className="px-6 pb-32 pt-4">
         <section className="mb-6">
           <p
             className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: '#9CA3AF' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             Private Profile
           </p>
@@ -75,10 +75,10 @@ export default function SettingsPageClient({ masjids }: Props) {
                   <UserRound className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium" style={{ color: '#202124' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                     {isLoggedIn ? `@${session?.username}` : 'Not logged in'}
                   </p>
-                  <p className="text-xs" style={{ color: '#9CA3AF' }}>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                     {isLoggedIn ? 'Your preferences and progress can sync privately.' : 'Log in before saving favorites or progress.'}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ export default function SettingsPageClient({ masjids }: Props) {
                   type="button"
                   onClick={logout}
                   className="pressable rounded-full p-2"
-                  style={{ background: 'rgba(31,41,55,0.05)', color: '#6B7280' }}
+                  style={{ background: 'rgba(31,41,55,0.05)', color: 'var(--text-secondary)' }}
                   aria-label="Log out"
                 >
                   <LogOut className="h-4 w-4" />
@@ -111,7 +111,7 @@ export default function SettingsPageClient({ masjids }: Props) {
         <section className="mb-6">
           <p
             className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: '#9CA3AF' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             Data
           </p>
@@ -127,16 +127,34 @@ export default function SettingsPageClient({ masjids }: Props) {
                 <Bell className="w-4 h-4" style={{ color: '#C8A951' }} />
               </div>
               <div className="text-left">
-                <p className="text-sm font-medium" style={{ color: '#202124' }}>Notifications</p>
-                <p className="text-xs" style={{ color: '#9CA3AF' }}>Coming soon — iqama reminders</p>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Notifications</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Coming soon — iqama reminders</p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('iqamatime:open-guide'))}
+              className="pressable flex items-center gap-3 rounded-[1.2rem] p-4 text-left"
+              style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
+            >
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                style={{ background: 'rgba(79,111,82,0.12)', color: '#4F6F52' }}
+              >
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>How to use</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Reopen the intro guide</p>
+              </div>
+            </button>
           </div>
         </section>
 
         <section className="mb-8">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
               Favorite Masjids
             </p>
             {!allSelected && (
@@ -150,7 +168,7 @@ export default function SettingsPageClient({ masjids }: Props) {
             )}
           </div>
 
-          <p className="mb-3 text-xs" style={{ color: '#9CA3AF' }}>
+          <p className="mb-3 text-xs" style={{ color: 'var(--text-muted)' }}>
             {isLoggedIn
               ? allSelected
                 ? 'Showing all masjids. Tap to filter.'
@@ -170,12 +188,12 @@ export default function SettingsPageClient({ masjids }: Props) {
                   style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
                 >
                   <div className="min-w-0 pr-3 text-left">
-                    <p className="truncate text-sm font-medium" style={{ color: '#202124' }}>{masjid.name}</p>
-                    <p className="text-xs" style={{ color: '#6B7280' }}>{masjid.city}</p>
+                    <p className="truncate text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{masjid.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{masjid.city}</p>
                   </div>
                   {selected && isLoggedIn
                     ? <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: '#4F6F52' }} />
-                    : <Circle className="w-5 h-5 shrink-0" style={{ color: '#9CA3AF' }} />
+                    : <Circle className="w-5 h-5 shrink-0" style={{ color: 'var(--text-muted)' }} />
                   }
                 </button>
               )
@@ -184,7 +202,7 @@ export default function SettingsPageClient({ masjids }: Props) {
         </section>
 
         <div className="text-center">
-          <p className="text-xs" style={{ color: '#9CA3AF' }}>IqamaTime · Updated daily at 11:15 PM CT</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>IqamaTime · Updated daily at 11:15 PM CT</p>
         </div>
       </div>
 

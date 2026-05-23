@@ -97,6 +97,16 @@ export default function FirstVisitGuide() {
   }, [mounted])
 
   useEffect(() => {
+    const handler = () => {
+      localStorage.removeItem(ONBOARDING_KEY)
+      setStepIndex(0)
+      setOpen(true)
+    }
+    window.addEventListener('iqamatime:open-guide', handler)
+    return () => window.removeEventListener('iqamatime:open-guide', handler)
+  }, [])
+
+  useEffect(() => {
     if (!open || typeof document === 'undefined') return
 
     const previousOverflow = document.body.style.overflow
@@ -144,7 +154,7 @@ export default function FirstVisitGuide() {
     >
       <div
         className="w-full max-w-sm overflow-hidden rounded-[2rem] border bg-white"
-        style={{ borderColor: '#E7E2D8', boxShadow: '0 24px 70px rgba(31,41,55,0.24)' }}
+        style={{ borderColor: 'var(--border)', boxShadow: '0 24px 70px rgba(31,41,55,0.24)' }}
         onTouchStart={e => setTouchStart(e.changedTouches[0]?.clientX ?? null)}
         onTouchEnd={e => handleTouchEnd(e.changedTouches[0]?.clientX ?? 0)}
       >
@@ -176,10 +186,10 @@ export default function FirstVisitGuide() {
           >
             {current.eyebrow}
           </p>
-          <h2 className="text-2xl font-bold leading-tight" style={{ color: '#202124' }}>
+          <h2 className="text-2xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
             {current.title}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed" style={{ color: '#6B7280' }}>
+          <p className="mt-3 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
             {current.description}
           </p>
 
@@ -188,7 +198,7 @@ export default function FirstVisitGuide() {
               <div
                 key={text}
                 className="flex items-center gap-3 rounded-2xl border px-3 py-3"
-                style={{ background: '#FAFAF7', borderColor: '#E7E2D8' }}
+                style={{ background: 'var(--background)', borderColor: 'var(--border)' }}
               >
                 <div
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
@@ -220,7 +230,7 @@ export default function FirstVisitGuide() {
             {isLast ? <Check className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </button>
 
-          <p className="mt-3 text-center text-[0.62rem]" style={{ color: '#9CA3AF' }}>
+          <p className="mt-3 text-center text-[0.62rem]" style={{ color: 'var(--text-muted)' }}>
             Swipe left or tap Next
           </p>
         </div>

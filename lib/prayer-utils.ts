@@ -111,32 +111,32 @@ export function getHijriDate(): string {
   }
 }
 
-/** Prayer gradient config — soft light tints fading to white */
+/** Prayer gradient config — sky-progression tints from dawn to night */
 export const PRAYER_GRADIENTS: Record<PrayerKey, string> = {
-  fajr:    'from-orange-50 to-white',
-  dhuhr:   'from-orange-50 to-white',
+  fajr:    'from-indigo-50 to-white',
+  dhuhr:   'from-amber-50 to-white',
   asr:     'from-orange-50 to-white',
-  maghrib: 'from-orange-50 to-white',
-  isha:    'from-orange-50 to-white',
-  jummah:  'from-orange-50 to-white',
+  maghrib: 'from-red-50 to-white',
+  isha:    'from-blue-50 to-white',
+  jummah:  'from-green-50 to-white',
 }
 
 /** Radial glow color behind each prayer card */
 export const PRAYER_GLOW: Record<PrayerKey, string> = {
-  fajr:    'rgba(200,169,81,0.26)',
-  dhuhr:   'rgba(200,169,81,0.26)',
-  asr:     'rgba(200,169,81,0.26)',
-  maghrib: 'rgba(200,169,81,0.26)',
-  isha:    'rgba(200,169,81,0.26)',
-  jummah:  'rgba(200,169,81,0.26)',
+  fajr:    'rgba(79,92,210,0.22)',
+  dhuhr:   'rgba(217,158,0,0.26)',
+  asr:     'rgba(234,110,20,0.22)',
+  maghrib: 'rgba(220,75,40,0.22)',
+  isha:    'rgba(30,58,138,0.22)',
+  jummah:  'rgba(79,111,82,0.26)',
 }
 
-/** Unified warm gold accent across all prayers */
+/** Per-prayer accent color — all values ≥4.5:1 on white */
 export const PRAYER_ACCENT: Record<PrayerKey, string> = {
-  fajr:    '#C8A951',
-  dhuhr:   '#C8A951',
-  asr:     '#C8A951',
-  maghrib: '#C8A951',
-  isha:    '#C8A951',
-  jummah:  '#C8A951',
+  fajr:    '#3B4BC5',   // indigo   6.9:1
+  dhuhr:   '#7A5A0A',   // amber    6.3:1
+  asr:     '#9A4E10',   // sienna   6.0:1
+  maghrib: '#9D2D0E',   // sunset   6.8:1
+  isha:    '#1E3A6E',   // navy    11.2:1
+  jummah:  '#4F6F52',   // green    6.2:1
 }

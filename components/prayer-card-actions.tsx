@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { PrayerKey } from '@/types'
 import { getLocalDate } from '@/lib/prayer-checkins'
@@ -8,6 +8,7 @@ import {
   getPrivateSession,
   getPrivatePrayerCheckins,
   savePrivatePrayerCheckin,
+  removePrivatePrayerCheckin,
 } from '@/lib/private-auth'
 import PrivateAuthModal from '@/components/private-auth-modal'
 
@@ -28,6 +29,8 @@ export default function PrayerCardActions({
   const [checkedIn, setCheckedIn] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [undoVisible, setUndoVisible] = useState(false)
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loadCheckin = async () => {
     const session = getPrivateSession()
@@ -68,8 +71,24 @@ export default function PrayerCardActions({
         adhanTime: adhanTime ?? '',
       }, session)
       setCheckedIn(true)
+      setUndoVisible(true)
+      if (undoTimer.current) clearTimeout(undoTimer.current)
+      undoTimer.current = setTimeout(() => setUndoVisible(false), 3000)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleUndo = async () => {
+    if (undoTimer.current) clearTimeout(undoTimer.current)
+    setUndoVisible(false)
+    const session = getPrivateSession()
+    if (!session) return
+    try {
+      await removePrivatePrayerCheckin(getLocalDate(), prayerKey, session)
+      setCheckedIn(false)
+    } catch {
+      // checkin stays if removal fails
     }
   }
 
@@ -80,8 +99,8 @@ export default function PrayerCardActions({
   if (!adhanPast) {
     return (
       <p
-        className="text-center text-[0.58rem] font-medium tracking-wide opacity-55"
-        style={{ color: '#9CA3AF' }}
+        className="text-center text-[0.65rem] font-medium tracking-wide opacity-55"
+        style={{ color: 'var(--text-muted)' }}
       >
         Available after Adhan
       </p>
@@ -95,9 +114,21 @@ export default function PrayerCardActions({
           <p className="text-[0.7rem] font-semibold" style={{ color: '#4F6F52' }}>
             ✓ {prayerLabel} recorded
           </p>
-          <p className="text-[0.58rem]" style={{ color: '#9CA3AF' }}>
-            May Allah accept it.
-          </p>
+          {undoVisible ? (
+            <button
+              type="button"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={handleUndo}
+              className="text-[0.65rem] font-semibold underline underline-offset-2"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Undo
+            </button>
+          ) : (
+            <p className="text-[0.65rem]" style={{ color: 'var(--text-muted)' }}>
+              May Allah accept it.
+            </p>
+          )}
         </div>
       ) : (
         <button

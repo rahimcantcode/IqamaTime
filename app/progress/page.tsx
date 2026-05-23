@@ -214,7 +214,7 @@ export default function ProgressPage() {
 
   return (
     <main
-      className="min-h-screen overflow-x-clip bg-[#FAFAF7] scrollbar-none"
+      className="min-h-screen overflow-x-clip bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="pointer-events-none fixed inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_50%_0%,rgba(143,174,147,0.14),transparent_28rem)]" />
@@ -222,11 +222,11 @@ export default function ProgressPage() {
       <div className="relative z-10 px-6 pb-2 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <TrendingUp className="h-5 w-5" style={{ color: '#4F6F52' }} />
-          <h1 className="text-xl font-bold" style={{ color: '#202124' }}>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
             Progress
           </h1>
         </div>
-        <p className="text-xs" style={{ color: '#6B7280' }}>
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
           A calm view of your salah consistency
         </p>
       </div>
@@ -235,7 +235,7 @@ export default function ProgressPage() {
         <section className="relative z-10 px-6 pt-8">
           <div
             className="rounded-[1.8rem] border px-5 py-8 text-center"
-            style={{ background: '#FFFFFF', borderColor: '#E7E2D8', boxShadow: '0 10px 32px rgba(31,41,55,0.06)' }}
+            style={{ background: '#FFFFFF', borderColor: 'var(--border)', boxShadow: '0 10px 32px rgba(31,41,55,0.06)' }}
           >
             <div
               className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
@@ -243,10 +243,10 @@ export default function ProgressPage() {
             >
               <Lock className="h-6 w-6" />
             </div>
-            <h2 className="text-lg font-bold" style={{ color: '#202124' }}>
+            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
               Private progress dashboard
             </h2>
-            <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed" style={{ color: '#6B7280' }}>
+            <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               Create a private username and PIN to save your salah progress and keep it separate from everyone else.
             </p>
             <button
@@ -266,7 +266,7 @@ export default function ProgressPage() {
               className="rounded-[1.8rem] border p-5"
               style={{
                 background: 'linear-gradient(135deg, rgba(255,255,255,0.96), rgba(244,241,234,0.72))',
-                borderColor: '#E7E2D8',
+                borderColor: 'var(--border)',
                 boxShadow: '0 10px 32px rgba(31,41,55,0.06)',
               }}
             >
@@ -278,12 +278,12 @@ export default function ProgressPage() {
                   />
                   <div
                     className="relative flex h-[5.9rem] w-[5.9rem] flex-col items-center justify-center rounded-full border"
-                    style={{ background: '#FFFFFF', borderColor: '#E7E2D8' }}
+                    style={{ background: '#FFFFFF', borderColor: 'var(--border)' }}
                   >
-                    <p className="text-3xl font-bold tabular-nums" style={{ color: '#202124' }}>
+                    <p className="text-3xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
                       {todayCount}/5
                     </p>
-                    <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em]" style={{ color: '#9CA3AF' }}>
+                    <p className="text-[0.58rem] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--text-muted)' }}>
                       Today
                     </p>
                   </div>
@@ -294,10 +294,10 @@ export default function ProgressPage() {
                     <Sparkles className="h-3 w-3" />
                     @{session?.username ?? 'profile'}
                   </div>
-                  <h2 className="text-lg font-bold leading-tight" style={{ color: '#202124' }}>
+                  <h2 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
                     {todayCount === 5 ? 'Complete day, mashaAllah' : `${5 - todayCount} prayers left today`}
                   </h2>
-                  <p className="mt-1 text-xs leading-relaxed" style={{ color: '#6B7280' }}>
+                  <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                     {loadingProgress
                       ? 'Loading your private progress...'
                       : completedPrayers.length
@@ -305,7 +305,7 @@ export default function ProgressPage() {
                         : 'Nothing logged yet. Add prayers as you complete them.'}
                   </p>
                   {nextMissingPrayer && !loadingProgress && (
-                    <p className="mt-2 text-[0.68rem] font-medium" style={{ color: '#9CA3AF' }}>
+                    <p className="mt-2 text-[0.68rem] font-medium" style={{ color: 'var(--text-muted)' }}>
                       Next to log: {nextMissingPrayer}
                     </p>
                   )}
@@ -326,13 +326,13 @@ export default function ProgressPage() {
                 style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
               >
                 <Icon className="mb-1 h-4 w-4" style={{ color: accent }} />
-                <p className="text-2xl font-bold tabular-nums" style={{ color: '#202124' }}>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: 'var(--text-primary)' }}>
                   {value}
                 </p>
-                <p className="mt-0.5 text-[0.6rem] font-semibold uppercase tracking-wide" style={{ color: '#9CA3AF' }}>
+                <p className="mt-0.5 text-[0.6rem] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
                   {unit}
                 </p>
-                <p className="mt-0.5 text-[0.6rem]" style={{ color: '#9CA3AF' }}>
+                <p className="mt-0.5 text-[0.6rem]" style={{ color: 'var(--text-muted)' }}>
                   {label}
                 </p>
               </div>
@@ -347,23 +347,23 @@ export default function ProgressPage() {
               style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
             >
               <div>
-                <p className="text-sm font-semibold" style={{ color: '#202124' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                   Edit today’s masjid prayers
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>
+                <p className="mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>
                   Select the prayers you completed at the masjid today
                 </p>
               </div>
               <ChevronDown
                 className={`h-5 w-5 transition-transform ${editingToday ? 'rotate-180' : ''}`}
-                style={{ color: '#9CA3AF' }}
+                style={{ color: 'var(--text-muted)' }}
               />
             </button>
 
             {editingToday && (
               <div
                 className="mt-3 overflow-hidden rounded-[1.35rem] border"
-                style={{ background: '#FFFFFF', borderColor: '#E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
+                style={{ background: '#FFFFFF', borderColor: 'var(--border)', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
               >
                 {PRAYERS.map((prayer, index) => {
                   const active = todayLog[prayer]
@@ -379,16 +379,16 @@ export default function ProgressPage() {
                           className="flex h-8 w-8 items-center justify-center rounded-full"
                           style={{
                             background: active ? 'rgba(79,111,82,0.12)' : 'rgba(31,41,55,0.04)',
-                            color: active ? '#4F6F52' : '#9CA3AF',
+                            color: active ? '#4F6F52' : 'var(--text-muted)',
                           }}
                         >
                           {active ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
                         </div>
-                        <span className="text-sm font-medium" style={{ color: '#202124' }}>
+                        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                           {prayer}
                         </span>
                       </div>
-                      <span className="text-[0.62rem] font-semibold" style={{ color: active ? '#4F6F52' : '#9CA3AF' }}>
+                      <span className="text-[0.62rem] font-semibold" style={{ color: active ? '#4F6F52' : 'var(--text-muted)' }}>
                         {active ? 'Logged' : 'Tap to log'}
                       </span>
                     </button>
@@ -401,10 +401,10 @@ export default function ProgressPage() {
           <section className="relative z-10 px-6 pb-32 pt-7">
             <div className="mb-3 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: '#9CA3AF' }}>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
                   Weekly Rhythm
                 </p>
-                <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
+                <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
                   Edit any day from this week
                 </p>
               </div>
@@ -423,13 +423,13 @@ export default function ProgressPage() {
               className="overflow-hidden rounded-[1.6rem] border"
               style={{
                 background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,241,234,0.58))',
-                borderColor: '#E7E2D8',
+                borderColor: 'var(--border)',
                 boxShadow: '0 8px 28px rgba(31,41,55,0.06)',
               }}
             >
               <div className="px-4 pb-3 pt-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold" style={{ color: '#202124' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
                     Week completion
                   </p>
                   <p className="text-xs font-bold tabular-nums" style={{ color: '#4F6F52' }}>
@@ -462,14 +462,14 @@ export default function ProgressPage() {
                             className="flex h-10 w-10 items-center justify-center rounded-2xl text-xs font-bold"
                             style={{
                               background: count === 5 ? 'rgba(79,111,82,0.14)' : 'rgba(244,241,234,0.90)',
-                              color: count === 5 ? '#4F6F52' : '#6B7280',
+                              color: count === 5 ? '#4F6F52' : 'var(--text-secondary)',
                             }}
                           >
                             {day}
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-semibold" style={{ color: '#202124' }}>
+                              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                                 {count}/5 prayers
                               </p>
                               {isToday && (
@@ -478,7 +478,7 @@ export default function ProgressPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-[0.62rem]" style={{ color: '#9CA3AF' }}>
+                            <p className="text-[0.62rem]" style={{ color: 'var(--text-muted)' }}>
                               {mood} · {shortDate}
                             </p>
                           </div>
@@ -500,12 +500,12 @@ export default function ProgressPage() {
                                 className="flex h-6 w-6 items-center justify-center rounded-full text-[0.6rem] font-bold"
                                 style={{
                                   background: prayed ? 'rgba(79,111,82,0.76)' : 'rgba(255,255,255,0.76)',
-                                  color: prayed ? '#FFFFFF' : '#9CA3AF',
+                                  color: prayed ? '#FFFFFF' : 'var(--text-muted)',
                                 }}
                               >
                                 {prayed ? '✓' : PRAYER_INITIALS[prayerIndex]}
                               </div>
-                              <p className="text-[0.52rem] font-semibold" style={{ color: prayed ? '#4F6F52' : '#9CA3AF' }}>
+                              <p className="text-[0.52rem] font-semibold" style={{ color: prayed ? '#4F6F52' : 'var(--text-muted)' }}>
                                 {PRAYER_INITIALS[prayerIndex]}
                               </p>
                             </>
@@ -544,7 +544,7 @@ export default function ProgressPage() {
                 })}
               </div>
 
-              <div className="flex items-center justify-center gap-4 px-4 py-3 text-[0.58rem] font-medium" style={{ color: '#9CA3AF' }}>
+              <div className="flex items-center justify-center gap-4 px-4 py-3 text-[0.58rem] font-medium" style={{ color: 'var(--text-muted)' }}>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(79,111,82,0.76)' }} />
                   Logged
@@ -556,7 +556,7 @@ export default function ProgressPage() {
               </div>
             </div>
 
-            <p className="mt-5 text-center text-xs" style={{ color: '#9CA3AF' }}>
+            <p className="mt-5 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
               Saved privately to your profile
             </p>
           </section>

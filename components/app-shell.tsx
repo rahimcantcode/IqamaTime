@@ -1,16 +1,17 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
   return (
+    <MotionConfig reducedMotion="user">
     <div
       data-app-shell="true"
-      className="min-h-dvh bg-[#FAFAF7]"
+      className="min-h-dvh bg-[--background]"
     >
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div
@@ -25,5 +26,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </motion.div>
       </AnimatePresence>
     </div>
+    </MotionConfig>
   )
 }

@@ -33,7 +33,7 @@ function TimePill({
 }) {
   if (isPast) {
     return (
-      <span className="text-sm font-semibold tabular-nums" style={{ color: '#9CA3AF' }}>
+      <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-muted)' }}>
         {time}
       </span>
     )
@@ -73,7 +73,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
     return (
       <div
         className="iphone-panel rounded-[1.25rem] py-8 text-center text-sm"
-        style={{ color: '#9CA3AF' }}
+        style={{ color: 'var(--text-muted)' }}
       >
         No iqama times available
       </div>
@@ -97,7 +97,7 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             key={entry.masjid.id}
             variants={item}
             className={cn(
-              'pressable flex min-h-[80px] items-center justify-between rounded-[1.2rem] px-4 py-3.5',
+              'pressable flex min-h-[64px] items-center justify-between rounded-[1.2rem] px-4 py-3',
               entry.isPast ? 'opacity-50' : 'opacity-100'
             )}
             style={{
@@ -107,43 +107,27 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             }}
           >
             {/* Masjid name + city */}
-            <div className="flex min-w-0 flex-col gap-1 pr-2">
+            <div className="flex min-w-0 flex-col gap-0.5 pr-2">
               <span
                 className="truncate text-[0.92rem] font-semibold leading-tight"
-                style={{ color: '#202124' }}
+                style={{ color: 'var(--text-primary)' }}
               >
                 {entry.masjid.name}
               </span>
               <span
                 className="text-[0.72rem] leading-tight"
-                style={{ color: '#6B7280' }}
+                style={{ color: 'var(--text-secondary)' }}
               >
                 {entry.masjid.city}
               </span>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${entry.masjid.name}, ${entry.masjid.city}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="pressable inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 mt-2"
-                style={{
-                  color: '#3F6F55',
-                  background: '#EAF4EC',
-                  border: '1px solid #B9D6C2',
-                  boxShadow: '0 1px 3px rgba(63,111,85,0.12)',
-                }}
-              >
-                <Navigation className="h-3 w-3" />
-                <span className="text-xs font-semibold">Get Directions</span>
-              </a>
             </div>
 
-            {/* Time(s) */}
+            {/* Time(s) + directions */}
             <div className="ml-4 flex shrink-0 flex-col items-end gap-1.5">
               {entry.iqama ? (
                 <TimePill time={entry.iqama} isPast={entry.isPast} accent={accentColor} />
               ) : (
-                <span className="text-xs" style={{ color: '#9CA3AF' }}>—</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>—</span>
               )}
               {hasBoth && entry.iqama2 && (
                 <TimePill time={entry.iqama2} isPast={isTimePast(entry.iqama2)} accent={accentColor} />
@@ -151,6 +135,19 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
               {hasThird && entry.iqama3 && (
                 <TimePill time={entry.iqama3} isPast={isTimePast(entry.iqama3)} accent={accentColor} />
               )}
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${entry.masjid.name}, ${entry.masjid.city}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                className="flex h-11 w-11 items-center justify-center"
+                style={{ color: '#4F6F52' }}
+                aria-label={`Get directions to ${entry.masjid.name}`}
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: '#EAF4EC' }}>
+                  <Navigation className="h-3.5 w-3.5" />
+                </span>
+              </a>
             </div>
           </motion.div>
         )

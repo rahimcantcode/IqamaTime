@@ -34,7 +34,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[10px] font-medium transition-[color,transform] duration-300 active:scale-[0.97] ${active ? 'text-[#4F6F52]' : 'text-[rgba(122,122,122,0.82)]'}`}
+              className={`relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-1.5 text-[10px] font-medium transition-[color,transform] duration-300 active:scale-[0.97] ${active ? 'text-[#4F6F52]' : 'text-[#595550]'}`}
             >
               {active ? (
                 <motion.span

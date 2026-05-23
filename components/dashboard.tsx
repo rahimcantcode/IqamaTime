@@ -104,7 +104,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
 
 
   return (
-    <main className="relative min-h-screen overflow-x-clip bg-[#FAFAF7]">
+    <main className="relative min-h-screen overflow-x-clip bg-[--background]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-8%,rgba(143,174,147,0.14),transparent_34rem)]" />
       <div className="relative z-10">
         <AppHeader

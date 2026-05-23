@@ -126,7 +126,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                 scale:   isCenter ? 1 : 0.82,
                 rotateY: offset * -18,
                 opacity: isCenter ? 1 : Math.max(0.15, 1 - dist * 0.42),
-                filter:  `blur(${isCenter ? 0 : dist * 3}px) brightness(${isCenter ? 1 : 0.72})`,
+                filter:  `brightness(${isCenter ? 1 : 0.72})`,
               }}
               transition={SPRING}
               onClick={() => { if (offset !== 0) setActive(p => p + offset) }}
@@ -167,25 +167,25 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                       style={{
                         fontFamily: 'Georgia, serif',
                         direction: 'rtl',
-                        color: 'rgba(32,33,36,0.32)',
+                        color: 'rgba(32,33,36,0.62)',
                       }}
                     >
                       {c.prayer.arabicName}
                     </p>
-                    <p
+                    <h1
                       className="text-[1.45rem] font-bold leading-none tracking-tight"
-                      style={{ color: '#202124' }}
+                      style={{ color: 'var(--text-primary)' }}
                     >
                       {c.prayer.displayName}
-                    </p>
+                    </h1>
                   </div>
 
                   {/* Adhan time */}
                   {c.adhanTime && (
                     <div className="flex flex-col items-center gap-1">
                       <p
-                        className="text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
-                        style={{ color: '#9CA3AF' }}
+                        className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         Adhan Time
                       </p>
@@ -217,7 +217,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                     style={{
                       fontFamily: 'Georgia, serif',
                       direction: 'rtl',
-                      color: 'rgba(32,33,36,0.32)',
+                      color: 'rgba(32,33,36,0.62)',
                     }}
                   >
                     {c.prayer.arabicName}
@@ -225,7 +225,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
                   <p
                     className="text-[1.45rem] font-bold leading-none tracking-tight"
-                    style={{ color: '#202124' }}
+                    style={{ color: 'var(--text-primary)' }}
                   >
                     {c.prayer.displayName}
                   </p>
@@ -233,8 +233,8 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                   {c.adhanTime && (
                     <div className="mt-3 flex flex-col items-center gap-1">
                       <p
-                        className="text-[0.58rem] font-semibold uppercase tracking-[0.18em]"
-                        style={{ color: '#9CA3AF' }}
+                        className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
+                        style={{ color: 'var(--text-muted)' }}
                       >
                         Adhan Time
                       </p>
@@ -261,8 +261,8 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       <div className="mx-auto flex w-[82vw] max-w-[420px] items-center justify-between pb-1 pt-1">
         <button
           onClick={goPrev}
-          className="rounded-full p-2 transition-colors active:scale-90"
-          style={{ color: '#9CA3AF' }}
+          className="rounded-full p-3.5 transition-colors active:scale-90"
+          style={{ color: 'var(--text-muted)' }}
           aria-label="Previous prayer"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -274,7 +274,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               key={i}
               onClick={() => setActive(i)}
               aria-label={cards[i].prayer.displayName}
-              className="flex min-h-9 min-w-9 items-center justify-center transition-all duration-300"
+              className="flex min-h-11 min-w-11 items-center justify-center transition-all duration-300"
             >
               {i === activeIdx ? (
                 <div
@@ -293,8 +293,8 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
         <button
           onClick={goNext}
-          className="rounded-full p-2 transition-colors active:scale-90"
-          style={{ color: '#9CA3AF' }}
+          className="rounded-full p-3.5 transition-colors active:scale-90"
+          style={{ color: 'var(--text-muted)' }}
           aria-label="Next prayer"
         >
           <ChevronRight className="w-4 h-4" />
@@ -306,7 +306,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
         {!allIqamaPast && !adhanPast && (
           <p
             className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-            style={{ color: '#9CA3AF' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             Until Adhan
           </p>
@@ -314,7 +314,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
         {allIqamaPast ? (
           <p
             className="text-sm font-semibold tracking-[0.18em] uppercase"
-            style={{ color: '#9CA3AF' }}
+            style={{ color: 'var(--text-muted)' }}
           >
             Prayer Ended
           </p>
@@ -324,7 +324,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               className="h-2 w-2 rounded-full animate-pulse"
               style={{ background: accent }}
             />
-            <p className="text-base font-semibold" style={{ color: '#6B7280' }}>
+            <p className="text-base font-semibold" style={{ color: 'var(--text-secondary)' }}>
               Adhan Called
             </p>
           </div>
@@ -334,13 +334,13 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
       </div>
 
       {/* ── SWIPEABLE IQAMA LIST ───────────────────────────── */}
-      <div className="pb-28 pt-6">
-        <p
+      <div className="pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]">
+        <h2
           className="mb-3 px-7 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
-          style={{ color: '#9CA3AF' }}
+          style={{ color: 'var(--text-muted)' }}
         >
           Iqama Times
-        </p>
+        </h2>
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

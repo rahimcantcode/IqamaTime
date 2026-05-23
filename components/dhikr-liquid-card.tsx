@@ -84,8 +84,8 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
           </p>
         )}
         <div className="text-center">
-          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: '#202124' }}>{item.transliteration}</p>
-          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: '#9CA3AF' }}>{item.translation}</p>
+          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: 'var(--text-primary)' }}>{item.transliteration}</p>
+          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{item.translation}</p>
         </div>
 
         {/* Counter row */}
@@ -95,7 +95,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
             onClick={reset}
             disabled={count === 0}
             className="flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-all active:scale-90 disabled:opacity-30"
-            style={{ background: 'rgba(31,41,55,0.06)', color: '#6B7280' }}
+            style={{ background: 'rgba(31,41,55,0.06)', color: 'var(--text-secondary)' }}
             aria-label="Reset count"
           >
             ×
@@ -104,11 +104,11 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
           <div className="flex flex-col items-center">
             <span
               className="text-2xl font-bold tabular-nums"
-              style={{ color: completed ? item.accent : '#202124' }}
+              style={{ color: completed ? item.accent : 'var(--text-primary)' }}
             >
               {count}
             </span>
-            <span className="text-[0.58rem] font-medium" style={{ color: '#9CA3AF' }}>
+            <span className="text-[0.58rem] font-medium" style={{ color: 'var(--text-muted)' }}>
               of {item.targetCount}
             </span>
           </div>
@@ -144,7 +144,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
       style={{
         minHeight: 132,
         background: '#FFFFFF',
-        border: `1px solid ${completed ? item.accent + '35' : '#E7E2D8'}`,
+        border: `1px solid ${completed ? item.accent + '35' : 'var(--border)'}`,
         boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
       }}
       onClick={completed ? undefined : increment}
@@ -177,7 +177,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
         <button
           type="button"
           className="absolute right-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold transition-all active:scale-90"
-          style={{ background: 'rgba(31,41,55,0.08)', color: '#9CA3AF' }}
+          style={{ background: 'rgba(31,41,55,0.08)', color: 'var(--text-muted)' }}
           onPointerDown={e => e.stopPropagation()}
           onClick={e => { e.stopPropagation(); reset() }}
           aria-label="Reset count"
@@ -200,10 +200,10 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
         )}
 
         <div>
-          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: completed ? item.accent : '#202124' }}>
+          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: completed ? item.accent : 'var(--text-primary)' }}>
             {item.transliteration}
           </p>
-          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: '#9CA3AF' }}>
+          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
             {item.translation}
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function DhikrLiquidCard({ item, mode }: Props) {
               style={{
                 background: 'rgba(31,41,55,0.06)',
                 border: '1px solid rgba(31,41,55,0.10)',
-                color: '#9CA3AF',
+                color: 'var(--text-muted)',
               }}
               aria-label="Reset counter"
             >

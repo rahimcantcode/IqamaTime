@@ -106,10 +106,10 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
                       {item.arabic}
                     </p>
                   )}
-                  <p className="text-xs font-semibold" style={{ color: done ? item.accent : '#202124' }}>
+                  <p className="text-xs font-semibold" style={{ color: done ? item.accent : 'var(--text-primary)' }}>
                     {item.transliteration}
                   </p>
-                  <p className="text-[0.6rem] mt-0.5" style={{ color: '#9CA3AF' }}>{item.translation}</p>
+                  <p className="text-[0.6rem] mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.translation}</p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
@@ -118,14 +118,14 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
                     onClick={() => simpleReset(i)}
                     disabled={c === 0}
                     className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold transition-all active:scale-90 disabled:opacity-30"
-                    style={{ background: 'rgba(31,41,55,0.06)', color: '#6B7280' }}
+                    style={{ background: 'rgba(31,41,55,0.06)', color: 'var(--text-secondary)' }}
                     aria-label="Reset count"
                   >
                     ×
                   </button>
                   <div className="flex flex-col items-center min-w-[2.5rem]">
-                    <span className="text-xl font-bold tabular-nums" style={{ color: done ? item.accent : '#202124' }}>{c}</span>
-                    <span className="text-[0.55rem]" style={{ color: '#9CA3AF' }}>of {item.targetCount}</span>
+                    <span className="text-xl font-bold tabular-nums" style={{ color: done ? item.accent : 'var(--text-primary)' }}>{c}</span>
+                    <span className="text-[0.55rem]" style={{ color: 'var(--text-muted)' }}>of {item.targetCount}</span>
                   </div>
                   <button
                     onPointerDown={e => e.stopPropagation()}
@@ -159,7 +159,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
       style={{
         minHeight: 188,
         background: '#FFFFFF',
-        border: `1px solid ${allComplete ? '#C8A95135' : '#E7E2D8'}`,
+        border: `1px solid ${allComplete ? '#C8A95135' : 'var(--border)'}`,
         boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
       }}
       onClick={allComplete ? undefined : increment}
@@ -188,7 +188,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
         <button
           type="button"
           className="absolute right-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold transition-all active:scale-90"
-          style={{ background: 'rgba(31,41,55,0.08)', color: '#9CA3AF' }}
+          style={{ background: 'rgba(31,41,55,0.08)', color: 'var(--text-muted)' }}
           onPointerDown={e => e.stopPropagation()}
           onClick={e => { e.stopPropagation(); reset() }}
           aria-label="Reset tasbih"
@@ -242,10 +242,10 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
                 {currentItem.arabic}
               </p>
             )}
-            <p className="text-sm font-semibold" style={{ color: allComplete ? '#C8A951' : '#202124' }}>
+            <p className="text-sm font-semibold" style={{ color: allComplete ? '#C8A951' : 'var(--text-primary)' }}>
               {currentItem.transliteration}
             </p>
-            <p className="text-[0.6rem]" style={{ color: '#9CA3AF' }}>
+            <p className="text-[0.6rem]" style={{ color: 'var(--text-muted)' }}>
               {currentItem.translation}
             </p>
           </motion.div>
@@ -266,7 +266,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
               style={{
                 background: 'rgba(31,41,55,0.06)',
                 border: '1px solid rgba(31,41,55,0.10)',
-                color: '#9CA3AF',
+                color: 'var(--text-muted)',
               }}
               aria-label="Reset tasbih counter"
             >

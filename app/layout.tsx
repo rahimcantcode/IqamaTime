@@ -54,8 +54,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+        <link rel="preload" as="image" href="/calligraphy-bg.jpg" type="image/jpeg" />
       </head>
-      <body className="min-h-full bg-[#FAFAF7] text-[#202124]">
+      <body className="min-h-full bg-[--background] text-[--text-primary]">
         {children}
         <Script id="register-service-worker" strategy="afterInteractive">
           {`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});})}`}

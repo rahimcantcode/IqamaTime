@@ -37,16 +37,16 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
       <div className="flex min-w-0 flex-col gap-0.5">
         <p
           className="text-[2rem] font-bold leading-none tracking-tight tabular-nums"
-          style={{ color: '#202124' }}
+          style={{ color: 'var(--text-primary)' }}
           suppressHydrationWarning
         >
           {formatTime(now)}
         </p>
-        <p className="text-xs font-medium" style={{ color: '#6B7280' }} suppressHydrationWarning>
+        <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }} suppressHydrationWarning>
           {formatDate(now)}
         </p>
         {hijri && (
-          <p className="text-xs" style={{ color: '#9CA3AF' }} suppressHydrationWarning>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }} suppressHydrationWarning>
             {hijri}
           </p>
         )}
@@ -60,8 +60,8 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
               style={{ background: '#C8A951' }}
             />
             <p
-              className="text-[0.68rem] font-bold tracking-wide"
-              style={{ color: '#C8A951' }}
+              className="text-[0.75rem] font-bold tracking-wide"
+              style={{ color: '#4F6F52' }}
               suppressHydrationWarning
             >
               {nextPrayerName}
@@ -86,7 +86,7 @@ export default function AppHeader({ nextPrayerName, nextPrayerTime, onSettingsOp
         }}
         aria-label="Open settings"
       >
-        <Settings className="w-5 h-5" style={{ color: '#6B7280' }} />
+        <Settings className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
       </button>
     </header>
   )

@@ -95,14 +95,14 @@ export default async function UpdatesPage() {
   const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
-    <main className="min-h-screen bg-[#FAFAF7] pt-[max(env(safe-area-inset-top),16px)]">
+    <main className="min-h-screen bg-[--background] pt-[max(env(safe-area-inset-top),16px)]">
       <div className="px-6 pb-4 pt-2">
         <div className="mb-1 flex items-center gap-2">
           <Bell className="h-5 w-5" style={{ color: '#4F6F52' }} />
-          <h1 className="text-xl font-bold text-[#202124]">Updates</h1>
+          <h1 className="text-xl font-bold text-[--text-primary]">Updates</h1>
         </div>
 
-        <p className="text-xs text-[#6B7280]">
+        <p className="text-xs text-[--text-secondary]">
           Community lectures, seminars, and gatherings from supported masjids.
         </p>
       </div>
@@ -113,10 +113,10 @@ export default async function UpdatesPage() {
             className="rounded-[1.5rem] border border-[#E7E2D8] bg-white px-5 py-8 text-center"
             style={{ boxShadow: '0 4px 16px rgba(15,23,42,0.05)' }}
           >
-            <p className="mb-1 text-base font-semibold text-[#202124]">
+            <p className="mb-1 text-base font-semibold text-[--text-primary]">
               No upcoming events yet
             </p>
-            <p className="text-sm text-[#6B7280]">
+            <p className="text-sm text-[--text-secondary]">
               The weekly community feed refreshes automatically.
             </p>
           </div>
@@ -157,7 +157,7 @@ export default async function UpdatesPage() {
               <div className="px-5 py-5">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-lg font-bold leading-tight text-[#202124]">
+                    <p className="text-lg font-bold leading-tight text-[--text-primary]">
                       {event.title}
                     </p>
 
@@ -169,7 +169,7 @@ export default async function UpdatesPage() {
                   </div>
                 </div>
 
-                <div className="mb-4 flex flex-col gap-2 text-sm text-[#6B7280]">
+                <div className="mb-4 flex flex-col gap-2 text-sm text-[--text-secondary]">
                   {(event.event_date || event.event_time) && (
                     <div className="flex items-center gap-2">
                       <CalendarDays className="h-4 w-4 text-[#C8A951]" />
