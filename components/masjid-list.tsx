@@ -6,6 +6,23 @@ import { MasjidIqamaTime } from '@/types'
 import { compareTimesAsc } from '@/scrapers/normalizeTime'
 import { cn } from '@/lib/utils'
 
+const MASJID_LABELS: Record<string, { short: string; full: string }> = {
+  'EPIC Masjid':                          { short: 'EPIC',   full: 'East Plano Islamic Center' },
+  'IANT':                                 { short: 'IANT',   full: 'Islamic Association of North Texas' },
+  'Islamic Center of Rowlett':            { short: 'ICR',    full: 'Islamic Center of Rowlett' },
+  'SMS Masjid of Sachse':                 { short: 'SMS',    full: 'Sachse Masjid of Sachse' },
+  'Valley Ranch Islamic Center':          { short: 'VRIC',   full: 'Valley Ranch Islamic Center' },
+  'Qalam Institute':                      { short: 'Qalam',  full: 'Qalam Institute' },
+  'Islamic Association of Collin County': { short: 'IACC',   full: 'Islamic Association of Collin County' },
+  'Masjid Yaseen':                        { short: 'Yaseen', full: 'Masjid Yaseen' },
+  'American Imams Academy':               { short: 'AIA',    full: 'American Imams Academy' },
+  'Islamic Center of Irving':             { short: 'ICI',    full: 'Islamic Center of Irving' },
+  'Islamic Association of Allen':         { short: 'IAA',    full: 'Islamic Association of Allen' },
+  'McKinney Islamic Association':         { short: 'MIA',    full: 'McKinney Islamic Association' },
+  'Islamic Center of Frisco':             { short: 'ICF',    full: 'Islamic Center of Frisco' },
+  'MAS Dallas':                           { short: 'MAS',    full: 'Muslim American Society Dallas' },
+}
+
 interface Props {
   iqamaTimes: MasjidIqamaTime[]
   isJummah?: boolean
@@ -107,19 +124,47 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
             }}
           >
             {/* Masjid name + city */}
-            <div className="flex min-w-0 flex-col gap-0.5 pr-2">
-              <span
-                className="truncate text-[0.92rem] font-semibold leading-tight"
-                style={{ color: 'var(--text-primary)' }}
-              >
-                {entry.masjid.name}
-              </span>
-              <span
-                className="text-[0.72rem] leading-tight"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                {entry.masjid.city}
-              </span>
+            <div className="flex min-w-0 flex-col gap-0 pr-2">
+              {(() => {
+                const label = MASJID_LABELS[entry.masjid.name]
+                return label ? (
+                  <>
+                    <span
+                      className="text-[0.58rem] font-bold uppercase tracking-[0.14em]"
+                      style={{ color: accentColor }}
+                    >
+                      {label.short}
+                    </span>
+                    <span
+                      className="truncate text-[0.86rem] font-semibold leading-tight"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {label.full}
+                    </span>
+                    <span
+                      className="text-[0.68rem] leading-tight"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {entry.masjid.city}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span
+                      className="truncate text-[0.92rem] font-semibold leading-tight"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {entry.masjid.name}
+                    </span>
+                    <span
+                      className="text-[0.72rem] leading-tight"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      {entry.masjid.city}
+                    </span>
+                  </>
+                )
+              })()}
             </div>
 
             {/* Time(s) + directions */}
