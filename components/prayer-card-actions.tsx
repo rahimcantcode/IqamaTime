@@ -138,9 +138,9 @@ export default function PrayerCardActions({
           disabled={saving}
           className="w-full rounded-full py-1.5 text-[0.62rem] font-semibold tracking-wide transition-all active:scale-95 disabled:opacity-60"
           style={{
-            background: 'rgba(79,111,82,0.13)',
-            border: '1px solid rgba(79,111,82,0.28)',
-            color: '#4F6F52',
+            background: '#4F6F52',
+            border: '1px solid #4F6F52',
+            color: '#FFFFFF',
           }}
         >
           {saving ? 'Saving...' : 'I prayed at the masjid'}
@@ -153,9 +153,9 @@ export default function PrayerCardActions({
         onClick={handleTasbih}
         className="rounded-full px-5 py-1.5 text-[0.62rem] font-semibold tracking-wide transition-all active:scale-95"
         style={{
-          background: 'transparent',
-          border: '1px solid rgba(200,169,81,0.45)',
-          color: '#C8A951',
+          background: '#C8A951',
+          border: '1px solid #C8A951',
+          color: '#FFFFFF',
         }}
       >
         Tasbih
