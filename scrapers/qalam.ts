@@ -93,5 +93,6 @@ export async function scrapeQalam(): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err)
     logger.error(MASJID_NAME, msg)
     await logScrape(MASJID_NAME, false, dur, msg)
+    throw err
   }
 }

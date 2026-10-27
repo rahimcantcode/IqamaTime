@@ -12,6 +12,7 @@ const MASJID_LABELS: Record<string, { short: string; full: string }> = {
   'Islamic Center of Rowlett':            { short: 'ICR',    full: 'Islamic Center of Rowlett' },
   'SMS Masjid of Sachse':                 { short: 'SMS',    full: 'Sachse Masjid of Sachse' },
   'Valley Ranch Islamic Center':          { short: 'VRIC',   full: 'Valley Ranch Islamic Center' },
+  'Qalam Masjid':                          { short: 'Qalam', full: 'Qalam Masjid' },
   'Qalam Institute':                      { short: 'Qalam',  full: 'Qalam Institute' },
   'Islamic Association of Collin County': { short: 'IACC',   full: 'Islamic Association of Collin County' },
   'Masjid Yaseen':                        { short: 'Yaseen', full: 'Masjid Yaseen' },
@@ -172,8 +173,9 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
               {entry.iqama ? (
                 <TimePill time={entry.iqama} isPast={entry.isPast} accent={accentColor} />
               ) : (
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>—</span>
+                <a href={entry.sourceUrl ?? entry.masjid.website_url} target="_blank" rel="noopener noreferrer" className="text-xs underline" style={{ color: 'var(--text-muted)' }}>Check website</a>
               )}
+              {entry.stale && <span className="text-[0.65rem] text-amber-800">Previous day: verify with masjid</span>}
               {hasBoth && entry.iqama2 && (
                 <TimePill time={entry.iqama2} isPast={isTimePast(entry.iqama2)} accent={accentColor} />
               )}

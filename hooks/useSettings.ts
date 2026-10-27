@@ -66,8 +66,9 @@ export function useSettings() {
   }, [readLocalSettings])
 
   useEffect(() => {
-    syncPrivateSettings()
-    return subscribeToPrivateAuth(syncPrivateSettings)
+    const timer = window.setTimeout(syncPrivateSettings, 0)
+    const unsubscribe = subscribeToPrivateAuth(syncPrivateSettings)
+    return () => { window.clearTimeout(timer); unsubscribe() }
   }, [syncPrivateSettings])
 
   const updateSettings = useCallback((updates: Partial<AppSettings>) => {

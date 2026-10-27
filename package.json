@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "generate-icons": "node scripts/generate-icons.mjs",
-    "scrape": "npx tsx scrapers/scrape_all.ts"
+    "scrape": "node --import tsx scrapers/scrape_all.ts",
+    "test": "node --import tsx --test scrapers/repairs.test.ts",
+    "scrape:events": "node --import tsx scrapers/scrape_events.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -49,6 +51,7 @@
     "pg": "^8.21.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3"
   }
 }

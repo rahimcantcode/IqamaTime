@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import type { JsonLdEvent } from './event-types'
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 
@@ -112,7 +113,7 @@ function contentHash(event: EventRow): string {
     .digest('hex')
 }
 
-function fromJsonLd(item: any, pageUrl: string): EventRow | null {
+function fromJsonLd(item: JsonLdEvent, pageUrl: string): EventRow | null {
   if (!item || item['@type'] !== 'Event') return null
   const title = cleanText(item.name)
   if (!title || /^events?$/i.test(title) || title.length > 100) return null
@@ -129,7 +130,7 @@ function fromJsonLd(item: any, pageUrl: string): EventRow | null {
   }
 }
 
-function fromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, pageUrl: string): EventRow | null {
+function fromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<import("domhandler").AnyNode>, pageUrl: string): EventRow | null {
   const title = cleanText(
     node.find('.tribe-events-calendar-list__event-title a').first().text() ||
     node.find('.tribe-events-calendar-list__event-title').first().text() ||
@@ -198,11 +199,7 @@ async function upsertEvents(events: EventRow[]) {
   const supabase = getSupabase()
   const { data: masjid, error: masjidError } = await supabase.from('masjids').select('id').eq('name', MASJID_NAME).maybeSingle()
   if (masjidError) throw masjidError
-  await supabase.from('community_events').update({ active: false }).eq('source_name', SOURCE_NAME)
-  if (!events.length) {
-    logger.warn('IANT', 'No IANT events found for the upcoming week. Feed will show empty state.')
-    return
-  }
+  if (!events.length) throw new Error('No events parsed; preserving previous feed')
   const rows = events.map(event => ({
     masjid_id: masjid?.id ?? null,
     title: event.title,
@@ -221,6 +218,10 @@ async function upsertEvents(events: EventRow[]) {
   console.log(`Upserting ${rows.length} IANT community_events rows`)
   const { error } = await supabase.from('community_events').upsert(rows, { onConflict: 'content_hash' })
   if (error) throw error
+  const { error: cleanupError } = await supabase.from('community_events').update({ active: false })
+    .in('source_name', [...new Set(rows.map(row => row.source_name))])
+    .not('content_hash', 'in', `(${rows.map(row => row.content_hash).join(',')})`)
+  if (cleanupError) throw cleanupError
 }
 
 export async function scrapeIANTEvents(): Promise<void> {

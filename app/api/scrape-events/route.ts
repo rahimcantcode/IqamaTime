@@ -10,11 +10,10 @@ export const maxDuration = 300 // 5 min (Vercel Pro)
  * Called by Vercel cron every Sunday at 07:00 America/Chicago.
  */
 export async function POST(req: NextRequest) {
-  const isVercelCron = req.headers.get('x-vercel-cron') === '1'
-  const secret = process.env.SCRAPE_SECRET
+  const secrets = [process.env.CRON_SECRET, process.env.SCRAPE_SECRET].filter(Boolean)
   const auth   = req.headers.get('authorization')
 
-  if (!isVercelCron && secret && auth !== `Bearer ${secret}`) {
+  if (!secrets.length || !secrets.some(secret => auth === `Bearer ${secret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -22,6 +21,7 @@ export async function POST(req: NextRequest) {
     const { scrapeAllCommunityEvents } = await import('@/scrapers/events')
     const { scrapeIANTEvents }         = await import('@/scrapers/iant_events')
 
+    const { scrapeMASEvents } = await import('@/scrapers/mas')
     const results: Record<string, 'ok' | string> = {}
 
     try {
@@ -38,7 +38,15 @@ export async function POST(req: NextRequest) {
       results['IANT'] = e instanceof Error ? e.message : 'error'
     }
 
-    return NextResponse.json({ success: true, results })
+    try {
+      await scrapeMASEvents()
+      results['MAS'] = 'ok'
+    } catch (e) {
+      results['MAS'] = e instanceof Error ? e.message : 'error'
+    }
+
+    const success = Object.values(results).every(result => result === 'ok')
+    return NextResponse.json({ success, results }, { status: success ? 200 : 502 })
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Unknown error' },

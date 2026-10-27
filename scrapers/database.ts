@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import type { WebSocketLikeConstructor } from '@supabase/realtime-js'
 import { logger } from './logger'
 import WebSocket from 'ws'
+import { dallasDate } from '../lib/dallas-date'
+import { validatePrayerTimes } from './validation'
 
 export interface ScrapedPrayerTimes {
   masjidName: string
@@ -50,6 +52,7 @@ export async function ensureMasjid(input: {
   city: string
   websiteUrl: string
 }): Promise<string | null> {
+  if (process.env.SCRAPE_DRY_RUN === '1') return 'dry-run'
   const supabase = getSupabase()
 
   // Upsert on name (requires masjids_name_unique constraint).
@@ -126,10 +129,9 @@ export async function replaceCommunityEventsForSource(input: {
 }
 
 export async function upsertPrayerTimes(data: ScrapedPrayerTimes): Promise<void> {
-  // Skip entirely if we found no prayer times — don't overwrite good existing data
-  const hasTimes = [data.fajr, data.dhuhr, data.asr, data.maghrib, data.isha].some(Boolean)
-  if (!hasTimes) {
-    logger.warn(data.masjidName, 'No prayer times found — skipping DB write to preserve existing data')
+  validatePrayerTimes(data)
+  if (process.env.SCRAPE_DRY_RUN === '1') {
+    console.log('SCRAPE_RESULT ' + JSON.stringify(data))
     return
   }
 
@@ -178,6 +180,7 @@ export async function logScrape(
   durationMs: number,
   error?: string
 ): Promise<void> {
+  if (process.env.SCRAPE_DRY_RUN === '1') return
   try {
     const supabase = getSupabase()
     const { data: masjid } = await supabase
@@ -198,5 +201,5 @@ export async function logScrape(
 }
 
 export function todayDate(): string {
-  return new Date().toISOString().split('T')[0]
+  return dallasDate()
 }

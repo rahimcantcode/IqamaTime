@@ -1,9 +1,8 @@
 /**
  * Scraper: McKinney Islamic Association
- * URL: https://us.mohid.co/tx/dallas/mia
- * Method: axios + cheerio (old Mohid platform, SSR HTML)
- * Daily: div.list.plusG li — prayer name in first text node, iqama in .prayer_iqama_div
- * Jummah: items with "Friday Khutba" text, time in .num element
+ * URL: https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=wLVzDqLJ
+ * Method: GET AthanPlus widget (embedded on mckinneymasjid.org via iframe)
+ *         Active carousel slide = today's iqamah times
  */
 import axios from 'axios'
 import * as cheerio from 'cheerio'
@@ -12,50 +11,59 @@ import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 
 const MASJID_NAME = 'McKinney Islamic Association'
-const URL = 'https://us.mohid.co/tx/dallas/mia'
+const WIDGET_URL  = 'https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=wLVzDqLJ'
+const SOURCE_URL  = 'https://mckinneymasjid.org'
 
 export async function scrapeMIA(): Promise<void> {
   const start = logger.scrapeStart(MASJID_NAME)
   const date  = todayDate()
 
   try {
-    const { data: html } = await axios.get(URL, {
+    const { data: html } = await axios.get(WIDGET_URL, {
       timeout: 15000,
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; IqamaTimeBot/1.0)' },
     })
 
-    const $ = cheerio.load(html)
+    const $ = cheerio.load(html as string)
+
+    // The carousel has 7 slides (one per day); find which index is active (today)
+    let activeIdx = 0
+    $('.carousel-item').each((i, el) => {
+      if ($(el).hasClass('active')) activeIdx = i
+    })
+
+    // Tables and Jumuah ULs are parallel arrays matching carousel slides
+    const table = $('table').eq(activeIdx)
+
     const times: TimesOnly = {
       fajr: null, dhuhr: null, asr: null, maghrib: null, isha: null,
       jummah1: null, jummah2: null, jummah3: null,
     }
 
-    // Daily prayer iqama times
-    $('div.list.plusG li').each((_, li) => {
-      const text = $(li).text().toLowerCase()
-      const iqamaText = $(li).find('.prayer_iqama_div').text().trim()
-      const iqama = iqamaText || $(li).find('.num').last().text().trim() || null
+    // Each prayer row: td[0]=name, td[1]=adhan, td[2]=iqamah (bold)
+    table.find('tr').each((_, row) => {
+      const cells = $(row).find('td')
+      if (cells.length < 3) return
+      const name   = cells.eq(0).text().replace(/\s+/g, ' ').trim().toLowerCase()
+      const iqamah = cells.eq(2).find('b').text().trim() || cells.eq(2).text().trim()
 
-      if (text.includes('fajr'))                                 times.fajr    = normalizeTime(iqama)
-      else if (text.includes('dhuhr') || text.includes('zuhr')) times.dhuhr   = normalizeTime(iqama)
-      else if (text.includes('asr'))                            times.asr     = normalizeTime(iqama)
-      else if (text.includes('maghrib'))                        times.maghrib  = normalizeTime(iqama)
-      else if (text.includes('isha'))                           times.isha    = normalizeTime(iqama)
+      if      (name.includes('fajr'))    times.fajr    = normalizeTime(iqamah)
+      else if (name.includes('dhuhr'))   times.dhuhr   = normalizeTime(iqamah)
+      else if (name.includes('asr'))     times.asr     = normalizeTime(iqamah)
+      else if (name.includes('maghrib')) times.maghrib = normalizeTime(iqamah)
+      else if (name.includes('isha'))    times.isha    = normalizeTime(iqamah)
     })
 
-    // Jummah times — "Friday Khutba 1/2/3" items with .num containing the time
-    $('li, div, p').each((_, el) => {
-      const text = $(el).text().toLowerCase()
-      if (!text.includes('friday') && !text.includes('khutba') && !text.includes('jumu')) return
-      const timeText = $(el).find('.num').text().trim()
-      if (!timeText) return
-      const t = normalizeTime(timeText)
-      if      (!times.jummah1) times.jummah1 = t
-      else if (!times.jummah2 && t !== times.jummah1) times.jummah2 = t
-      else if (!times.jummah3 && t !== times.jummah2) times.jummah3 = t
+    // Jumuah times: parallel UL list at same index as active carousel slide
+    $('ul.month-calendar').eq(activeIdx).find('li').each((_, item) => {
+      const time  = $(item).find('b').text().trim()
+      const label = $(item).find('p').text().trim().toLowerCase()
+      if      (label.includes('1')) times.jummah1 = normalizeTime(time)
+      else if (label.includes('2')) times.jummah2 = normalizeTime(time)
+      else if (label.includes('3')) times.jummah3 = normalizeTime(time)
     })
 
-    await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
+    await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: SOURCE_URL, ...times })
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)
     await logScrape(MASJID_NAME, true, dur)
   } catch (err: unknown) {
@@ -63,5 +71,6 @@ export async function scrapeMIA(): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err)
     logger.error(MASJID_NAME, msg)
     await logScrape(MASJID_NAME, false, dur, msg)
+    throw err
   }
 }

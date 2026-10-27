@@ -1,3 +1,5 @@
+import Image from 'next/image'
+import { dallasDate } from '@/lib/dallas-date'
 import { Bell, CalendarDays, MapPin, Mic } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { epicRecurringEvents } from '@/data/epic-recurring-events'
@@ -34,13 +36,15 @@ function hasValue(value: unknown) {
   return typeof value === 'string' && value.trim().length > 0
 }
 
-function mergeDuplicateEvents(events: any[] | null | undefined) {
+type FeedEvent = { id: string; title: string; event_date: string | null; event_time: string | null; location: string | null; speakers: string | null; description: string | null; image_url: string | null; source_url: string; source_name: string; masjids: { name: string } | null }
+
+function mergeDuplicateEvents(events: FeedEvent[] | null | undefined) {
   if (!events?.length) return []
 
-  const merged = new Map<string, any>()
+  const merged = new Map<string, FeedEvent>()
 
   for (const event of events) {
-    const key = normalizeEventTitle(event.title || '')
+    const key = [event.source_name, normalizeEventTitle(event.title || ''), event.event_date, event.event_time].join('|')
     const existing = merged.get(key)
 
     if (!existing) {
@@ -88,10 +92,11 @@ export default async function UpdatesPage() {
       masjids(name)
     `)
     .eq('active', true)
+    .or(`event_date.is.null,event_date.gte.${dallasDate()}`)
     .order('event_date', { ascending: true })
     .limit(50)
 
-  const combinedEvents = [...(events || []), ...epicRecurringEvents]
+  const combinedEvents = [...((events || []) as unknown as FeedEvent[]), ...epicRecurringEvents]
   const visibleEvents = mergeDuplicateEvents(combinedEvents)
 
   return (
@@ -122,7 +127,7 @@ export default async function UpdatesPage() {
           </div>
         )}
 
-        {visibleEvents.map((event: any) => {
+        {visibleEvents.map((event) => {
           const displayDescription = cleanDisplayDescription(event.description, event.title, event.source_name)
 
           return (
@@ -136,7 +141,10 @@ export default async function UpdatesPage() {
             >
               {event.image_url ? (
                 <div className="relative aspect-[1.35/1] w-full overflow-hidden bg-[#F3F4F6]">
-                  <img
+                  <Image
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 640px"
                     src={event.image_url}
                     alt={event.title}
                     className="h-full w-full object-cover"

@@ -30,7 +30,8 @@ interface Props {
 }
 
 export default function PrayerFocusRail({ cards, initialIndex }: Props) {
-  const [active, setActive] = useState(initialIndex)
+  const [selected, setActive] = useState<number | null>(null)
+  const active = selected ?? initialIndex
   const count    = cards.length
   const activeIdx = wrap(0, count, active)
   const card     = cards[activeIdx]
@@ -42,14 +43,14 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
   const adhanPast = isTimePast(card.adhanTime)
 
   const latestIqama = card.iqamaTimes
-    .map(t => t.iqama)
+    .flatMap(t => [t.iqama, t.iqama2, t.iqama3])
     .filter((t): t is string => !!t)
     .sort((a, b) => compareTimesAsc(b, a))[0] ?? null
 
   const allIqamaPast = isTimePast(latestIqama)
 
-  const goPrev = useCallback(() => setActive(p => p - 1), [])
-  const goNext = useCallback(() => setActive(p => p + 1), [])
+  const goPrev = useCallback(() => setActive(p => (p ?? initialIndex) - 1), [initialIndex])
+  const goNext = useCallback(() => setActive(p => (p ?? initialIndex) + 1), [initialIndex])
 
   const onDragEnd = useCallback((_: unknown, { offset, velocity }: PanInfo) => {
     const power = Math.abs(offset.x) * velocity.x
@@ -129,7 +130,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                 filter:  `brightness(${isCenter ? 1 : 0.72})`,
               }}
               transition={SPRING}
-              onClick={() => { if (offset !== 0) setActive(p => p + offset) }}
+              onClick={() => { if (offset !== 0) setActive(p => (p ?? initialIndex) + offset) }}
             >
               {/* Gradient base */}
               <div className={`absolute inset-0 bg-gradient-to-b ${PRAYER_GRADIENTS[c.prayer.key]}`} />

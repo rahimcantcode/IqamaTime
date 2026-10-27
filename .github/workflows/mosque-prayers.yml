@@ -1,9 +1,19 @@
 name: Scrape Prayer Times
 
 on:
+  push:
+    branches: [main]
+    paths: ['scrapers/**', '.github/workflows/mosque-prayers.yml']
   schedule:
-    - cron: '15 5 * * *'   # 5:15 AM UTC = 11:15 PM CST daily
+    - cron: '17 6 * * *'   # After midnight in Dallas throughout the year
   workflow_dispatch:         # allow manual run from GitHub Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mosque-prayers
+  cancel-in-progress: false
 
 jobs:
   scrape:
@@ -15,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -28,4 +38,4 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx tsx scrapers/scrape_all.ts
+        run: node --import tsx scrapers/scrape_all.ts

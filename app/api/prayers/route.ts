@@ -1,6 +1,6 @@
+import { dallasDate, previousDate } from '@/lib/dallas-date'
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { MOCK_PRAYER_TIMES } from '@/lib/mock-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,12 +8,12 @@ export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key || url === 'your-supabase-url') {
-    return NextResponse.json(MOCK_PRAYER_TIMES)
+    return NextResponse.json([])
   }
 
   try {
     const supabase = await createServerSupabaseClient()
-    const today    = new Date().toISOString().split('T')[0]
+    const today    = dallasDate()
 
     const { data: masjids, error: m } = await supabase
       .from('masjids')
@@ -23,7 +23,7 @@ export async function GET() {
 
     if (m) return NextResponse.json({ error: m.message }, { status: 500 })
 
-    const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0]
+    const yesterday = previousDate(today)
     const { data: prayerTimes, error: ptErr } = await supabase
       .from('prayer_times')
       .select('*')
@@ -40,7 +40,7 @@ export async function GET() {
     }))
 
     return NextResponse.json(merged, {
-      headers: { 'Cache-Control': 's-maxage=1800, stale-while-revalidate=300' },
+      headers: { 'Cache-Control': 'no-store' },
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })

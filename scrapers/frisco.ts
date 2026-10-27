@@ -16,8 +16,9 @@ export async function scrapeFrisco(): Promise<void> {
   const start = logger.scrapeStart(MASJID_NAME)
   const date  = todayDate()
 
+  let browser: Awaited<ReturnType<typeof launchBrowser>> | undefined
   try {
-    const browser = await launchBrowser()
+    browser = await launchBrowser()
     const page    = await browser.newPage()
 
     await page.goto(WIDGET_URL, { waitUntil: 'networkidle', timeout: 45000 })
@@ -28,7 +29,6 @@ export async function scrapeFrisco(): Promise<void> {
     ).catch(() => {})
 
     const html = await page.content()
-    await browser.close()
 
     const { load } = await import('cheerio')
     const $ = load(html)
@@ -67,5 +67,8 @@ export async function scrapeFrisco(): Promise<void> {
     const msg = err instanceof Error ? err.message : String(err)
     logger.error(MASJID_NAME, msg)
     await logScrape(MASJID_NAME, false, dur, msg)
+    throw err
+  } finally {
+    await browser?.close()
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { PrayerKey } from '@/types'
 import { getLocalDate } from '@/lib/prayer-checkins'
@@ -32,7 +32,7 @@ export default function PrayerCardActions({
   const [undoVisible, setUndoVisible] = useState(false)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const loadCheckin = async () => {
+  const loadCheckin = useCallback(async () => {
     const session = getPrivateSession()
     if (!session) {
       setCheckedIn(false)
@@ -46,12 +46,12 @@ export default function PrayerCardActions({
     } catch {
       setCheckedIn(false)
     }
-  }
+  }, [prayerKey])
 
   useEffect(() => {
     const timer = window.setTimeout(loadCheckin, 0)
     return () => window.clearTimeout(timer)
-  }, [prayerKey])
+  }, [loadCheckin])
 
   const handleCheckin = async () => {
     if (checkedIn || saving) return

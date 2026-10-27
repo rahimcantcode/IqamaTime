@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useHydrated } from '@/hooks/useHydrated'
 import { createPortal } from 'react-dom'
 import {
   Share,
@@ -74,14 +75,10 @@ const steps = [
 ]
 
 export default function FirstVisitGuide() {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useHydrated()
   const [open, setOpen] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   useEffect(() => {
     if (!mounted) return
@@ -92,8 +89,9 @@ export default function FirstVisitGuide() {
       setOpen(!alreadySeen && !loggedIn)
     }
 
-    evaluate()
-    return subscribeToPrivateAuth(evaluate)
+    const timer = window.setTimeout(evaluate, 0)
+    const unsubscribe = subscribeToPrivateAuth(evaluate)
+    return () => { window.clearTimeout(timer); unsubscribe() }
   }, [mounted])
 
   useEffect(() => {

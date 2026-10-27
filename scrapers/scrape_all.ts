@@ -83,8 +83,9 @@ async function runAll() {
   const results: { name: string; status: 'success' | 'failed' }[] = []
 
   // Run scrapers concurrently (light ones) but rate-limit heavy ones
-  const lightScrapers  = SCRAPERS.filter(s => !['VRIC', 'AIA', 'Frisco'].includes(s.name))
-  const heavyScrapers  = SCRAPERS.filter(s =>  ['VRIC', 'AIA', 'Frisco'].includes(s.name))
+  const selected = SCRAPERS.filter(s => !process.env.SCRAPE_ONLY || process.env.SCRAPE_ONLY.split(',').includes(s.name))
+  const lightScrapers  = selected.filter(s => !['VRIC', 'AIA', 'Frisco'].includes(s.name))
+  const heavyScrapers  = selected.filter(s =>  ['VRIC', 'AIA', 'Frisco'].includes(s.name))
 
   // Light scrapers: run concurrently
   const lightResults = await Promise.all(

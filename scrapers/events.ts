@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import type { JsonLdEvent } from './event-types'
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 
@@ -126,7 +127,7 @@ function extractSpeaker(text: string): string | null {
 }
 
 function cleanDescription(text: string, title: string, sourceName: string): string {
-  let cleaned = text
+  const cleaned = text
     .replace(title, '')
     .replace(/\b\d+\s*min\s*read\b/gi, '')
     .replace(/search and views navigation/gi, '')
@@ -160,7 +161,7 @@ function rememberCandidate(candidate: DebugCandidate) {
   if (DEBUG_CANDIDATES.length < 120) DEBUG_CANDIDATES.push(candidate)
 }
 
-function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source: SourceDef, pageUrl: string): RawEvent | null {
+function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<import("domhandler").AnyNode>, source: SourceDef, pageUrl: string): RawEvent | null {
   const imageAlt = node.find('img').map((_, img) => $(img).attr('alt') || '').get().join(' ')
   const text = cleanText([node.text(), imageAlt].filter(Boolean).join(' '))
   if (!text) return null
@@ -201,7 +202,7 @@ function buildFromNode($: cheerio.CheerioAPI, node: cheerio.Cheerio<any>, source
   }
 }
 
-function buildFromJsonLd(item: any, source: SourceDef, pageUrl: string): RawEvent | null {
+function buildFromJsonLd(item: JsonLdEvent, source: SourceDef, pageUrl: string): RawEvent | null {
   if (item?.['@type'] !== 'Event') return null
   const title = cleanText(item.name)
   if (!title || isBadTitle(title)) return null
@@ -292,14 +293,7 @@ async function upsertEvents(events: RawEvent[]) {
   if (masjidError) throw masjidError
   const masjidByName = new Map((masjids || []).map((m: { id: string; name: string }) => [m.name, m.id]))
 
-  const sourceNames = SOURCES.map(s => s.name)
-  await supabase.from('community_events').update({ active: false }).in('source_name', sourceNames)
-
-  if (!events.length) {
-    logger.warn('Events', 'No clean EPIC, Sachse, or Qalam events found. Feed will show empty state.')
-    return
-  }
-
+  if (!events.length) throw new Error('No events parsed; preserving previous feed')
   const rows = events.map(event => ({
     masjid_id: masjidByName.get(event.matchedMasjidName) ?? null,
     title: event.title,
@@ -319,6 +313,10 @@ async function upsertEvents(events: RawEvent[]) {
   console.log(`Upserting ${rows.length} clean community_events rows`)
   const { error } = await supabase.from('community_events').upsert(rows, { onConflict: 'content_hash' })
   if (error) throw error
+  const { error: cleanupError } = await supabase.from('community_events').update({ active: false })
+    .in('source_name', [...new Set(rows.map(row => row.source_name))])
+    .not('content_hash', 'in', `(${rows.map(row => row.content_hash).join(',')})`)
+  if (cleanupError) throw cleanupError
 }
 
 export async function scrapeAllCommunityEvents(): Promise<void> {

@@ -12,18 +12,22 @@ export interface PrivateUserSession {
   sessionToken: string
 }
 
-export interface PrivatePrayerCheckin extends PrayerCheckin {}
+export type PrivatePrayerCheckin = PrayerCheckin
 
 function normalizeUsername(username: string) {
   return username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '')
 }
 
-function readAuthRow(row: any): PrivateUserSession {
-  return {
-    userId: row.user_id ?? row.out_user_id,
-    username: row.username ?? row.out_username,
-    sessionToken: row.session_token ?? row.out_session_token,
+function readAuthRow(input: unknown): PrivateUserSession {
+  if (!input || typeof input !== 'object') throw new Error('Profile login returned no session.')
+  const row = input as Record<string, unknown>
+  const userId = row.user_id ?? row.out_user_id
+  const username = row.username ?? row.out_username
+  const sessionToken = row.session_token ?? row.out_session_token
+  if (typeof userId !== 'string' || typeof username !== 'string' || typeof sessionToken !== 'string') {
+    throw new Error('Profile login returned an invalid session.')
   }
+  return { userId, username, sessionToken }
 }
 
 async function sha256(value: string) {
@@ -158,7 +162,7 @@ export async function getPrivatePrayerCheckins(startDate?: string, endDate?: str
   })
   if (error) throw new Error(error.message)
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map((row: { id: string; prayer_date: string; prayer: PrayerCheckin['prayer']; prayer_label: string; adhan_time?: string; created_at: string; updated_at: string }) => ({
     id: row.id,
     date: row.prayer_date,
     prayer: row.prayer,

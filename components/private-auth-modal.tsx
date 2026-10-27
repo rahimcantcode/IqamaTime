@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useHydrated } from '@/hooks/useHydrated'
 import { createPortal } from 'react-dom'
 import { Lock, UserRound, X } from 'lucide-react'
 import { createPrivateProfile, loginPrivateProfile, PrivateUserSession } from '@/lib/private-auth'
@@ -18,11 +19,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
   const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useHydrated()
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') return

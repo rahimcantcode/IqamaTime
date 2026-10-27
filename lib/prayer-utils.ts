@@ -31,6 +31,8 @@ export function parseTime(timeStr: string): [number, number] | null {
   const m = parseInt(match[2], 10)
   const period = match[3]?.toUpperCase()
 
+  if (m > 59 || h > 23 || (period && (h < 1 || h > 12))) return null
+
   if (period === 'PM' && h !== 12) h += 12
   if (period === 'AM' && h === 12) h = 0
 
@@ -70,15 +72,15 @@ export function formatCountdownText(seconds: number): string {
 /** Which prayer index is next (0-4), given prayer adhan times */
 export function getNextPrayerIndex(
   prayerTimes: Record<PrayerKey, string | null>,
-  isFriday: boolean
+  isFriday: boolean,
+  now = new Date()
 ): number {
   const prayers = getPrayersForDay(isFriday)
-  const now = new Date()
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
   for (let i = 0; i < prayers.length; i++) {
     const key = prayers[i].key
-    const raw = key === 'jummah' ? (prayerTimes.dhuhr ?? prayerTimes.jummah) : prayerTimes[key]
+    const raw = key === 'jummah' ? (prayerTimes.jummah ?? prayerTimes.dhuhr) : prayerTimes[key]
     if (!raw) continue
     const parts = parseTime(raw)
     if (!parts) continue

@@ -153,12 +153,15 @@ export default function ProgressPage() {
 
   useEffect(() => {
     if (!loaded) return
-    if (!isLoggedIn) {
-      setAuthOpen(true)
-      setWeekLog(createEmptyWeekLog(weekDates))
-      return
-    }
-    loadWeek()
+    const timer = window.setTimeout(() => {
+      if (!isLoggedIn) {
+        setAuthOpen(true)
+        setWeekLog(createEmptyWeekLog(weekDates))
+      } else {
+        void loadWeek()
+      }
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [loaded, isLoggedIn, loadWeek, weekDates])
 
   const togglePrayerForDate = async (dateKey: string, prayer: PrayerName) => {

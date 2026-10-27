@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { dallasDate } from '@/lib/dallas-date'
 import { MasjidWithPrayers, PrayerCardData, MasjidIqamaTime, PrayerKey, AdhanTimes } from '@/types'
 import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-utils'
 import { isFridayToday } from '@/lib/utils'
@@ -16,15 +18,23 @@ interface Props {
   adhanTimes: AdhanTimes
 }
 
-function isPast(timeStr: string | null): boolean {
+function isPast(timeStr: string | null, now: Date): boolean {
   if (!timeStr) return false
   const parts = parseTime(timeStr)
   if (!parts) return false
-  const now = new Date()
   return parts[0] * 60 + parts[1] < now.getHours() * 60 + now.getMinutes()
 }
 
 export default function Dashboard({ data, adhanTimes }: Props) {
+  const router = useRouter()
+  const [clock, setClock] = useState(() => new Date())
+  useEffect(() => {
+    const tick = setInterval(() => setClock(new Date()), 30000)
+    const refresh = () => { if (document.visibilityState === 'visible') router.refresh() }
+    const polling = setInterval(refresh, 300000)
+    document.addEventListener('visibilitychange', refresh)
+    return () => { clearInterval(tick); clearInterval(polling); document.removeEventListener('visibilitychange', refresh) }
+  }, [router])
   const isFriday = isFridayToday()
   const prayers  = getPrayersForDay(isFriday)
   const { settings, loaded } = useSettings()
@@ -51,10 +61,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
     jummah:  jummahTime,
   }), [adhanTimes, jummahTime])
 
-  const initialIndex = useMemo(
-    () => getNextPrayerIndex(timesForIndex, isFriday),
-    [timesForIndex, isFriday]
-  )
+  const initialIndex = getNextPrayerIndex(timesForIndex, isFriday, clock)
 
   const cards: PrayerCardData[] = useMemo(() =>
     prayers.map(prayer => {
@@ -81,7 +88,9 @@ export default function Dashboard({ data, adhanTimes }: Props) {
           iqama,
           iqama2,
           iqama3,
-          isPast: isPast(iqama),
+          isPast: isPast(iqama, clock),
+          stale: !!pt && pt.date !== dallasDate(),
+          sourceUrl: pt?.source_url ?? entry.website_url,
         }
       })
 
@@ -96,7 +105,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         isFriday,
       }
     }),
-    [prayers, visibleData, adhanTimes, jummahTime, isFriday]
+    [prayers, visibleData, adhanTimes, jummahTime, isFriday, clock]
   )
 
   const nextPrayer = prayers[initialIndex]
@@ -125,6 +134,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
         masjids={data.map(d => d)}
       />
 
+      {!data.length && <p role="status" className="mx-5 rounded-xl bg-white p-4 text-sm">Prayer data is temporarily unavailable. Please check your masjid website.</p>}
       <FirstVisitGuide />
       <BottomNav />
     </main>

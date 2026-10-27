@@ -1,4 +1,4 @@
-const CACHE_NAME     = 'iqamatime-v2'
+const CACHE_NAME     = 'iqamatime-v3'
 const OFFLINE_URL    = '/offline.html'
 const STATIC_ASSETS  = [
   '/',
@@ -40,7 +40,8 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request).catch(() =>
-        new Response(JSON.stringify({ error: 'Offline — using cached data' }), {
+        new Response(JSON.stringify({ error: 'Offline: prayer times unavailable' }), {
+          status: 503,
           headers: { 'Content-Type': 'application/json' },
         })
       )
@@ -52,11 +53,6 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then((res) => {
-          const clone = res.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-          return res
-        })
         .catch(() => caches.match(OFFLINE_URL))
     )
     return

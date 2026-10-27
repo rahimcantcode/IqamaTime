@@ -21,6 +21,7 @@ export function normalizeTime(raw: string | null | undefined): string | null {
   if (h12) {
     let h = parseInt(h12[1], 10)
     const m = parseInt(h12[2], 10)
+    if (h < 1 || h > 12 || m < 0 || m > 59) return null
     const period = h12[3].toUpperCase()
     if (period === 'PM' && h !== 12) h += 12
     if (period === 'AM' && h === 12) h = 0
