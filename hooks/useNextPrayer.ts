@@ -1,5 +1,6 @@
 'use client'
 
+import { dallasMinutes } from '@/lib/dallas-date'
 import { useMemo } from 'react'
 import { PrayerKey } from '@/types'
 import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-utils'
@@ -36,7 +37,7 @@ export function usePrayerIsPast(timeStr: string | null): boolean {
   const parts = parseTime(timeStr)
   if (!parts) return false
   const now = new Date()
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  const nowMinutes = dallasMinutes(now)
   const prayerMinutes = parts[0] * 60 + parts[1]
   return prayerMinutes < nowMinutes
 }

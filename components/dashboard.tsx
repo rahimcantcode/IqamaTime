@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { dallasDate } from '@/lib/dallas-date'
+import { dallasDate, dallasMinutes } from '@/lib/dallas-date'
 import { MasjidWithPrayers, PrayerCardData, MasjidIqamaTime, PrayerKey, AdhanTimes } from '@/types'
 import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-utils'
 import { isFridayToday } from '@/lib/utils'
@@ -22,7 +22,7 @@ function isPast(timeStr: string | null, now: Date): boolean {
   if (!timeStr) return false
   const parts = parseTime(timeStr)
   if (!parts) return false
-  return parts[0] * 60 + parts[1] < now.getHours() * 60 + now.getMinutes()
+  return parts[0] * 60 + parts[1] < dallasMinutes(now)
 }
 
 export default function Dashboard({ data, adhanTimes }: Props) {

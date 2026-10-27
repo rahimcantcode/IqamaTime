@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatTime(date: Date): string {
   return date.toLocaleTimeString('en-US', {
+    timeZone: 'America/Chicago',
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
@@ -15,6 +16,7 @@ export function formatTime(date: Date): string {
 
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
+    timeZone: 'America/Chicago',
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -22,5 +24,5 @@ export function formatDate(date: Date): string {
 }
 
 export function isFridayToday(): boolean {
-  return new Date().getDay() === 5
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', weekday: 'short' }).format(new Date()) === 'Fri'
 }

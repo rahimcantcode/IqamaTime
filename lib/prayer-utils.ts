@@ -1,3 +1,4 @@
+import { dallasMinutes, dallasTimeToDate } from './dallas-date'
 import { PrayerKey, PrayerMeta } from '@/types'
 
 export const ALL_PRAYERS: PrayerMeta[] = [
@@ -40,12 +41,10 @@ export function parseTime(timeStr: string): [number, number] | null {
 }
 
 /** Convert a time string to today's Date object */
-export function timeStrToDate(timeStr: string): Date | null {
+export function timeStrToDate(timeStr: string, now = new Date()): Date | null {
   const parts = parseTime(timeStr)
   if (!parts) return null
-  const d = new Date()
-  d.setHours(parts[0], parts[1], 0, 0)
-  return d
+  return dallasTimeToDate(parts[0], parts[1], now)
 }
 
 /** Format seconds into "1h 47m" or "47:23" */
@@ -76,7 +75,7 @@ export function getNextPrayerIndex(
   now = new Date()
 ): number {
   const prayers = getPrayersForDay(isFriday)
-  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  const nowMinutes = dallasMinutes(now)
 
   for (let i = 0; i < prayers.length; i++) {
     const key = prayers[i].key
@@ -103,6 +102,7 @@ export function secondsUntil(timeStr: string | null): number {
 export function getHijriDate(): string {
   try {
     const hijri = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {
+      timeZone: 'America/Chicago',
       day: 'numeric',
       month: 'long',
       year: 'numeric',

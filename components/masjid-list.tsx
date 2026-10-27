@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Navigation } from 'lucide-react'
 import { MasjidIqamaTime } from '@/types'
 import { compareTimesAsc } from '@/scrapers/normalizeTime'
+import { dallasMinutes } from '@/lib/dallas-date'
 import { cn } from '@/lib/utils'
 
 const MASJID_LABELS: Record<string, { short: string; full: string }> = {
@@ -79,7 +80,7 @@ function isTimePast(timeStr: string | null | undefined): boolean {
   if (match[3].toUpperCase() === 'PM' && h !== 12) h += 12
   if (match[3].toUpperCase() === 'AM' && h === 12) h = 0
   const now = new Date()
-  return h * 60 + m < now.getHours() * 60 + now.getMinutes()
+  return h * 60 + m < dallasMinutes(now)
 }
 
 export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }: Props) {
