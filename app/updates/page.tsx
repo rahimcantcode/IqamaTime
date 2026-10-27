@@ -44,7 +44,7 @@ function mergeDuplicateEvents(events: FeedEvent[] | null | undefined) {
   const merged = new Map<string, FeedEvent>()
 
   for (const event of events) {
-    const key = [event.source_name, normalizeEventTitle(event.title || ''), event.event_date, event.event_time].join('|')
+    const key = [event.source_name, normalizeEventTitle(event.title || ''), event.event_date].join('|')
     const existing = merged.get(key)
 
     if (!existing) {

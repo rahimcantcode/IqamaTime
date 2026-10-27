@@ -118,7 +118,7 @@ export default function SettingsSheet({ open, onClose, masjids }: Props) {
               {/* App info */}
               <div className="pb-6 text-center">
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  IqamaTime · Updated daily at 11:15 PM CT
+                  IqamaTime · Refreshed daily after midnight CT
                 </p>
               </div>
             </div>

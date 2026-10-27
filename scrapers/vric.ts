@@ -51,7 +51,7 @@ export async function scrapeVRIC(): Promise<void> {
         if (!khutbahTime) return  // skip rows with no parseable time
         if      (!times.jummah1) times.jummah1 = khutbahTime
         else if (!times.jummah2 && khutbahTime !== times.jummah1) times.jummah2 = khutbahTime
-        // VRIC has 2 Jumu'ah prayers; jummah3 stays null
+        else if (!times.jummah3 && khutbahTime !== times.jummah1 && khutbahTime !== times.jummah2) times.jummah3 = khutbahTime
         return
       }
 

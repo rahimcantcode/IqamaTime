@@ -44,9 +44,9 @@ interface DebugCandidate {
 }
 
 const SOURCES: SourceDef[] = [
-  { name: 'EPIC Masjid', masjidName: 'EPIC Masjid', url: 'https://epicmasjid.org', paths: ['/', '/events', '/event'] },
-  { name: 'SMS Masjid of Sachse', masjidName: 'SMS Masjid of Sachse', url: 'https://sachsemasjid.org', paths: ['/', '/events', '/calendar'] },
-  { name: 'Qalam Institute', masjidName: 'Qalam Institute', url: 'https://qalamcampus.org', paths: ['/', '/events', '/calendar'] },
+  { name: 'EPIC Masjid', masjidName: 'EPIC Masjid', url: 'https://epicmasjid.org', paths: ['/', '/event'] },
+  { name: 'SMS Masjid of Sachse', masjidName: 'SMS Masjid of Sachse', url: 'https://sachsemasjid.org', paths: ['/', '/sms-events-calendar/'] },
+  { name: 'Qalam Institute', masjidName: 'Qalam Masjid', url: 'https://qalamcampus.org', paths: ['/'] },
 ]
 
 const DEBUG_CANDIDATES: DebugCandidate[] = []
@@ -340,7 +340,7 @@ export async function scrapeAllCommunityEvents(): Promise<void> {
 }
 
 // CLI entry point
-if (process.argv[1]?.endsWith('events.ts') || process.argv[1]?.endsWith('events.js')) {
+if (['events.ts', 'events.js'].includes(process.argv[1]?.split(/[\\/]/).pop() ?? '')) {
   scrapeAllCommunityEvents().catch(error => {
     console.error('Fatal error in events scraper:', error)
     process.exit(1)

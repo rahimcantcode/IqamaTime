@@ -6,7 +6,7 @@ export const maxDuration = 300 // 5 min (Vercel Pro)
 /**
  * POST /api/scrape
  * Triggers all scrapers. Protected by SCRAPE_SECRET env var.
- * Called by Vercel cron at 23:15 America/Chicago daily.
+ * Called by Vercel cron at 06:17 UTC daily (after midnight in Dallas).
  */
 export async function POST(req: NextRequest) {
   const secrets = [process.env.CRON_SECRET, process.env.SCRAPE_SECRET].filter(Boolean)

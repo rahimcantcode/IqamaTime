@@ -202,7 +202,7 @@ export default function SettingsPageClient({ masjids }: Props) {
         </section>
 
         <div className="text-center">
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>IqamaTime · Updated daily at 11:15 PM CT</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>IqamaTime · Refreshed daily after midnight CT</p>
         </div>
       </div>
 

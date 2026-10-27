@@ -5,7 +5,7 @@ import { fetchAdhanTimes } from '@/lib/adhan-times'
 import Dashboard from '@/components/dashboard'
 
 async function getPrayerData(): Promise<MasjidWithPrayers[]> {
-  // Try Supabase first; fall back to mock data if env vars not set or query fails
+  // Never invent prayer times when live data is unavailable.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key || url === 'your-supabase-url') return []
@@ -50,5 +50,5 @@ export default async function HomePage() {
   return <Dashboard data={data} adhanTimes={adhanTimes} />
 }
 
-// Revalidate data every 30 minutes
+// Read current prayer data on every page refresh.
 export const dynamic = 'force-dynamic'

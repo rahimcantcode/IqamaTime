@@ -2,7 +2,7 @@
 /**
  * Master scraper runner
  * Runs all masjid scrapers and logs results.
- * Schedule: daily at 11:15 PM America/Chicago via cron or Vercel cron.
+ * Schedule: daily at 06:17 UTC (after midnight America/Chicago) via cron or Vercel cron.
  *
  * Usage:
  *   npx tsx scrapers/scrape_all.ts

@@ -232,7 +232,7 @@ export async function scrapeIANTEvents(): Promise<void> {
 }
 
 // CLI entry point
-if (process.argv[1]?.endsWith('iant_events.ts') || process.argv[1]?.endsWith('iant_events.js')) {
+if (['iant_events.ts', 'iant_events.js'].includes(process.argv[1]?.split(/[\\/]/).pop() ?? '')) {
   scrapeIANTEvents().catch(error => {
     console.error('Fatal error in IANT events scraper:', error)
     process.exit(1)
