@@ -97,7 +97,11 @@ export default async function UpdatesPage() {
     .limit(50)
 
   const combinedEvents = [...((events || []) as unknown as FeedEvent[]), ...epicRecurringEvents]
-  const visibleEvents = mergeDuplicateEvents(combinedEvents)
+  const visibleEvents = mergeDuplicateEvents(combinedEvents.filter(event => {
+    // Legacy imports included navigation labels and a removed MAS page.
+    if (/^(campaigns?|announcements?|youth committee)$/i.test(event.title.trim())) return false
+    return event.source_url !== 'https://masdfw.org/adults/'
+  }))
 
   return (
     <main className="min-h-screen bg-[--background] pt-[max(env(safe-area-inset-top),16px)]">

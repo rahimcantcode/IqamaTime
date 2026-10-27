@@ -81,7 +81,7 @@ async function upsertMasEvents(events: ScrapedCommunityEvent[]) {
   const { error } = await supabase.from('community_events').upsert(rows, { onConflict: 'content_hash' })
   if (error) throw error
   const { error: cleanupError } = await supabase.from('community_events').update({ active: false })
-    .eq('source_name', SOURCE_NAME).not('content_hash', 'in', `(${rows.map(row => row.content_hash).join(',')})`)
+    .eq('source_name', SOURCE_NAME).or(`content_hash.is.null,content_hash.not.in.(${rows.map(row => row.content_hash).join(',')})`)
   if (cleanupError) throw cleanupError
 }
 

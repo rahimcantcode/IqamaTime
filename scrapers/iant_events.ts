@@ -220,7 +220,7 @@ async function upsertEvents(events: EventRow[]) {
   if (error) throw error
   const { error: cleanupError } = await supabase.from('community_events').update({ active: false })
     .in('source_name', [...new Set(rows.map(row => row.source_name))])
-    .not('content_hash', 'in', `(${rows.map(row => row.content_hash).join(',')})`)
+    .or(`content_hash.is.null,content_hash.not.in.(${rows.map(row => row.content_hash).join(',')})`)
   if (cleanupError) throw cleanupError
 }
 
