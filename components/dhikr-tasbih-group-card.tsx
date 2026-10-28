@@ -3,7 +3,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
-import { RepeatableItem } from '@/lib/dhikr-data'
+import type { RepeatableItem } from '@/lib/dhikr-data'
+import DhikrText from './dhikr-text'
 
 interface Props {
   items: RepeatableItem[]
@@ -71,13 +72,6 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
     })
   }, [])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      if (mode === 'interactive') increment()
-    }
-  }
-
   const fillColor     = 'rgba(200,169,81,0.15)'
   const fillColorFull = 'rgba(200,169,81,0.30)'
 
@@ -85,6 +79,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
   if (mode === 'simple') {
     return (
       <div
+        data-dhikr-card="tasbih-group"
         className="flex flex-col rounded-[1.2rem] overflow-hidden"
         style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
       >
@@ -96,44 +91,31 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
               key={item.id}
               className={`flex flex-col gap-2 p-4 ${i < items.length - 1 ? 'border-b border-[#E7E2D8]' : ''}`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  {item.arabic && (
-                    <p
-                      className="text-base leading-snug mb-0.5"
-                      style={{ fontFamily: 'Georgia, serif', direction: 'rtl', color: done ? item.accent : 'rgba(32,33,36,0.75)' }}
-                    >
-                      {item.arabic}
-                    </p>
-                  )}
-                  <p className="text-xs font-semibold" style={{ color: done ? item.accent : 'var(--text-primary)' }}>
-                    {item.transliteration}
-                  </p>
-                  <p className="text-[0.6rem] mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.translation}</p>
-                </div>
+              <div className="flex flex-col gap-5">
+                <DhikrText item={item} />
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex w-full items-center justify-center gap-4 border-t border-[#E7E2D8] pt-4">
                   <button
                     onPointerDown={e => e.stopPropagation()}
                     onClick={() => simpleReset(i)}
                     disabled={c === 0}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold transition-all active:scale-90 disabled:opacity-30"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold transition-all active:scale-90 disabled:opacity-30"
                     style={{ background: 'rgba(31,41,55,0.06)', color: 'var(--text-secondary)' }}
-                    aria-label="Reset count"
+                    aria-label={`Reset ${item.transliteration} count`}
                   >
                     ×
                   </button>
                   <div className="flex flex-col items-center min-w-[2.5rem]">
                     <span className="text-xl font-bold tabular-nums" style={{ color: done ? item.accent : 'var(--text-primary)' }}>{c}</span>
-                    <span className="text-[0.55rem]" style={{ color: 'var(--text-muted)' }}>of {item.targetCount}</span>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>of {item.targetCount}</span>
                   </div>
                   <button
                     onPointerDown={e => e.stopPropagation()}
                     onClick={() => simpleIncrement(i)}
                     disabled={done}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold transition-all active:scale-90 disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-all active:scale-90 disabled:opacity-40"
                     style={{ background: `${item.accent}18`, border: `1px solid ${item.accent}30`, color: item.accent }}
-                    aria-label="Increment count"
+                    aria-label={`Increment ${item.transliteration} count`}
                   >
                     +
                   </button>
@@ -141,7 +123,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
               </div>
 
               {done && (
-                <p className="text-[0.6rem] font-semibold" style={{ color: item.accent }}>✓ Complete</p>
+                <p className="text-xs font-semibold" style={{ color: item.accent }}>✓ Complete</p>
               )}
             </div>
           )
@@ -153,18 +135,14 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
   // ── INTERACTIVE MODE ─────────────────────────────────────────
   return (
     <div
-      role="button"
-      tabIndex={0}
-      className="relative overflow-hidden rounded-[1.2rem] cursor-pointer select-none"
+      data-dhikr-card="tasbih-group"
+      className="relative isolate overflow-hidden rounded-[1.2rem] cursor-pointer select-none"
       style={{
         minHeight: 188,
         background: '#FFFFFF',
         border: `1px solid ${allComplete ? '#C8A95135' : 'var(--border)'}`,
         boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
       }}
-      onClick={allComplete ? undefined : increment}
-      onKeyDown={handleKeyDown}
-      aria-label={`Tasbih group: ${currentItem.transliteration}, ${count} of ${currentItem.targetCount}`}
     >
       {/* Liquid fill */}
       <motion.div
@@ -187,7 +165,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
       {count > 0 && !allComplete && !phaseComplete && (
         <button
           type="button"
-          className="absolute right-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold transition-all active:scale-90"
+          className="absolute right-2 top-2 z-30 flex h-11 w-11 items-center justify-center rounded-full text-[0.65rem] font-bold transition-all active:scale-90"
           style={{ background: 'rgba(31,41,55,0.08)', color: 'var(--text-muted)' }}
           onPointerDown={e => e.stopPropagation()}
           onClick={e => { e.stopPropagation(); reset() }}
@@ -198,8 +176,11 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
       )}
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-3 p-5 text-center">
+      <div className="relative flex flex-col items-center gap-5 p-5 text-center sm:p-6">
 
+        <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+          Tasbih set · {allComplete ? 'Complete' : `Part ${phaseIndex + 1} of ${items.length}`}
+        </p>
         {/* Phase indicator pills */}
         <div className="flex items-center gap-2">
           {items.map((item, i) => {
@@ -228,26 +209,9 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.18 }}
-            className="flex flex-col items-center gap-1.5"
+            className="flex w-full min-w-0 flex-col items-center gap-1.5"
           >
-            {currentItem.arabic && (
-              <p
-                className="text-2xl leading-snug"
-                style={{
-                  fontFamily: 'Georgia, serif',
-                  direction: 'rtl',
-                  color: allComplete ? '#C8A951' : 'rgba(32,33,36,0.82)',
-                }}
-              >
-                {currentItem.arabic}
-              </p>
-            )}
-            <p className="text-sm font-semibold" style={{ color: allComplete ? '#C8A951' : 'var(--text-primary)' }}>
-              {currentItem.transliteration}
-            </p>
-            <p className="text-[0.6rem]" style={{ color: 'var(--text-muted)' }}>
-              {currentItem.translation}
-            </p>
+            <DhikrText item={currentItem} />
           </motion.div>
         </AnimatePresence>
 
@@ -262,7 +226,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
               type="button"
               onPointerDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); reset() }}
-              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.58rem] font-medium transition-all active:scale-95"
+              className="relative z-30 flex min-h-11 items-center gap-1 rounded-full px-3 py-2 text-xs font-medium transition-all active:scale-95"
               style={{
                 background: 'rgba(31,41,55,0.06)',
                 border: '1px solid rgba(31,41,55,0.10)',
@@ -270,7 +234,7 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
               }}
               aria-label="Reset tasbih counter"
             >
-              <RotateCcw className="h-2.5 w-2.5" />
+              <RotateCcw className="h-4 w-4" />
               Reset
             </button>
           </div>
@@ -280,6 +244,13 @@ export default function DhikrTasbihGroupCard({ items, mode }: Props) {
           </p>
         )}
       </div>
+      <button
+        type="button"
+        className="dhikr-count-button absolute inset-0 z-20 w-full cursor-pointer"
+        onClick={increment}
+        disabled={allComplete || advancing}
+        aria-label={`Tasbih group: ${currentItem.transliteration}, ${count} of ${currentItem.targetCount}`}
+      />
     </div>
   )
 }

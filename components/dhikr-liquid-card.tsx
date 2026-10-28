@@ -1,244 +1,104 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
-import { RepeatableItem } from '@/lib/dhikr-data'
+import type { RepeatableItem } from '@/lib/dhikr-data'
+import DhikrText from './dhikr-text'
 
 interface Props {
   item: RepeatableItem
   mode: 'simple' | 'interactive'
+  position?: number
 }
 
-const NEXT_CARD_TOP_VIEWPORT_RATIO = 0.25
-
-export default function DhikrLiquidCard({ item, mode }: Props) {
+export default function DhikrLiquidCard({ item, mode, position }: Props) {
   const [count, setCount] = useState(0)
-  const cardRef = useRef<HTMLDivElement | null>(null)
-
+  const cardRef = useRef<HTMLElement | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const completed = count >= item.targetCount
-  const progress  = Math.min(count / item.targetCount, 1)
+  const progress = Math.min(count / item.targetCount, 1)
 
-  const fillColor = item.accent === '#C8A951'
-    ? 'rgba(200,169,81,0.16)'
-    : 'rgba(79,111,82,0.13)'
-  const fillColorFull = item.accent === '#C8A951'
-    ? 'rgba(200,169,81,0.30)'
-    : 'rgba(79,111,82,0.24)'
-
-  const scrollToNextCard = useCallback(() => {
-    window.setTimeout(() => {
-      const currentCard = cardRef.current
-      const nextCard = currentCard?.nextElementSibling as HTMLElement | null
-      if (!nextCard) return
-
-      const viewportHeight = window.innerHeight || document.documentElement.clientHeight
-      const targetTopFromScreenTop = viewportHeight * NEXT_CARD_TOP_VIEWPORT_RATIO
-      const nextCardPageTop = nextCard.getBoundingClientRect().top + window.scrollY
-
-      window.scrollTo({
-        top: Math.max(nextCardPageTop - targetTopFromScreenTop, 0),
-        behavior: 'smooth',
-      })
-    }, 240)
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
   }, [])
 
   const increment = useCallback(() => {
     if (completed) return
-
-    setCount(current => {
-      const next = Math.min(current + 1, item.targetCount)
-      if (next >= item.targetCount && current < item.targetCount) {
-        scrollToNextCard()
-      }
-      return next
-    })
-  }, [completed, item.targetCount, scrollToNextCard])
-
-  const reset = useCallback(() => setCount(0), [])
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      if (mode === 'interactive') increment()
+    const next = Math.min(count + 1, item.targetCount)
+    setCount(next)
+    if (next === item.targetCount && mode === 'interactive') {
+      timerRef.current = setTimeout(() => {
+        const nextCard = cardRef.current?.nextElementSibling as HTMLElement | null
+        if (!nextCard) return
+        window.scrollTo({
+          top: Math.max(nextCard.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.2, 0),
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+        })
+      }, 300)
     }
+  }, [completed, count, item.targetCount, mode])
+
+  const reset = () => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setCount(0)
   }
 
-  // ── SIMPLE MODE ──────────────────────────────────────────────
-  if (mode === 'simple') {
-    return (
-      <div
-        ref={cardRef}
-        className="flex scroll-mt-[25vh] flex-col gap-3.5 rounded-[1.15rem] p-4"
-        style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
-        aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed`}
-      >
-        {item.arabic && (
-          <p
-            lang="ar"
-            dir="rtl"
-            className="dhikr-arabic"
-            style={{ color: 'rgba(32,33,36,0.78)' }}
-          >
-            {item.arabic}
-          </p>
-        )}
-        <div className="text-center">
-          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: 'var(--text-primary)' }}>{item.transliteration}</p>
-          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{item.translation}</p>
-        </div>
-
-        {/* Counter row */}
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onPointerDown={e => e.stopPropagation()}
-            onClick={reset}
-            disabled={count === 0}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-base font-semibold transition-all active:scale-90 disabled:opacity-30"
-            style={{ background: 'rgba(31,41,55,0.06)', color: 'var(--text-secondary)' }}
-            aria-label="Reset count"
-          >
-            ×
-          </button>
-
-          <div className="flex flex-col items-center">
-            <span
-              className="text-2xl font-bold tabular-nums"
-              style={{ color: completed ? item.accent : 'var(--text-primary)' }}
-            >
-              {count}
-            </span>
-            <span className="text-[0.58rem] font-medium" style={{ color: 'var(--text-muted)' }}>
-              of {item.targetCount}
-            </span>
-          </div>
-
-          <button
-            onPointerDown={e => e.stopPropagation()}
-            onClick={increment}
-            disabled={completed}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-base font-bold transition-all active:scale-90 disabled:opacity-40"
-            style={{ background: `${item.accent}18`, border: `1px solid ${item.accent}30`, color: item.accent }}
-            aria-label="Increment count"
-          >
-            +
-          </button>
-        </div>
-
-        {completed && (
-          <p className="text-center text-[0.65rem] font-semibold" style={{ color: item.accent }}>
-            ✓ Complete
-          </p>
-        )}
-      </div>
-    )
-  }
-
-  // ── INTERACTIVE MODE (liquid fill) ───────────────────────────
   return (
-    <div
+    <article
       ref={cardRef}
-      role="button"
-      tabIndex={0}
-      className="relative scroll-mt-[25vh] overflow-hidden rounded-[1.15rem] cursor-pointer select-none"
-      style={{
-        minHeight: 132,
-        background: '#FFFFFF',
-        border: `1px solid ${completed ? item.accent + '35' : 'var(--border)'}`,
-        boxShadow: '0 1px 4px rgba(31,41,55,0.05)',
-      }}
-      onClick={completed ? undefined : increment}
-      onKeyDown={handleKeyDown}
-      aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed.`}
+      data-dhikr-card={item.id}
+      className="relative isolate scroll-mt-[20vh] overflow-hidden rounded-2xl"
+      style={{ background: 'var(--surface)', border: `1px solid ${completed ? item.accent + '60' : 'var(--border)'}`, boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
     >
-      {/* Liquid fill layer */}
-      <motion.div
-        className="absolute inset-x-0 bottom-0"
-        animate={{ height: `${progress * 100}%` }}
-        transition={{ type: 'spring', stiffness: 280, damping: 32 }}
-        style={{ background: completed ? fillColorFull : fillColor }}
-      >
-        {/* Wave surface at top of fill */}
-        {!completed && progress > 0 && (
-          <motion.div
-            className="absolute inset-x-0 top-0 h-2"
-            style={{
-              background: fillColor,
-              borderRadius: '50% 50% 0 0 / 4px 4px 0 0',
-            }}
-            animate={{ scaleX: [1, 1.06, 0.97, 1.03, 1] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )}
-      </motion.div>
-
-      {/* Reset button — appears when count > 0, not completed */}
-      {count > 0 && !completed && (
-        <button
-          type="button"
-          className="absolute right-2 top-2 z-20 flex h-5 w-5 items-center justify-center rounded-full text-[0.65rem] font-bold transition-all active:scale-90"
-          style={{ background: 'rgba(31,41,55,0.08)', color: 'var(--text-muted)' }}
-          onPointerDown={e => e.stopPropagation()}
-          onClick={e => { e.stopPropagation(); reset() }}
-          aria-label="Reset count"
-        >
-          ×
-        </button>
+      {mode === 'interactive' && (
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 -z-10"
+          animate={{ height: `${progress * 100}%` }}
+          transition={{ type: 'spring', stiffness: 280, damping: 32 }}
+          style={{ background: `${item.accent}${completed ? '26' : '14'}` }}
+        />
       )}
-
-      {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-2.5 p-4 text-center">
-        {item.arabic && (
-          <p
-            lang="ar"
-            dir="rtl"
-            className="dhikr-arabic"
-            style={{ color: completed ? item.accent : 'rgba(32,33,36,0.80)' }}
-          >
-            {item.arabic}
-          </p>
-        )}
-
-        <div>
-          <p className="text-[0.82rem] font-semibold leading-relaxed" style={{ color: completed ? item.accent : 'var(--text-primary)' }}>
-            {item.transliteration}
-          </p>
-          <p className="mt-1 text-[0.64rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            {item.translation}
-          </p>
+      <div className="flex flex-col gap-5 p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3 text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+          <span>{position ? `Remembrance ${position}` : 'Remembrance'}</span>
+          <span className="rounded-full px-3 py-1" style={{ background: `${item.accent}12`, color: 'var(--accent-dark)' }}>
+            Recite {item.targetCount === 1 ? 'once' : `${item.targetCount} times`}
+          </span>
         </div>
-
-        {completed ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span style={{ color: item.accent }} className="text-sm font-bold">✓</span>
-              <span className="text-xs font-semibold" style={{ color: item.accent }}>Complete</span>
-            </div>
+        <DhikrText item={item} />
+        <div className="flex min-h-11 items-center justify-between gap-3 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+          <span className="text-xs font-medium" style={{ color: completed ? 'var(--accent-dark)' : 'var(--text-muted)' }} aria-live="polite">
+            {completed ? '✓ Complete' : mode === 'interactive' ? 'Tap card to count' : 'Your count'}
+          </span>
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onPointerDown={e => e.stopPropagation()}
-              onClick={e => { e.stopPropagation(); reset() }}
-              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[0.58rem] font-medium transition-all active:scale-95"
-              style={{
-                background: 'rgba(31,41,55,0.06)',
-                border: '1px solid rgba(31,41,55,0.10)',
-                color: 'var(--text-muted)',
-              }}
-              aria-label="Reset counter"
+              onClick={reset}
+              disabled={count === 0}
+              className="relative z-30 flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"
+              style={{ background: 'rgba(31,41,55,0.06)', color: 'var(--text-secondary)' }}
+              aria-label={`Reset ${item.transliteration} count`}
             >
-              <RotateCcw className="h-2.5 w-2.5" />
-              Reset
+              <RotateCcw className="h-4 w-4" />
             </button>
+            <span className="whitespace-nowrap text-sm font-semibold tabular-nums" style={{ color: 'var(--accent-dark)' }}>{count} / {item.targetCount}</span>
+            {mode === 'simple' && (
+              <button type="button" onClick={increment} disabled={completed} className="relative z-30 h-11 w-11 rounded-full text-xl font-semibold disabled:opacity-30" style={{ background: `${item.accent}18`, color: 'var(--accent-dark)' }} aria-label={`Increment ${item.transliteration} count`}>+</button>
+            )}
           </div>
-        ) : (
-          <p
-            className="text-sm font-bold tabular-nums"
-            style={{ color: item.accent }}
-          >
-            {count} / {item.targetCount}
-          </p>
-        )}
+        </div>
       </div>
-    </div>
+      {mode === 'interactive' && (
+        <button
+          type="button"
+          className="dhikr-count-button absolute inset-0 z-20 w-full cursor-pointer"
+          onClick={increment}
+          disabled={completed}
+          aria-label={`${item.transliteration} counter, ${count} of ${item.targetCount} completed.`}
+        />
+      )}
+    </article>
   )
 }

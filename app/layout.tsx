@@ -1,11 +1,18 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Noto_Naskh_Arabic } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const arabic = Noto_Naskh_Arabic({
+  subsets: ['arabic'],
+  weight: '400',
+  variable: '--font-arabic',
   display: 'swap',
 })
 
@@ -45,7 +52,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${inter.variable} ${arabic.variable} h-full`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

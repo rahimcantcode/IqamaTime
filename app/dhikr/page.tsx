@@ -20,7 +20,7 @@ function SectionCard({ card, onClick }: { card: DhikrCard; onClick: () => void }
     <button
       type="button"
       onClick={onClick}
-      className="pressable flex flex-col gap-3 rounded-[1.2rem] p-4 text-left"
+      className="pressable h-full w-full flex flex-col gap-3 rounded-[1.2rem] p-4 text-left"
       style={{
         background: '#FFFFFF',
         border: '1px solid #E7E2D8',
@@ -36,7 +36,7 @@ function SectionCard({ card, onClick }: { card: DhikrCard; onClick: () => void }
       </div>
       <div>
         <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>{card.title}</p>
-        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>{card.description}</p>
+        <p className="mt-0.5 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{card.description}</p>
       </div>
     </button>
   )
@@ -48,7 +48,7 @@ export default function DhikrPage() {
 
   return (
     <main
-      className="min-h-screen bg-[--background] scrollbar-none"
+      className="dhikr-shell min-h-screen bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="px-6 pb-2 pt-2">
@@ -114,7 +114,7 @@ export default function DhikrPage() {
         {DHIKR_SECTIONS.map(section => (
           <section key={section.title} className="mb-7">
             <p
-              className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
+              className="mb-3 text-xs font-semibold uppercase tracking-[0.18em]"
               style={{ color: 'var(--text-muted)' }}
             >
               {section.title}

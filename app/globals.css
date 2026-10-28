@@ -74,29 +74,64 @@ select {
 }
 
 [lang="ar"], .arabic {
-  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Times New Roman', serif;
+  font-family: var(--font-arabic), 'Traditional Arabic', serif;
   direction: rtl;
+  font-synthesis: none;
+}
+
+.dhikr-shell {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
 }
 
 .dhikr-arabic {
+  width: 100%;
+  min-width: 0;
   direction: rtl;
-  unicode-bidi: plaintext;
+  unicode-bidi: isolate;
   white-space: pre-line;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
   word-break: normal;
   text-align: center;
-  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', 'Times New Roman', serif;
-  font-size: clamp(1.42rem, 5.55vw, 1.86rem);
-  line-height: 2.02;
-  letter-spacing: 0;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-arabic), 'Traditional Arabic', serif;
+  font-size: clamp(1.5rem, 4.8vw, 1.875rem);
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 2.15;
+  letter-spacing: normal;
+  padding-block: 0.3em;
 }
 
-@supports (font: -apple-system-body) {
-  .dhikr-arabic {
-    line-height: 2.08;
-  }
+.dhikr-arabic-long {
+  text-align: right;
+}
+
+.dhikr-supporting-text {
+  min-width: 0;
+  width: 100%;
+  direction: ltr;
+  unicode-bidi: isolate;
+  overflow-wrap: break-word;
+  text-align: left;
+  font-size: 0.8125rem;
+  line-height: 1.85;
+}
+
+.dhikr-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dhikr-count-button:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: -4px;
+  border-radius: inherit;
 }
 
 .glass {

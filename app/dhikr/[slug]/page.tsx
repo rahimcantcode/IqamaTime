@@ -33,7 +33,7 @@ export default function DhikrDetailPage() {
   const splitIndex = detail?.tasbihGroupIndex ?? detail?.items.length ?? 0
 
   const scrollToTasbih = () => {
-    document.getElementById('tasbih-counters')?.scrollIntoView({
+    document.querySelector('[data-dhikr-card="tasbih-group"]')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     })
@@ -41,13 +41,13 @@ export default function DhikrDetailPage() {
 
   return (
     <main
-      className="min-h-screen bg-[--background] scrollbar-none"
+      className="dhikr-shell min-h-screen bg-[--background] scrollbar-none"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 16px)' }}
     >
       <div className="flex items-center gap-2 px-4 pb-1 pt-2">
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push('/dhikr')}
           className="pressable flex items-center gap-1 rounded-full px-2 py-1.5"
           style={{ color: 'var(--text-secondary)' }}
           aria-label="Go back"
@@ -94,13 +94,13 @@ export default function DhikrDetailPage() {
             </div>
 
             {detail.sequence && (
-              <section className="mb-5">
-                <p
-                  className="mb-3 text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
+              <details className="mb-5">
+                <summary
+                  className="mb-3 cursor-pointer text-xs font-semibold uppercase tracking-[0.18em]"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   Suggested Sequence
-                </p>
+                </summary>
 
                 <div
                   className="overflow-hidden rounded-[1.35rem]"
@@ -131,14 +131,14 @@ export default function DhikrDetailPage() {
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 text-[0.6rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                        <p className="mt-0.5 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                           {step.description}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
-              </section>
+              </details>
             )}
 
             {detail.tasbihGroup && (
@@ -158,8 +158,8 @@ export default function DhikrDetailPage() {
             )}
 
             <div id={detail.tasbihGroup ? 'tasbih-counters' : undefined} className="flex scroll-mt-4 flex-col gap-4">
-              {detail.items.slice(0, splitIndex).map(item => (
-                <DhikrLiquidCard key={item.id} item={item} mode={mode} />
+              {detail.items.slice(0, splitIndex).map((item, index) => (
+                <DhikrLiquidCard key={item.id} item={item} mode={mode} position={index + 1} />
               ))}
 
               {detail.tasbihGroup && (
@@ -170,14 +170,14 @@ export default function DhikrDetailPage() {
                 />
               )}
 
-              {detail.items.slice(splitIndex).map(item => (
-                <DhikrLiquidCard key={item.id} item={item} mode={mode} />
+              {detail.items.slice(splitIndex).map((item, index) => (
+                <DhikrLiquidCard key={item.id} item={item} mode={mode} position={splitIndex + index + 1} />
               ))}
             </div>
 
             {mode === 'interactive' && (
               <p
-                className="mt-6 text-center text-[0.6rem]"
+                className="mt-6 text-center text-xs"
                 style={{ color: 'var(--text-muted)' }}
               >
                 Tap a card to count · use reset when needed
