@@ -7,6 +7,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { usePrivateAuth } from '@/hooks/usePrivateAuth'
 import BottomNav from '@/components/bottom-nav'
 import PrivateAuthModal from '@/components/private-auth-modal'
+import FirstVisitGuide from '@/components/first-visit-guide'
 
 interface Props {
   masjids: Masjid[]
@@ -16,6 +17,7 @@ export default function SettingsPageClient({ masjids }: Props) {
   const { settings, updateSettings, toggleMasjid, loaded, saving, syncError, requiresLogin, clearLoginRequirement, syncPrivateSettings } = useSettings()
   const { session, isLoggedIn, logout } = usePrivateAuth()
   const [authOpen, setAuthOpen] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
 
   const allSelected = settings.selectedMasjidIds.length === 0
 
@@ -134,7 +136,7 @@ export default function SettingsPageClient({ masjids }: Props) {
 
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent('iqamatime:open-guide'))}
+              onClick={() => setGuideOpen(true)}
               className="pressable flex items-center gap-3 rounded-[1.2rem] p-4 text-left"
               style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
             >
@@ -210,6 +212,7 @@ export default function SettingsPageClient({ masjids }: Props) {
         </div>
       </div>
 
+      <FirstVisitGuide autoOpen={false} open={guideOpen} onOpenChange={setGuideOpen} />
       <PrivateAuthModal
         open={authOpen || requiresLogin}
         reason="Create a private username and PIN before saving masjid preferences."

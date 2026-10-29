@@ -146,3 +146,15 @@ test('equivalent generic times merge while distinct sessions sharing a generic U
   assert.equal(feed[0].image_url, 'https://masjid.example/flyer.jpg')
   assert.equal(feed[0].location, 'Masjid, 123 Main Street')
 })
+
+
+test('newer venue, speaker and description corrections beat longer outdated text', () => {
+  const feed = prepareFeed([
+    { ...event, id: 'new', event_time: '9am', location: 'Room 2', speakers: 'Ali', description: 'Moved online.', scraped_at: '2026-10-29T12:00:00Z' },
+    { ...event, id: 'old', event_time: '9:00 AM', location: 'IANT Masjid, 840 Abrams Road', speakers: 'Ali and a previous speaker', description: 'Meet in the old venue for a long in-person gathering.', scraped_at: '2026-10-22T12:00:00Z' },
+  ], '2026-10-29')
+  assert.equal(feed.length, 1)
+  assert.equal(feed[0].location, 'Room 2')
+  assert.equal(feed[0].speakers, 'Ali')
+  assert.equal(feed[0].description, 'Moved online.')
+})

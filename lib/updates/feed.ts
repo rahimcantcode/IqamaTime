@@ -43,13 +43,17 @@ function occurrenceKey(event: FeedEvent, title: string): string {
   return [event.source_name, title, event.event_date || '', session].join('|')
 }
 
-function richerText(current: string | null, incoming: string | null): string | null {
+function richerText(current: string | null, incoming: string | null, genericLabels: string[] = []): string | null {
   if (!current?.trim()) return incoming
   if (!incoming?.trim()) return current
   const currentBoilerplate = /^tap (?:here )?to view/i.test(current)
   const incomingBoilerplate = /^tap (?:here )?to view/i.test(incoming)
   if (currentBoilerplate !== incomingBoilerplate) return currentBoilerplate ? incoming : current
-  return incoming.length > current.length ? incoming : current
+  // Length is not freshness: an older room/speaker/description must not replace
+  // a newer correction. Only expand a known generic venue label with its address.
+  const label = current.trim().toLowerCase()
+  if (genericLabels.some(value => value.toLowerCase() === label) && incoming.toLowerCase().startsWith(label)) return incoming
+  return current
 }
 
 export function prepareFeed(events: FeedEvent[], today: string): FeedEvent[] {
@@ -69,7 +73,7 @@ export function prepareFeed(events: FeedEvent[], today: string): FeedEvent[] {
       ...existing,
       event_time: existing.event_time || event.event_time,
       image_url: existing.image_url || safeEventUrl(event.image_url),
-      location: richerText(existing.location, event.location),
+      location: richerText(existing.location, event.location, ['Masjid', existing.source_name, `${existing.source_name} Masjid`, existing.masjids?.name || '']),
       speakers: richerText(existing.speakers, event.speakers),
       description: richerText(existing.description, event.description),
       masjids: existing.masjids || event.masjids,
