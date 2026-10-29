@@ -115,3 +115,34 @@ test('dated headings and old or manually curated freshness are explicit', () => 
   assert.match(freshnessLabel({ ...event, curated: true }, '2026-10-29T00:00:00Z'), /Saved recurring listing/)
   assert.match(freshnessLabel({ ...event, scraped_at: null }, '2026-10-29T00:00:00Z'), /Refresh date unknown/)
 })
+
+test('live IANT legacy/current pairs merge equivalent times and dated occurrence metadata', () => {
+  const pairs = [
+    { title: 'Support & Counseling for Single Mothers and Widows', date: '2026-10-29', slug: 'support-counseling-for-single-mothers-and-widows', current: '5:00 PM', legacy: null },
+    { title: 'Tafsir Program', date: '2026-11-01', slug: 'tafsir', current: '9:00 AM', legacy: '9am' },
+    { title: 'Mukhtasar Minhaj Al Qasidin', date: '2026-11-02', slug: 'mukhtasar-minhaj-al-qasidin', current: '8:30 PM', legacy: null },
+  ]
+  const rows = pairs.flatMap((pair, i) => {
+    const base = { ...event, title: pair.title, event_date: pair.date, source_name: 'IANT', source_url: `https://iant.com/event/${pair.slug}/${pair.date}/` }
+    return [
+      { ...base, id: `current-${i}`, event_time: pair.current, image_url: null, location: 'IANT Masjid 840 Abrams Road, Richardson, TX', scraped_at: '2026-10-29T12:00:00Z' },
+      { ...base, id: `legacy-${i}`, event_time: pair.legacy, image_url: `https://iant.com/flyer-${i}.jpg`, location: 'IANT Masjid', description: 'A full program description from the organizer.', scraped_at: '2026-10-22T12:00:00Z' },
+    ]
+  })
+  const feed = prepareFeed(rows, '2026-10-29')
+  assert.equal(feed.length, 3)
+  assert.deepEqual(feed.map(row => row.event_time), ['5:00 PM', '9:00 AM', '8:30 PM'])
+  assert.ok(feed.every(row => row.image_url && row.location?.includes('840 Abrams Road') && row.description))
+})
+
+test('equivalent generic times merge while distinct sessions sharing a generic URL remain separate', () => {
+  const feed = prepareFeed([
+    { ...event, id: 'one', event_time: '9:00 AM', image_url: null, location: 'Masjid' },
+    { ...event, id: 'duplicate', event_time: '9am', image_url: 'https://masjid.example/flyer.jpg', location: 'Masjid, 123 Main Street' },
+    { ...event, id: 'second-session', event_time: '2 PM' },
+  ], '2026-10-29')
+  assert.equal(feed.length, 2)
+  assert.deepEqual(feed.map(row => row.event_time), ['9:00 AM', '2:00 PM'])
+  assert.equal(feed[0].image_url, 'https://masjid.example/flyer.jpg')
+  assert.equal(feed[0].location, 'Masjid, 123 Main Street')
+})

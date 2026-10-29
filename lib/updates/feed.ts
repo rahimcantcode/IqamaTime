@@ -20,24 +20,60 @@ export function safeEventUrl(value: string | null | undefined): string | null {
 }
 
 export function eventTimeMinutes(value: string | null): number {
-  const match = value?.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
-  if (!match) return Infinity
-  return (Number(match[1]) % 12 + (match[3].toUpperCase() === 'PM' ? 12 : 0)) * 60 + Number(match[2])
+  const match = value?.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*([ap])\.?m\.?$/i)
+  if (!match || Number(match[1]) < 1 || Number(match[1]) > 12 || Number(match[2] || 0) > 59) return Infinity
+  return (Number(match[1]) % 12 + (match[3].toLowerCase() === 'p' ? 12 : 0)) * 60 + Number(match[2] || 0)
+}
+
+function normalizedTime(value: string | null): string | null {
+  const minutes = eventTimeMinutes(value)
+  if (!Number.isFinite(minutes)) return value?.trim() || null
+  const hour = Math.floor(minutes / 60)
+  return `${hour % 12 || 12}:${String(minutes % 60).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`
+}
+
+function occurrenceKey(event: FeedEvent, title: string): string {
+  const url = new URL(event.source_url)
+  // IANT's calendar assigns one dated permalink per recurring occurrence. Legacy
+  // JSON-LD imports sometimes omitted its time; the permalink still identifies it.
+  const datedOccurrence = url.hostname.replace(/^www\./, '') === 'iant.com'
+    && /^\/event\/[^/]+\/\d{4}-\d{2}-\d{2}\/?$/.test(url.pathname)
+    && url.pathname.replace(/\/$/, '').endsWith(`/${event.event_date}`)
+  const session = datedOccurrence ? url.pathname.replace(/\/$/, '') : (event.event_time || '').toLowerCase().replace(/\s+/g, ' ')
+  return [event.source_name, title, event.event_date || '', session].join('|')
+}
+
+function richerText(current: string | null, incoming: string | null): string | null {
+  if (!current?.trim()) return incoming
+  if (!incoming?.trim()) return current
+  const currentBoilerplate = /^tap (?:here )?to view/i.test(current)
+  const incomingBoilerplate = /^tap (?:here )?to view/i.test(incoming)
+  if (currentBoilerplate !== incomingBoilerplate) return currentBoilerplate ? incoming : current
+  return incoming.length > current.length ? incoming : current
 }
 
 export function prepareFeed(events: FeedEvent[], today: string): FeedEvent[] {
   const unique = new Map<string, FeedEvent>()
   // A newly refreshed record wins over a legacy import of the same occurrence.
-  for (const event of [...events].sort((a, b) => (b.scraped_at || '').localeCompare(a.scraped_at || ''))) {
+  for (const raw of [...events].sort((a, b) => (b.scraped_at || '').localeCompare(a.scraped_at || ''))) {
+    const event = { ...raw, event_time: normalizedTime(raw.event_time) }
     if (!safeEventUrl(event.source_url) || (event.event_date && event.event_date < today)) continue
     if (/^(campaigns?|announcements?|youth committee|events?|event organizers)$/i.test(event.title.trim())) continue
     if (event.source_url === 'https://masdfw.org/adults/') continue
     const title = event.title.toLocaleLowerCase().replace(/&[#a-z0-9]+;/gi, ' ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim()
     // Distinct sessions of the same event must remain visible.
-    const key = [event.source_name, title, event.event_date || '', event.event_time || ''].join('|')
+    const key = occurrenceKey(event, title)
     const existing = unique.get(key)
     if (!existing) unique.set(key, { ...event, image_url: safeEventUrl(event.image_url) })
-    else unique.set(key, { ...existing, image_url: existing.image_url || safeEventUrl(event.image_url), description: existing.description || event.description })
+    else unique.set(key, {
+      ...existing,
+      event_time: existing.event_time || event.event_time,
+      image_url: existing.image_url || safeEventUrl(event.image_url),
+      location: richerText(existing.location, event.location),
+      speakers: richerText(existing.speakers, event.speakers),
+      description: richerText(existing.description, event.description),
+      masjids: existing.masjids || event.masjids,
+    })
   }
   return [...unique.values()].sort((a, b) => (a.event_date || '9999').localeCompare(b.event_date || '9999') || eventTimeMinutes(a.event_time) - eventTimeMinutes(b.event_time) || a.title.localeCompare(b.title))
 }

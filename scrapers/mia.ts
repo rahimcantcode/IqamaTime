@@ -7,7 +7,7 @@
 import axios from 'axios'
 import { logger } from './logger'
 import { parseAthanPlusTimes } from './athanplus'
-import { upsertPrayerTimes, logScrape, todayDate } from './database'
+import { upsertPrayerTimes, logScrape, todayDate, ensureMasjid } from './database'
 
 const MASJID_NAME = 'McKinney Islamic Association'
 const WIDGET_URL  = 'https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=wLVzDqLJ'
@@ -24,6 +24,8 @@ export async function scrapeMIA(): Promise<void> {
     })
 
     const times = parseAthanPlusTimes(html as string, date)
+
+    await ensureMasjid({ name: MASJID_NAME, city: 'McKinney', websiteUrl: SOURCE_URL })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: SOURCE_URL, ...times })
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)

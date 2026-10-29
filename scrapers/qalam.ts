@@ -8,7 +8,7 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { logger } from './logger'
 import { normalizeTime } from './normalizeTime'
-import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
+import { upsertPrayerTimes, logScrape, todayDate, TimesOnly, ensureMasjid } from './database'
 import { sunsetPlus } from './sunsetUtils'
 
 const MASJID_NAME = 'Qalam Masjid'
@@ -98,6 +98,8 @@ export async function scrapeQalam(): Promise<void> {
     })
 
     const times = await parseQalamTimes(html as string, date)
+
+    await ensureMasjid({ name: MASJID_NAME, city: 'Carrollton', websiteUrl: URL })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })
     const dur = logger.scrapeEnd(MASJID_NAME, start, true)
