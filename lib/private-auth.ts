@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase'
 import { PrayerCheckin } from '@/lib/prayer-checkins'
+import { savePrivateCheckinRpc } from '@/lib/private-rpc'
+import { prayerKeysForSlot } from '@/lib/progress'
 
 const SESSION_KEY = 'iqamatime:private-session'
 const AUTH_EVENT = 'iqamatime-auth-changed'
@@ -49,7 +51,8 @@ export function getPrivateSession(): PrivateUserSession | null {
     const raw = localStorage.getItem(SESSION_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw) as PrivateUserSession
-    if (!parsed.userId || !parsed.username || !parsed.sessionToken) return null
+    if (!parsed || typeof parsed !== 'object' ||
+      ![parsed.userId, parsed.username, parsed.sessionToken].every(value => typeof value === 'string' && value.length > 0)) return null
     return parsed
   } catch {
     return null
@@ -68,15 +71,18 @@ export function clearPrivateSession() {
 }
 
 export function subscribeToPrivateAuth(callback: () => void) {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === SESSION_KEY || event.key === null) callback()
+  }
   window.addEventListener(AUTH_EVENT, callback)
-  window.addEventListener('storage', callback)
+  window.addEventListener('storage', onStorage)
   return () => {
     window.removeEventListener(AUTH_EVENT, callback)
-    window.removeEventListener('storage', callback)
+    window.removeEventListener('storage', onStorage)
   }
 }
 
-export async function createPrivateProfile(username: string, pin: string) {
+export async function createPrivateProfile(username: string, pin: string, signal?: AbortSignal) {
   const cleanUsername = normalizeUsername(username)
 
   if (cleanUsername.length < 3 || cleanUsername.length > 24) {
@@ -89,21 +95,24 @@ export async function createPrivateProfile(username: string, pin: string) {
 
   const supabase = createClient()
   const pinHash = await hashPrivatePin(cleanUsername, pin)
-  const { data, error } = await supabase.rpc('create_app_user', {
+  signal?.throwIfAborted()
+  const request = supabase.rpc('create_app_user', {
     p_username: cleanUsername,
     p_pin_hash: pinHash,
   })
+  const { data, error } = await (signal ? request.abortSignal(signal) : request)
 
   if (error) throw new Error(error.message)
 
   const row = Array.isArray(data) ? data[0] : data
   const session = readAuthRow(row)
 
+  signal?.throwIfAborted()
   setPrivateSession(session)
   return session
 }
 
-export async function loginPrivateProfile(username: string, pin: string) {
+export async function loginPrivateProfile(username: string, pin: string, signal?: AbortSignal) {
   const cleanUsername = normalizeUsername(username)
 
   if (!cleanUsername || !pin) {
@@ -112,16 +121,19 @@ export async function loginPrivateProfile(username: string, pin: string) {
 
   const supabase = createClient()
   const pinHash = await hashPrivatePin(cleanUsername, pin)
-  const { data, error } = await supabase.rpc('login_app_user', {
+  signal?.throwIfAborted()
+  const request = supabase.rpc('login_app_user', {
     p_username: cleanUsername,
     p_pin_hash: pinHash,
   })
+  const { data, error } = await (signal ? request.abortSignal(signal) : request)
 
   if (error) throw new Error(error.message)
 
   const row = Array.isArray(data) ? data[0] : data
   const session = readAuthRow(row)
 
+  signal?.throwIfAborted()
   setPrivateSession(session)
   return session
 }
@@ -135,7 +147,8 @@ export async function getPrivateUserSettings(session = getPrivateSession()) {
   })
   if (error) throw new Error(error.message)
   const row = Array.isArray(data) ? data[0] : data
-  return row?.selected_masjid_ids ?? []
+  return Array.isArray(row?.selected_masjid_ids)
+    ? row.selected_masjid_ids.filter((id: unknown): id is string => typeof id === 'string') : []
 }
 
 export async function savePrivateUserSettings(selectedMasjidIds: string[], session = getPrivateSession()) {
@@ -148,7 +161,8 @@ export async function savePrivateUserSettings(selectedMasjidIds: string[], sessi
   })
   if (error) throw new Error(error.message)
   const row = Array.isArray(data) ? data[0] : data
-  return row?.selected_masjid_ids ?? []
+  return Array.isArray(row?.selected_masjid_ids)
+    ? row.selected_masjid_ids.filter((id: unknown): id is string => typeof id === 'string') : []
 }
 
 export async function getPrivatePrayerCheckins(startDate?: string, endDate?: string, session = getPrivateSession()) {
@@ -188,17 +202,7 @@ export async function savePrivatePrayerCheckin(
     p_adhan_time: data.adhanTime ?? '',
   }
 
-  const { error: stableError } = await supabase.rpc('save_private_prayer_checkin_v2', payload)
-
-  if (!stableError) return
-
-  const functionMissing = stableError.message?.toLowerCase().includes('function') &&
-    stableError.message?.toLowerCase().includes('does not exist')
-
-  if (!functionMissing) throw new Error(stableError.message)
-
-  const { error } = await supabase.rpc('upsert_private_prayer_checkin', payload)
-  if (error) throw new Error(error.message)
+  await savePrivateCheckinRpc((name, args) => supabase.rpc(name, args), payload)
 }
 
 export async function removePrivatePrayerCheckin(date: string, prayer: string, session = getPrivateSession()) {
@@ -211,4 +215,16 @@ export async function removePrivatePrayerCheckin(date: string, prayer: string, s
     p_prayer: prayer,
   })
   if (error) throw new Error(error.message)
+}
+
+/** Remove both persisted aliases for the Friday noon prayer, including legacy rows. */
+export async function removePrivatePrayerSlot(date: string, prayer: string, session = getPrivateSession()) {
+  for (const key of prayerKeysForSlot(date, prayer)) {
+    await removePrivatePrayerCheckin(date, key, session)
+  }
+}
+
+export function isCurrentPrivateSession(session: PrivateUserSession): boolean {
+  const current = getPrivateSession()
+  return current?.userId === session.userId && current?.sessionToken === session.sessionToken
 }

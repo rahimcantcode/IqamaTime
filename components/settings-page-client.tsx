@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function SettingsPageClient({ masjids }: Props) {
-  const { settings, toggleMasjid, requiresLogin, clearLoginRequirement, syncPrivateSettings } = useSettings()
+  const { settings, updateSettings, toggleMasjid, loaded, saving, syncError, requiresLogin, clearLoginRequirement, syncPrivateSettings } = useSettings()
   const { session, isLoggedIn, logout } = usePrivateAuth()
   const [authOpen, setAuthOpen] = useState(false)
 
@@ -32,7 +32,7 @@ export default function SettingsPageClient({ masjids }: Props) {
       setAuthOpen(true)
       return
     }
-    settings.selectedMasjidIds.forEach(id => toggleMasjid(id))
+    void updateSettings({ selectedMasjidIds: [] })
   }
 
   const handleCloseAuth = () => {
@@ -160,6 +160,7 @@ export default function SettingsPageClient({ masjids }: Props) {
             {!allSelected && (
               <button
                 onClick={handleShowAll}
+                disabled={!loaded || saving}
                 className="text-xs font-medium"
                 style={{ color: '#4F6F52' }}
               >
@@ -177,6 +178,8 @@ export default function SettingsPageClient({ masjids }: Props) {
             }
           </p>
 
+          {syncError && <p role="alert" className="mb-3 rounded-2xl bg-red-50 p-3 text-xs text-red-800">{syncError} <button type="button" disabled={saving} onClick={() => void syncPrivateSettings()} className="underline">Retry loading</button></p>}
+          {saving && <p role="status" className="mb-3 text-xs">Saving preferences...</p>}
           <div className="flex flex-col gap-2">
             {masjids.map(masjid => {
               const selected = allSelected || settings.selectedMasjidIds.includes(masjid.id)
@@ -184,6 +187,7 @@ export default function SettingsPageClient({ masjids }: Props) {
                 <button
                   key={masjid.id}
                   onClick={() => handleToggleMasjid(masjid.id)}
+                  disabled={isLoggedIn && (!loaded || saving)}
                   className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] p-4 transition-colors"
                   style={{ background: '#FFFFFF', border: '1px solid #E7E2D8', boxShadow: '0 1px 4px rgba(31,41,55,0.05)' }}
                 >
@@ -210,7 +214,6 @@ export default function SettingsPageClient({ masjids }: Props) {
         open={authOpen || requiresLogin}
         reason="Create a private username and PIN before saving masjid preferences."
         onClose={handleCloseAuth}
-        onSuccess={() => syncPrivateSettings()}
       />
 
       <BottomNav />

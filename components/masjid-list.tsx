@@ -11,7 +11,7 @@ const MASJID_LABELS: Record<string, { short: string; full: string }> = {
   'EPIC Masjid':                          { short: 'EPIC',   full: 'East Plano Islamic Center' },
   'IANT':                                 { short: 'IANT',   full: 'Islamic Association of North Texas' },
   'Islamic Center of Rowlett':            { short: 'ICR',    full: 'Islamic Center of Rowlett' },
-  'SMS Masjid of Sachse':                 { short: 'SMS',    full: 'Sachse Masjid of Sachse' },
+  'SMS Masjid of Sachse':                 { short: 'SMS',    full: 'Sachse Muslim Society' },
   'Valley Ranch Islamic Center':          { short: 'VRIC',   full: 'Valley Ranch Islamic Center' },
   'Qalam Masjid':                          { short: 'Qalam', full: 'Qalam Masjid' },
   'Qalam Institute':                      { short: 'Qalam',  full: 'Qalam Institute' },
@@ -167,6 +167,9 @@ export default function MasjidList({ iqamaTimes, isJummah = false, accentColor }
                   </>
                 )
               })()}
+              {entry.iqamaNote && (
+                <span className="mt-1 max-w-[15rem] text-[0.65rem] leading-snug text-amber-800">{entry.iqamaNote}</span>
+              )}
             </div>
 
             {/* Time(s) + directions */}

@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import {
   TrendingUp,
-  Flame,
   CheckCircle2,
   Circle,
   ChevronDown,
@@ -15,58 +14,17 @@ import {
 import BottomNav from '@/components/bottom-nav'
 import PrivateAuthModal from '@/components/private-auth-modal'
 import { usePrivateAuth } from '@/hooks/usePrivateAuth'
-import { getLocalDate } from '@/lib/prayer-checkins'
+import { useDallasDate } from '@/hooks/useDallasDate'
+import { PROGRESS_PRAYERS as PRAYERS, type ProgressPrayer as PrayerName, type WeekLog, emptyDayLog, getProgressWeek, buildWeekLog } from '@/lib/progress'
 import {
   getPrivatePrayerCheckins,
   savePrivatePrayerCheckin,
-  removePrivatePrayerCheckin,
+  removePrivatePrayerSlot,
+  isCurrentPrivateSession,
   getPrivateSession,
 } from '@/lib/private-auth'
 
-const PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const
 const PRAYER_INITIALS = ['F', 'D', 'A', 'M', 'I'] as const
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
-
-type PrayerName = typeof PRAYERS[number]
-type WeekLog = Record<string, Record<PrayerName, boolean>>
-
-function getPrayerKey(prayer: string) {
-  return prayer.toLowerCase()
-}
-
-function formatLocalDate(date: Date) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
-function getMondayStart(date = new Date()) {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
-  return d
-}
-
-function emptyDayLog(): Record<PrayerName, boolean> {
-  return {
-    Fajr: false,
-    Dhuhr: false,
-    Asr: false,
-    Maghrib: false,
-    Isha: false,
-  }
-}
-
-function createEmptyWeekLog(weekDates: { dateKey: string }[]) {
-  const base: WeekLog = {}
-  weekDates.forEach(({ dateKey }) => {
-    base[dateKey] = emptyDayLog()
-  })
-  return base
-}
 
 function getPieBackground(count: number) {
   const active = 'rgba(79,111,82,0.82)'
@@ -97,72 +55,63 @@ export default function ProgressPage() {
   const { session, isLoggedIn, loaded } = usePrivateAuth()
   const [authOpen, setAuthOpen] = useState(false)
 
-  const weekDates = useMemo(() => {
-    const start = getMondayStart()
-    return DAYS.map((day, index) => {
-      const date = new Date(start)
-      date.setDate(start.getDate() + index)
-      return {
-        day,
-        dateKey: formatLocalDate(date),
-        shortDate: `${date.getMonth() + 1}/${date.getDate()}`,
-      }
-    })
-  }, [])
-
-  const todayKey = getLocalDate()
-
-  const [weekLog, setWeekLog] = useState<WeekLog>(() => createEmptyWeekLog(weekDates))
+  const todayKey = useDallasDate()
+  const weekDates = useMemo(() => getProgressWeek(todayKey), [todayKey])
+  const [storedWeekLog, setWeekLog] = useState<WeekLog>(() => buildWeekLog(weekDates))
+  const [progressOwner, setProgressOwner] = useState('')
   const [editingToday, setEditingToday] = useState(false)
   const [editingWeek, setEditingWeek] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState(false)
+  const [progressError, setProgressError] = useState('')
+  const [pending, setPending] = useState<Set<string>>(new Set())
+  const pendingRef = useRef(new Set<string>())
+  const loadSequence = useRef(0)
+  const invalidateLoads = useCallback(() => { ++loadSequence.current }, [])
+  const progressReady = !!session && progressOwner === `${session.sessionToken}:${todayKey}`
+  const weekLog = progressReady ? storedWeekLog : buildWeekLog(weekDates)
+  const pendingKey = (date: string, prayer: string) => `${session?.sessionToken}:${date}:${prayer}`
 
   const loadWeek = useCallback(async () => {
+    const request = ++loadSequence.current
     const activeSession = getPrivateSession()
     if (!activeSession) {
-      setWeekLog(createEmptyWeekLog(weekDates))
+      setProgressOwner('')
+      setLoadingProgress(false)
       return
     }
-
     setLoadingProgress(true)
+    setProgressError('')
     try {
-      const startDate = weekDates[0]?.dateKey
-      const endDate = weekDates[weekDates.length - 1]?.dateKey
-      const checkins = await getPrivatePrayerCheckins(startDate, endDate, activeSession)
-      const next = createEmptyWeekLog(weekDates)
-
-      checkins.forEach(checkin => {
-        if (!next[checkin.date]) return
-        // Jumu'ah check-in counts as Dhuhr on Fridays
-        if (checkin.prayer === 'jummah') {
-          const day = new Date(checkin.date + 'T00:00:00').getDay()
-          if (day === 5) next[checkin.date]['Dhuhr'] = true
-          return
-        }
-        const label = checkin.prayerLabel as PrayerName
-        if (PRAYERS.includes(label)) {
-          next[checkin.date][label] = true
-        }
-      })
-
-      setWeekLog(next)
+      const checkins = await getPrivatePrayerCheckins(weekDates[0].dateKey, weekDates[6].dateKey, activeSession)
+      if (request !== loadSequence.current || !isCurrentPrivateSession(activeSession)) return
+      setWeekLog(buildWeekLog(weekDates, checkins))
+      setProgressOwner(`${activeSession.sessionToken}:${todayKey}`)
+    } catch {
+      if (request === loadSequence.current && isCurrentPrivateSession(activeSession)) {
+        setProgressError('Your progress could not be loaded. Retry, or log in again from Settings.')
+      }
     } finally {
-      setLoadingProgress(false)
+      if (request === loadSequence.current) setLoadingProgress(false)
     }
-  }, [weekDates])
+  }, [weekDates, todayKey])
 
   useEffect(() => {
     if (!loaded) return
     const timer = window.setTimeout(() => {
-      if (!isLoggedIn) {
+      if (!session) {
         setAuthOpen(true)
-        setWeekLog(createEmptyWeekLog(weekDates))
+        setProgressOwner('')
+        setProgressError('')
+        setLoadingProgress(false)
       } else {
         void loadWeek()
       }
     }, 0)
-    return () => window.clearTimeout(timer)
-  }, [loaded, isLoggedIn, loadWeek, weekDates])
+    return () => {
+      window.clearTimeout(timer)
+      invalidateLoads()
+    }
+  }, [loaded, session, loadWeek, invalidateLoads])
 
   const togglePrayerForDate = async (dateKey: string, prayer: PrayerName) => {
     const activeSession = getPrivateSession()
@@ -170,43 +119,34 @@ export default function ProgressPage() {
       setAuthOpen(true)
       return
     }
-
+    const key = `${activeSession.sessionToken}:${dateKey}:${prayer}`
     const active = weekLog[dateKey]?.[prayer] ?? false
-    const prayerKey = getPrayerKey(prayer)
-
-    setWeekLog(prev => ({
-      ...prev,
-      [dateKey]: {
-        ...(prev[dateKey] ?? emptyDayLog()),
-        [prayer]: !active,
-      },
-    }))
-
+    if (session?.sessionToken !== activeSession.sessionToken || !progressReady || loadingProgress || (dateKey > todayKey && !active) || pendingRef.current.has(key)) return
+    // A ref closes the double-click window before React renders disabled controls.
+    pendingRef.current.add(key)
+    setPending(new Set(pendingRef.current))
+    setProgressError('')
+    setWeekLog(prev => ({ ...prev, [dateKey]: { ...(prev[dateKey] ?? emptyDayLog()), [prayer]: !active } }))
     try {
       if (active) {
-        await removePrivatePrayerCheckin(dateKey, prayerKey, activeSession)
+        await removePrivatePrayerSlot(dateKey, prayer.toLowerCase(), activeSession)
       } else {
-        await savePrivatePrayerCheckin({
-          date: dateKey,
-          prayer: prayerKey,
-          prayerLabel: prayer,
-          adhanTime: '',
-        }, activeSession)
+        await savePrivatePrayerCheckin({ date: dateKey, prayer: prayer.toLowerCase(), prayerLabel: prayer, adhanTime: '' }, activeSession)
       }
     } catch {
-      setWeekLog(prev => ({
-        ...prev,
-        [dateKey]: {
-          ...(prev[dateKey] ?? emptyDayLog()),
-          [prayer]: active,
-        },
-      }))
+      if (isCurrentPrivateSession(activeSession)) {
+        setWeekLog(prev => ({ ...prev, [dateKey]: { ...(prev[dateKey] ?? emptyDayLog()), [prayer]: active } }))
+        setProgressError('That change could not be confirmed. Reload to verify, or log in again from Settings if your session expired.')
+      }
+    } finally {
+      pendingRef.current.delete(key)
+      setPending(new Set(pendingRef.current))
     }
   }
 
   const todayLog = weekLog[todayKey] ?? emptyDayLog()
   const todayCount = Object.values(todayLog).filter(Boolean).length
-  const streak = 12
+  const completedDays = weekDates.filter(({ dateKey }) => Object.values(weekLog[dateKey] ?? emptyDayLog()).every(Boolean)).length
   const weeklyTotal = weekDates.reduce((total, { dateKey }) => {
     return total + Object.values(weekLog[dateKey] ?? emptyDayLog()).filter(Boolean).length
   }, 0)
@@ -262,8 +202,14 @@ export default function ProgressPage() {
             </button>
           </div>
         </section>
+      ) : !progressReady ? (
+        <section className="relative z-10 px-6 pt-8" aria-live="polite">
+          <p>{progressError || 'Loading your private progress...'}</p>
+          {progressError && <button type="button" className="mt-3 rounded-full border px-4 py-2" disabled={loadingProgress} onClick={() => void loadWeek()}>Retry</button>}
+        </section>
       ) : (
         <>
+          {progressError && <p role="alert" className="relative z-10 mx-6 mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-800">{progressError} <button type="button" disabled={loadingProgress || pending.size > 0} onClick={() => void loadWeek()} className="underline">Reload progress</button></p>}
           <section className="relative z-10 px-6 pt-5">
             <div
               className="rounded-[1.8rem] border p-5"
@@ -319,7 +265,7 @@ export default function ProgressPage() {
 
           <section className="relative z-10 grid grid-cols-3 gap-3 px-6 pt-4">
             {[
-              { label: 'Streak', value: streak, unit: 'days', icon: Flame, accent: '#C8A951' },
+              { label: 'Complete', value: completedDays, unit: 'days this week', icon: CheckCircle2, accent: '#C8A951' },
               { label: 'Today', value: `${todayCount}/5`, unit: 'logged', icon: CheckCircle2, accent: '#4F6F52' },
               { label: 'Week', value: `${weekPercent}%`, unit: 'score', icon: CalendarDays, accent: '#4F6F52' },
             ].map(({ label, value, unit, icon: Icon, accent }) => (
@@ -374,7 +320,9 @@ export default function ProgressPage() {
                     <button
                       key={prayer}
                       type="button"
-                      onClick={() => togglePrayerForDate(todayKey, prayer)}
+                      onClick={() => void togglePrayerForDate(todayKey, prayer)}
+                      disabled={loadingProgress || pending.has(pendingKey(todayKey, prayer))}
+                      aria-pressed={active}
                       className={`pressable flex w-full items-center justify-between px-4 py-3.5 ${index < PRAYERS.length - 1 ? 'border-b border-[#E7E2D8]' : ''}`}
                     >
                       <div className="flex items-center gap-3">
@@ -392,7 +340,7 @@ export default function ProgressPage() {
                         </span>
                       </div>
                       <span className="text-[0.62rem] font-semibold" style={{ color: active ? '#4F6F52' : 'var(--text-muted)' }}>
-                        {active ? 'Logged' : 'Tap to log'}
+                        {pending.has(pendingKey(todayKey, prayer)) ? 'Saving...' : active ? 'Logged' : 'Tap to log'}
                       </span>
                     </button>
                   )
@@ -408,7 +356,7 @@ export default function ProgressPage() {
                   Weekly Rhythm
                 </p>
                 <p className="mt-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                  Edit any day from this week
+                  Edit today and earlier days this week
                 </p>
               </div>
               <button
@@ -525,7 +473,10 @@ export default function ProgressPage() {
                             <button
                               key={`${dateKey}-${prayer}`}
                               type="button"
-                              onClick={() => togglePrayerForDate(dateKey, prayer)}
+                              onClick={() => void togglePrayerForDate(dateKey, prayer)}
+                              disabled={loadingProgress || (dateKey > todayKey && !prayed) || pending.has(pendingKey(dateKey, prayer))}
+                              aria-label={`${prayer}, ${day} ${shortDate}${dateKey > todayKey ? ', future date' : ''}`}
+                              aria-pressed={prayed}
                               className="pressable flex flex-col items-center gap-1 rounded-2xl px-1.5 py-2"
                               style={sharedStyle}
                             >
@@ -560,7 +511,7 @@ export default function ProgressPage() {
             </div>
 
             <p className="mt-5 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
-              Saved privately to your profile
+              {pending.size ? 'Saving to your profile...' : progressError ? 'A change could not be confirmed. See the message above.' : 'Saved privately to your profile'}
             </p>
           </section>
         </>
@@ -570,7 +521,6 @@ export default function ProgressPage() {
         open={authOpen}
         reason="Create a private profile before viewing or editing your progress."
         onClose={() => setAuthOpen(false)}
-        onSuccess={() => loadWeek()}
       />
 
       <BottomNav />

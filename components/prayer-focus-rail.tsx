@@ -58,7 +58,11 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
     else if (power >  8000) goPrev()
   }, [goNext, goPrev])
 
-  const onKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Portals bubble through React's tree. Editing a dialog must not move or
+    // unmount the prayer card behind it; preserve caret/select arrow keys too.
+    const target = e.target as HTMLElement
+    if (!e.currentTarget.contains(target) || target.closest('input, textarea, select, [contenteditable="true"]')) return
     if (e.key === 'ArrowLeft')  goPrev()
     if (e.key === 'ArrowRight') goNext()
   }, [goPrev, goNext])
@@ -188,7 +192,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                         className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
                         style={{ color: 'var(--text-muted)' }}
                       >
-                        Adhan Time
+                        {c.prayer.key === 'jummah' ? 'First listed khutbah' : 'Adhan time'}
                       </p>
                       <p
                         className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.10em]"
@@ -237,7 +241,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
                         className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
                         style={{ color: 'var(--text-muted)' }}
                       >
-                        Adhan Time
+                        {c.prayer.key === 'jummah' ? 'First listed khutbah' : 'Adhan time'}
                       </p>
                       <p
                         className="rounded-full px-3 py-1 text-sm font-bold tracking-[0.10em]"
@@ -304,20 +308,24 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
 
       {/* ── COUNTDOWN / STATUS ────────────────────────────── */}
       <div className="mx-6 mt-2 flex flex-col items-center gap-1.5 rounded-[1.35rem] px-4 py-5 iphone-panel">
-        {!allIqamaPast && !adhanPast && (
+        {card.adhanTime && !allIqamaPast && !adhanPast && (
           <p
             className="text-[0.65rem] font-semibold uppercase tracking-[0.18em]"
             style={{ color: 'var(--text-muted)' }}
           >
-            Until Adhan
+            {card.prayer.key === 'jummah' ? 'Until first listed khutbah' : 'Until adhan'}
           </p>
         )}
-        {allIqamaPast ? (
+        {!card.adhanTime ? (
+          <p role="status" className="text-center text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+            {card.prayer.key === 'jummah' ? 'Khutbah schedule unavailable — verify with masjid' : 'Adhan schedule unavailable — verify with masjid'}
+          </p>
+        ) : allIqamaPast ? (
           <p
-            className="text-sm font-semibold tracking-[0.18em] uppercase"
+            className="text-center text-sm font-semibold"
             style={{ color: 'var(--text-muted)' }}
           >
-            Prayer Ended
+            {card.prayer.key === 'jummah' ? 'All listed khutbah starts have passed' : 'All listed iqamas have passed'}
           </p>
         ) : adhanPast ? (
           <div className="flex items-center gap-2.5">
@@ -326,7 +334,7 @@ export default function PrayerFocusRail({ cards, initialIndex }: Props) {
               style={{ background: accent }}
             />
             <p className="text-base font-semibold" style={{ color: 'var(--text-secondary)' }}>
-              Adhan Called
+              {card.prayer.key === 'jummah' ? 'First listed khutbah start has passed' : 'Adhan time has passed'}
             </p>
           </div>
         ) : (

@@ -25,5 +25,9 @@ export async function launchBrowser(): Promise<Browser> {
   }
 
   const { chromium } = await import('playwright')
-  return chromium.launch({ headless: true })
+  return chromium.launch({
+    headless: true,
+    // Optional local browser override; production keeps the pinned serverless binary.
+    executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH || undefined,
+  })
 }

@@ -58,7 +58,6 @@ export async function scrapeYaseen(): Promise<void> {
         const j2 = cleanBlock.match(/2nd[^:]*:\s*([\s\S]{0,30}?)(\d{1,2}:\d{2}\s*(?:AM|PM))/i)
         if (j1) times.jummah1 = normalizeTime(j1[2])
         if (j2) times.jummah2 = normalizeTime(j2[2])
-        if (!times.jummah1 && iqamahTime) times.jummah1 = normalizeTime(iqamahTime)
       }
     }
 

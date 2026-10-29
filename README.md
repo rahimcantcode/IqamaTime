@@ -75,3 +75,31 @@ MAS Dallas uses the matching year/day in its official annual JavaScript schedule
 and McKinney uses AthanPlus embedded on mckinneymasjid.org. MAS fails explicitly
 when the annual schedule year expires rather than silently reusing last year's
 values. Friday values are khutbah start times, as published by the mosques.
+
+## Quality and safe refreshes
+
+Use Node.js 24 and run `npm run check` (all fixture tests, lint, TypeScript, and
+production build). The quality workflow runs without production credentials.
+Tests cover date/source guards, event parsing and preservation, mocked private
+profile RPCs, and service-worker cache boundaries. Mocks are not proof that a
+production account can save successfully.
+
+For a local installed browser, optionally set
+`PLAYWRIGHT_EXECUTABLE_PATH=/path/to/chromium`. Otherwise install Playwright's
+Chromium normally. A source-only check never needs a database credential:
+`SCRAPE_DRY_RUN=1 npm run scrape` or `SCRAPE_DRY_RUN=1 npm run scrape:events`.
+
+Source failures intentionally fail the refresh job while preserving existing
+usable data. Do not replace missing iqamas with adhan times, calculated values
+without a published relative rule, search-engine snippets, or another day's
+schedule. On October 29, Sachse's official site rendered broken MadinaAPPS
+shortcodes, and the AthanPlus day widgets advanced to October 30 before Dallas
+midnight. These are external source limitations, not evidence for new times.
+
+The default database seed is directory metadata only; it never creates sample
+prayer times under today's date. Migrations `006_private_progress_safety.sql`
+and `007_public_feed_write_permissions.sql` require separate database review and
+approval; deploying the web app does not apply them. The new save RPC falls back
+to existing RPCs only when a function is explicitly missing, never after an
+uncertain write failure. Preserve anonymous read access when hardening public
+feed write permissions.

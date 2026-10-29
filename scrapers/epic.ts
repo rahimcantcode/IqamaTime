@@ -6,6 +6,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { logger } from './logger'
+import { addFridayTime } from './prayer-source-utils'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 
@@ -38,7 +39,7 @@ export async function scrapeEPIC(): Promise<void> {
 
         const name = cells[0].toLowerCase()
         // Iqama is typically the last time column
-        const iqama = cells[cells.length - 1]
+        const iqama = cells.length >= 3 ? cells[cells.length - 1] : null
 
         if (name.includes('fajr'))                    times.fajr    = normalizeTime(iqama)
         if (name.includes('dhuhr') || name.includes('zuhr')) times.dhuhr = normalizeTime(iqama)
@@ -46,8 +47,7 @@ export async function scrapeEPIC(): Promise<void> {
         if (name.includes('maghrib'))                 times.maghrib  = normalizeTime(iqama)
         if (name.includes('isha'))                    times.isha     = normalizeTime(iqama)
         if (name.includes('jumu') || name.includes('jumma')) {
-          if (!times.jummah1) times.jummah1 = normalizeTime(iqama)
-          else                times.jummah2 = normalizeTime(iqama)
+          addFridayTime(times, cells[cells.length - 1])
         }
       })
     })

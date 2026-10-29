@@ -40,6 +40,7 @@ export interface MasjidIqamaTime {
   iqama: string | null
   iqama2?: string | null
   iqama3?: string | null
+  iqamaNote?: string
   stale?: boolean
   sourceUrl?: string | null
   adhan?: string | null

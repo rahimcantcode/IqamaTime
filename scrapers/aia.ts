@@ -42,7 +42,7 @@ export async function scrapeAIA(): Promise<void> {
       if (cells.length < 2) return
 
       const name  = cells[0].replace(/[^\x20-\x7E]/g, '').trim().toLowerCase()
-      const iqama = cells[2] ?? cells[1]
+      const iqama = cells[2] ?? null
 
       if (name.includes('fajr'))                               times.fajr    = normalizeTime(iqama)
       if (name.includes('dhuhr') || name.includes('zuhr'))     times.dhuhr   = normalizeTime(iqama)

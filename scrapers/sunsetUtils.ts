@@ -1,31 +1,22 @@
 import axios from 'axios'
+import { dallasDate } from '../lib/dallas-date'
+import { normalizeTime } from './normalizeTime'
 
-function todayCT(): string {
-  return new Date()
-    .toLocaleDateString('en-GB', {
-      timeZone: 'America/Chicago',
-      day: '2-digit', month: '2-digit', year: 'numeric',
-    })
-    .replace(/\//g, '-')
-}
-
-/** Returns "H:MM PM" by adding offsetMinutes to today's Richardson sunset. */
-export async function sunsetPlus(offsetMinutes: number): Promise<string | null> {
+/** Calculation only for an explicit source-published relative iqamah rule. */
+export async function sunsetPlus(offsetMinutes: number, input: { city: string; date: string }): Promise<string | null> {
   try {
-    const url = `https://api.aladhan.com/v1/timingsByCity/${todayCT()}?city=Richardson&country=US&method=2`
-    const { data } = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0' } })
-    const sunsetStr: string = data?.data?.timings?.Maghrib
-    if (!sunsetStr) return null
-
-    const [hStr, mStr] = sunsetStr.split(':')
-    const totalMin = parseInt(hStr) * 60 + parseInt(mStr) + offsetMinutes
-    const h24 = Math.floor(totalMin / 60) % 24
-    const m   = totalMin % 60
-
-    const period = h24 >= 12 ? 'PM' : 'AM'
-    let h = h24 % 12
-    if (h === 0) h = 12
-    return `${h}:${m.toString().padStart(2, '0')} ${period}`
+    const date = input.date || dallasDate()
+    const [year, month, day] = date.split('-')
+    const url = `https://api.aladhan.com/v1/timingsByCity/${day}-${month}-${year}?city=${encodeURIComponent(input.city)}&state=Texas&country=US&method=2`
+    const { data } = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': 'IqamaTimeBot/1.0' } })
+    // A cached response for another day is not today's sunset.
+    if (data?.data?.date?.gregorian?.date !== `${day}-${month}-${year}`) return null
+    const sunset = normalizeTime(data?.data?.timings?.Maghrib)
+    const match = sunset?.match(/^(\d{1,2}):(\d{2}) (AM|PM)$/)
+    if (!match) return null
+    const hour = Number(match[1]) % 12 + (match[3] === 'PM' ? 12 : 0)
+    const total = (hour * 60 + Number(match[2]) + offsetMinutes) % (24 * 60)
+    return normalizeTime(`${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`)
   } catch {
     return null
   }

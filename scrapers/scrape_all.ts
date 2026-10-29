@@ -26,6 +26,7 @@ import { scrapeAllen  } from './allen'
 import { scrapeMIA    } from './mia'
 import { scrapeFrisco } from './frisco'
 import { logger } from './logger'
+import { isRetryableSourceError } from './retry'
 
 interface ScraperDef {
   name: string
@@ -63,6 +64,10 @@ async function runWithRetry(scraper: ScraperDef): Promise<'success' | 'failed'> 
       return 'success'
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
+      if (!isRetryableSourceError(err)) {
+        logger.error(scraper.name, `Source rejected request; not retrying: ${msg}`)
+        return 'failed'
+      }
       if (attempt < MAX_RETRIES) {
         logger.warn(scraper.name, `Attempt ${attempt} failed (${msg}). Retrying in ${RETRY_DELAY_MS}ms...`)
         await sleep(RETRY_DELAY_MS)
