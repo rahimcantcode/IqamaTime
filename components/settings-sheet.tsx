@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, CheckCircle2, Circle } from 'lucide-react'
 import { Masjid } from '@/types'
 import { useSettings } from '@/hooks/useSettings'
+import PrivateAuthModal from '@/components/private-auth-modal'
 
 interface Props {
   open: boolean
@@ -12,11 +13,12 @@ interface Props {
 }
 
 export default function SettingsSheet({ open, onClose, masjids }: Props) {
-  const { settings, toggleMasjid } = useSettings()
+  const { settings, updateSettings, toggleMasjid, saving, loaded, syncError, requiresLogin, clearLoginRequirement } = useSettings()
 
   const allSelected = settings.selectedMasjidIds.length === 0
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <>
@@ -73,7 +75,8 @@ export default function SettingsSheet({ open, onClose, masjids }: Props) {
                   </p>
                   {!allSelected && (
                     <button
-                      onClick={() => settings.selectedMasjidIds.forEach(id => toggleMasjid(id))}
+                      onClick={() => void updateSettings({ selectedMasjidIds: [] })}
+                      disabled={!loaded || saving}
                       className="text-xs font-medium"
                       style={{ color: '#4F6F52' }}
                     >
@@ -89,6 +92,7 @@ export default function SettingsSheet({ open, onClose, masjids }: Props) {
                   }
                 </p>
 
+                {syncError && <p role="alert" className="mb-3 text-xs text-red-700">{syncError}</p>}
                 <div className="flex flex-col gap-2">
                   {masjids.map(masjid => {
                     const selected = allSelected || settings.selectedMasjidIds.includes(masjid.id)
@@ -96,6 +100,7 @@ export default function SettingsSheet({ open, onClose, masjids }: Props) {
                       <button
                         key={masjid.id}
                         onClick={() => toggleMasjid(masjid.id)}
+                        disabled={!loaded || saving}
                         className="pressable flex min-h-[70px] items-center justify-between rounded-[1.2rem] p-4 transition-colors"
                         style={{ background: 'var(--surface-soft)', border: '1px solid #E7E2D8' }}
                       >
@@ -126,5 +131,7 @@ export default function SettingsSheet({ open, onClose, masjids }: Props) {
         </>
       )}
     </AnimatePresence>
+    <PrivateAuthModal open={requiresLogin} onClose={clearLoginRequirement} reason="Log in before saving masjid preferences." />
+    </>
   )
 }

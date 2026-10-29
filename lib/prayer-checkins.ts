@@ -1,6 +1,8 @@
+import { dallasDate } from './dallas-date'
+
 export interface PrayerCheckin {
   id: string
-  date: string        // YYYY-MM-DD local date
+  date: string        // YYYY-MM-DD Dallas date
   prayer: string      // fajr | dhuhr | asr | maghrib | isha | jummah
   prayerLabel: string // Fajr | Dhuhr | etc.
   adhanTime: string
@@ -10,18 +12,18 @@ export interface PrayerCheckin {
 
 const STORAGE_KEY = 'iqamatime_checkins'
 
-export function getLocalDate(): string {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+// Kept under the old export name for existing callers; prayer data uses Dallas.
+export function getLocalDate(now = new Date()): string {
+  return dallasDate(now)
 }
 
 export function getPrayerCheckins(): PrayerCheckin[] {
   if (typeof window === 'undefined') return []
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    const value: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    if (!Array.isArray(value)) return []
+    return value.filter((row): row is PrayerCheckin => !!row && typeof row === 'object' &&
+      ['id', 'date', 'prayer', 'prayerLabel', 'adhanTime', 'createdAt', 'updatedAt'].every(key => typeof row[key] === 'string'))
   } catch {
     return []
   }

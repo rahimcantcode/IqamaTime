@@ -8,6 +8,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { logger } from './logger'
+import { addFridayTime } from './prayer-source-utils'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 
@@ -46,14 +47,11 @@ export async function scrapeICI(): Promise<void> {
 
     // Jummah: .rm-namaz-jumu li → spans: [0]=label, [1]=khutbah, [2]=iqamah
     // Use khutbah time (when imam starts the khutbah), not iqamah
-    let jumaIndex = 0
     $('.rm-namaz-jumu li, ul.rm-namaz-jumu li').each((_, li) => {
       const spans = $(li).find('span').map((_, s) => $(s).text().trim()).get()
       const khutbahTime = spans[1] ?? null
       if (!khutbahTime || !/\d/.test(khutbahTime)) return
-      if (jumaIndex === 0) times.jummah1 = normalizeTime(khutbahTime)
-      else                 times.jummah2 = normalizeTime(khutbahTime)
-      jumaIndex++
+      addFridayTime(times, khutbahTime)
     })
 
     await upsertPrayerTimes({ masjidName: MASJID_NAME, date, sourceUrl: URL, ...times })

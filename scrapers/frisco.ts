@@ -4,6 +4,7 @@
  * Method: Playwright — renders Angular SPA to extract prayer times
  */
 import { logger } from './logger'
+import { addFridayTime } from './prayer-source-utils'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 import { launchBrowser } from './browser'
@@ -45,9 +46,7 @@ export async function scrapeFrisco(): Promise<void> {
       if (text.includes('jumu') || text.includes('jumma') || text.includes('friday')) {
         const t = normalizeTime(timeCells[0] ?? null)
         if (!t) return
-        if      (!times.jummah1) times.jummah1 = t
-        else if (!times.jummah2 && t !== times.jummah1) times.jummah2 = t
-        else if (!times.jummah3 && t !== times.jummah2) times.jummah3 = t
+        addFridayTime(times, t)
         return
       }
 

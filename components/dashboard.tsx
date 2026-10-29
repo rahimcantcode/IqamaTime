@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { prayerTimeNote } from '@/lib/prayer-source-notes'
 import { dallasDate, dallasMinutes } from '@/lib/dallas-date'
 import { MasjidWithPrayers, PrayerCardData, MasjidIqamaTime, PrayerKey, AdhanTimes } from '@/types'
 import { getPrayersForDay, getNextPrayerIndex, parseTime } from '@/lib/prayer-utils'
@@ -91,6 +92,7 @@ export default function Dashboard({ data, adhanTimes }: Props) {
           isPast: isPast(iqama, clock),
           stale: !!pt && pt.date !== dallasDate(),
           sourceUrl: pt?.source_url ?? entry.website_url,
+          iqamaNote: iqama ? prayerTimeNote(entry.name, pKey) : undefined,
         }
       })
 

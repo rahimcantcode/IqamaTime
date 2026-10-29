@@ -43,3 +43,10 @@ test('server and browser select Dallas prayers and DST offsets consistently', ()
   assert.equal(dallasTimeToDate(7, 0, new Date('2026-11-01T05:00:00Z')).toISOString(), '2026-11-01T13:00:00.000Z')
   assert.equal(dallasTimeToDate(7, 0, new Date('2026-03-08T06:00:00Z')).toISOString(), '2026-03-08T12:00:00.000Z')
 })
+
+
+test('daily iqama times must progress through the Dallas day, not silently use AM for afternoon', () => {
+  const times = parseCMZTimes(readFileSync('scrapers/fixtures/icr-cmz.html', 'utf8'))
+  assert.throws(() => validatePrayerTimes({ ...times, masjidName: 'test', date: '2026-10-29', dhuhr: '2:00 AM' }), /daily prayer order/)
+  assert.throws(() => validatePrayerTimes({ ...times, masjidName: 'test', date: '2026-10-29', asr: '5:00 AM' }), /daily prayer order/)
+})

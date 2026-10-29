@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { PrayerKey } from '@/types'
-import { getLocalDate } from '@/lib/prayer-checkins'
+import { useDallasDate } from '@/hooks/useDallasDate'
+import { usePrivateAuth } from '@/hooks/usePrivateAuth'
+import { prayerKeysForSlot } from '@/lib/progress'
 import {
   getPrivateSession,
   getPrivatePrayerCheckins,
   savePrivatePrayerCheckin,
-  removePrivatePrayerCheckin,
+  removePrivatePrayerSlot,
+  isCurrentPrivateSession,
 } from '@/lib/private-auth'
 import PrivateAuthModal from '@/components/private-auth-modal'
 
@@ -26,69 +29,109 @@ export default function PrayerCardActions({
   adhanPast,
 }: Props) {
   const router = useRouter()
-  const [checkedIn, setCheckedIn] = useState(false)
+  const { session, loaded } = usePrivateAuth()
+  const date = useDallasDate()
+  const [storedCheckin, setCheckedIn] = useState(false)
+  const [checkinOwner, setCheckinOwner] = useState('')
+  const owner = `${session?.sessionToken}:${date}:${prayerKey}`
+  const checkedIn = checkinOwner === owner && storedCheckin
+  const [error, setError] = useState('')
+  const busy = useRef(false)
+  const loadSequence = useRef(0)
+  const invalidateLoads = useCallback(() => { ++loadSequence.current }, [])
   const [authOpen, setAuthOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [undoVisible, setUndoVisible] = useState(false)
   const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const loadCheckin = useCallback(async () => {
-    const session = getPrivateSession()
-    if (!session) {
+    const request = ++loadSequence.current
+    const activeSession = getPrivateSession()
+    if (!activeSession) {
       setCheckedIn(false)
+      setCheckinOwner('')
       return
     }
-
     try {
-      const date = getLocalDate()
-      const checkins = await getPrivatePrayerCheckins(date, date, session)
-      setCheckedIn(checkins.some(c => c.date === date && c.prayer === prayerKey))
+      const checkins = await getPrivatePrayerCheckins(date, date, activeSession)
+      if (request !== loadSequence.current || !isCurrentPrivateSession(activeSession)) return
+      setCheckedIn(checkins.some(c => c.date === date && prayerKeysForSlot(date, prayerKey).includes(c.prayer)))
+      setCheckinOwner(`${activeSession.sessionToken}:${date}:${prayerKey}`)
+      setError('')
     } catch {
-      setCheckedIn(false)
+      if (request === loadSequence.current && isCurrentPrivateSession(activeSession)) {
+        setError('Could not check your saved progress. Try again when connected.')
+      }
     }
-  }, [prayerKey])
+  }, [date, prayerKey])
 
   useEffect(() => {
-    const timer = window.setTimeout(loadCheckin, 0)
-    return () => window.clearTimeout(timer)
-  }, [loadCheckin])
+    if (!loaded) return
+    const timer = window.setTimeout(() => {
+      setUndoVisible(false)
+      setError('')
+      void loadCheckin()
+    }, 0)
+    return () => {
+      window.clearTimeout(timer)
+      invalidateLoads()
+      if (undoTimer.current) clearTimeout(undoTimer.current)
+    }
+  }, [loadCheckin, loaded, session, invalidateLoads])
 
   const handleCheckin = async () => {
-    if (checkedIn || saving) return
-
-    const session = getPrivateSession()
-    if (!session) {
+    if (checkedIn || busy.current) return
+    const activeSession = getPrivateSession()
+    if (!activeSession) {
       setAuthOpen(true)
       return
     }
-
+    if (session?.sessionToken !== activeSession.sessionToken) return
+    busy.current = true
+    ++loadSequence.current
     setSaving(true)
+    setError('')
     try {
-      await savePrivatePrayerCheckin({
-        date: getLocalDate(),
-        prayer: prayerKey,
-        prayerLabel,
-        adhanTime: adhanTime ?? '',
-      }, session)
+      await savePrivatePrayerCheckin({ date, prayer: prayerKey, prayerLabel, adhanTime: adhanTime ?? '' }, activeSession)
+      if (!isCurrentPrivateSession(activeSession)) return
       setCheckedIn(true)
+      setCheckinOwner(`${activeSession.sessionToken}:${date}:${prayerKey}`)
       setUndoVisible(true)
       if (undoTimer.current) clearTimeout(undoTimer.current)
       undoTimer.current = setTimeout(() => setUndoVisible(false), 3000)
+    } catch {
+      if (isCurrentPrivateSession(activeSession)) {
+        setError('Could not confirm your prayer was saved. Retry, or log in again from Settings.')
+      }
     } finally {
+      busy.current = false
       setSaving(false)
     }
   }
 
   const handleUndo = async () => {
+    if (busy.current) return
+    const activeSession = getPrivateSession()
+    if (!activeSession) return
+    if (session?.sessionToken !== activeSession.sessionToken) return
+    busy.current = true
+    ++loadSequence.current
+    setSaving(true)
+    setError('')
     if (undoTimer.current) clearTimeout(undoTimer.current)
-    setUndoVisible(false)
-    const session = getPrivateSession()
-    if (!session) return
     try {
-      await removePrivatePrayerCheckin(getLocalDate(), prayerKey, session)
+      await removePrivatePrayerSlot(date, prayerKey, activeSession)
+      if (!isCurrentPrivateSession(activeSession)) return
       setCheckedIn(false)
+      setUndoVisible(false)
     } catch {
-      // checkin stays if removal fails
+      if (isCurrentPrivateSession(activeSession)) {
+        setError('Could not undo this check-in. Please retry.')
+        setUndoVisible(true)
+      }
+    } finally {
+      busy.current = false
+      setSaving(false)
     }
   }
 
@@ -96,13 +139,13 @@ export default function PrayerCardActions({
     router.replace('/dhikr', { scroll: false })
   }
 
-  if (!adhanPast) {
+  if (!adhanTime || !adhanPast) {
     return (
       <p
         className="text-center text-[0.65rem] font-medium tracking-wide opacity-55"
         style={{ color: 'var(--text-muted)' }}
       >
-        Available after Adhan
+        {!adhanTime ? 'Schedule unavailable' : prayerKey === 'jummah' ? 'Available after the listed khutbah start' : 'Available after Adhan'}
       </p>
     )
   }
@@ -118,7 +161,8 @@ export default function PrayerCardActions({
             <button
               type="button"
               onPointerDown={e => e.stopPropagation()}
-              onClick={handleUndo}
+              onClick={() => void handleUndo()}
+              disabled={saving}
               className="text-[0.65rem] font-semibold underline underline-offset-2"
               style={{ color: 'var(--text-muted)' }}
             >
@@ -134,7 +178,7 @@ export default function PrayerCardActions({
         <button
           type="button"
           onPointerDown={e => e.stopPropagation()}
-          onClick={handleCheckin}
+          onClick={() => void handleCheckin()}
           disabled={saving}
           className="w-full rounded-full py-2 text-[0.65rem] font-semibold tracking-wide transition-all duration-150 active:scale-[0.96] active:shadow-none disabled:opacity-60"
           style={{
@@ -165,11 +209,11 @@ export default function PrayerCardActions({
         Tasbih
       </button>
 
+      {error && <p role="alert" className="max-w-xs text-center text-xs text-red-700">{error}</p>}
       <PrivateAuthModal
         open={authOpen}
         reason="Create a private profile before saving prayer progress."
         onClose={() => setAuthOpen(false)}
-        onSuccess={() => loadCheckin()}
       />
     </div>
   )

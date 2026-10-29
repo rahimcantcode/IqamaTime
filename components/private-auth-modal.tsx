@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useHydrated } from '@/hooks/useHydrated'
-import { createPortal } from 'react-dom'
+import * as Dialog from '@radix-ui/react-dialog'
 import { Lock, UserRound, X } from 'lucide-react'
 import { createPrivateProfile, loginPrivateProfile, PrivateUserSession } from '@/lib/private-auth'
 
@@ -20,58 +20,73 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const mounted = useHydrated()
+  const request = useRef<AbortController | null>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
+  const usernameInput = useRef<HTMLInputElement | null>(null)
 
-  useEffect(() => {
-    if (!open || typeof document === 'undefined') return
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
+  useEffect(() => () => {
+    request.current?.abort()
+    request.current = null
   }, [open])
+
+  const close = () => {
+    request.current?.abort()
+    request.current = null
+    setLoading(false)
+    setPin('')
+    setError('')
+    onClose()
+  }
 
   if (!open || !mounted) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (request.current) return
+    const controller = new AbortController()
+    request.current = controller
     setError('')
     setLoading(true)
 
     try {
       const session = mode === 'create'
-        ? await createPrivateProfile(username, pin)
-        : await loginPrivateProfile(username, pin)
+        ? await createPrivateProfile(username, pin, controller.signal)
+        : await loginPrivateProfile(username, pin, controller.signal)
 
+      if (controller.signal.aborted) return
       setUsername('')
       setPin('')
       onSuccess?.(session)
       onClose()
     } catch (err) {
+      if (controller.signal.aborted) return
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
-      setLoading(false)
+      if (request.current === controller) {
+        request.current = null
+        setLoading(false)
+      }
     }
   }
 
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/20 px-4 backdrop-blur-sm sm:items-center"
-      style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
-    >
-      <button
-        type="button"
-        aria-label="Close login modal"
-        className="absolute inset-0 h-full w-full cursor-default"
-        onClick={onClose}
-      />
-
-      <div
-        className="relative z-10 w-full max-w-sm overflow-hidden rounded-[1.8rem] border bg-white"
-        style={{ borderColor: 'var(--border)', boxShadow: '0 20px 60px rgba(31,41,55,0.22)' }}
-        onClick={e => e.stopPropagation()}
-      >
+  return (
+    <Dialog.Root open={open} onOpenChange={value => { if (!value) close() }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm" />
+        <Dialog.Content
+          aria-modal="true"
+          onOpenAutoFocus={event => {
+            returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+            event.preventDefault()
+            usernameInput.current?.focus()
+          }}
+          onCloseAutoFocus={event => {
+            event.preventDefault()
+            if (returnFocus.current?.isConnected) returnFocus.current.focus()
+          }}
+          className="fixed bottom-[max(env(safe-area-inset-bottom),1rem)] left-1/2 z-[10000] w-[calc(100%_-_2rem)] max-h-[calc(100dvh_-_2rem)] max-w-sm -translate-x-1/2 overflow-y-auto rounded-[1.8rem] border bg-white sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2"
+          style={{ borderColor: 'var(--border)', boxShadow: '0 20px 60px rgba(31,41,55,0.22)' }}
+        >
         <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5">
           <div>
             <div
@@ -80,16 +95,16 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             >
               <Lock className="h-5 w-5" />
             </div>
-            <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+            <Dialog.Title className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
               {mode === 'create' ? 'Create your private profile' : 'Log in to your profile'}
-            </h2>
-            <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            </Dialog.Title>
+            <Dialog.Description className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {reason ?? 'Use a username and private PIN to save your personal progress.'}
-            </p>
+            </Dialog.Description>
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={close}
             className="pressable rounded-full p-2"
             style={{ background: 'rgba(31,41,55,0.05)', color: 'var(--text-secondary)' }}
             aria-label="Close"
@@ -103,6 +118,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             <button
               key={value}
               type="button"
+              disabled={loading}
               onClick={() => {
                 setMode(value)
                 setError('')
@@ -127,7 +143,12 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             <div className="flex items-center gap-2 rounded-2xl border px-3 py-3" style={{ borderColor: 'var(--border)', background: 'var(--background)' }}>
               <UserRound className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               <input
+                ref={usernameInput}
                 value={username}
+                disabled={loading}
+                required
+                minLength={3}
+                maxLength={24}
                 onChange={e => setUsername(e.target.value)}
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -146,6 +167,10 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
               <Lock className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 value={pin}
+                disabled={loading}
+                required
+                minLength={4}
+                maxLength={6}
                 onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 inputMode="numeric"
                 type="password"
@@ -157,7 +182,7 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
           </label>
 
           {error && (
-            <p className="mb-3 rounded-2xl px-3 py-2 text-xs" style={{ background: 'rgba(220,38,38,0.08)', color: '#B91C1C' }}>
+            <p role="alert" className="mb-3 rounded-2xl px-3 py-2 text-xs" style={{ background: 'rgba(220,38,38,0.08)', color: '#B91C1C' }}>
               {error}
             </p>
           )}
@@ -175,8 +200,8 @@ export default function PrivateAuthModal({ open, reason, onClose, onSuccess }: P
             No email needed for now. Your username and PIN keep your progress separate from other users.
           </p>
         </form>
-      </div>
-    </div>,
-    document.body
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   )
 }

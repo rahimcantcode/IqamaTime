@@ -6,6 +6,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { logger } from './logger'
+import { addFridayTime } from './prayer-source-utils'
 import { normalizeTime } from './normalizeTime'
 import { upsertPrayerTimes, logScrape, todayDate, TimesOnly } from './database'
 
@@ -42,8 +43,7 @@ export async function scrapeIACC(): Promise<void> {
       if (name.includes('maghrib')) times.maghrib  = normalizeTime(time)
       if (name.includes('isha'))    times.isha     = normalizeTime(time)
       if (name.includes('jumu') || name.includes('jumma')) {
-        if (!times.jummah1) times.jummah1 = normalizeTime(time)
-        else                times.jummah2 = normalizeTime(time)
+        addFridayTime(times, time)
       }
     })
 
