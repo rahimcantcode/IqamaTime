@@ -10,8 +10,10 @@
     "lint": "eslint",
     "generate-icons": "node scripts/generate-icons.mjs",
     "scrape": "node --import tsx scrapers/scrape_all.ts",
-    "test": "node --import tsx --test scrapers/repairs.test.ts",
-    "scrape:events": "node --import tsx scrapers/scrape_events.ts"
+    "test": "node --import tsx --test \"{scrapers,lib,scripts}/**/*.test.ts\"",
+    "scrape:events": "node --import tsx scrapers/scrape_events.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "npm test && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
