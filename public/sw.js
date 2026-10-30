@@ -1,7 +1,6 @@
-const CACHE_NAME     = 'iqamatime-v3'
+const CACHE_NAME     = 'iqamatime-v4'
 const OFFLINE_URL    = '/offline.html'
 const STATIC_ASSETS  = [
-  '/',
   '/offline.html',
   '/manifest.json',
   '/icons/icon-192.png',
@@ -36,6 +35,9 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
+  // Never intercept account/RPC requests or third-party services.
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return
+
   // API calls: network-first, no cache fallback (fresh data matters)
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
@@ -57,6 +59,13 @@ self.addEventListener('fetch', (event) => {
     )
     return
   }
+
+  // Cache only immutable app assets. Next.js RSC requests and other dynamic
+  // page data must reach the network, not an indefinitely stale cache.
+  const staticAsset = STATIC_ASSETS.includes(url.pathname) ||
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/fonts/') || url.pathname.startsWith('/icons/')
+  if (!staticAsset) return
 
   // Static assets: cache-first
   event.respondWith(

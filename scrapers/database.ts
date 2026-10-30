@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import type { WebSocketLikeConstructor } from '@supabase/realtime-js'
 import { logger } from './logger'
@@ -78,53 +79,45 @@ export async function replaceCommunityEventsForSource(input: {
   masjidName: string
   sourceName: string
   events: ScrapedCommunityEvent[]
-}): Promise<void> {
-  const supabase = getSupabase()
-
-  const { data: masjid, error: masjidErr } = await supabase
-    .from('masjids')
-    .select('id')
-    .eq('name', input.masjidName)
-    .maybeSingle()
-
-  if (masjidErr || !masjid) {
-    logger.error(input.masjidName, `Masjid not found for events: ${masjidErr?.message}`)
+  // Only a complete source snapshot may retire listings absent from that snapshot.
+  cancelledUrls?: string[]
+  retireMissing?: boolean
+}, clientFactory = getSupabase): Promise<void> {
+  if (!input.events.length && !input.cancelledUrls?.length) throw new Error(`${input.sourceName}: no events parsed; preserving previous feed`)
+  if (process.env.SCRAPE_DRY_RUN === '1') {
+    console.log('EVENTS_RESULT ' + JSON.stringify({ source: input.sourceName, events: input.events }))
     return
   }
-
-  const { error: deleteErr } = await supabase
-    .from('community_events')
-    .delete()
-    .eq('source_name', input.sourceName)
-
-  if (deleteErr) {
-    logger.error(input.sourceName, `Event cleanup failed: ${deleteErr.message}`)
-    throw deleteErr
+  const supabase = clientFactory()
+  if (!input.events.length) {
+    const { error } = await supabase.from('community_events').update({ active: false })
+      .eq('source_name', input.sourceName).in('source_url', input.cancelledUrls!)
+    if (error) throw error
+    return
   }
-
-  if (!input.events.length) return
+  const { data: masjid, error: masjidErr } = await supabase.from('masjids').select('id').eq('name', input.masjidName).maybeSingle()
+  if (masjidErr || !masjid) throw new Error(`Masjid not found for events: ${input.masjidName}`)
 
   const rows = input.events.map(event => ({
-    masjid_id: masjid.id,
-    title: event.title,
-    event_date: event.eventDate,
-    event_time: event.eventTime,
-    location: event.location,
-    speakers: event.speakers,
-    description: event.description,
-    image_url: event.imageUrl,
-    source_url: event.sourceUrl,
-    source_name: event.sourceName,
-    active: true,
+    masjid_id: masjid.id, title: event.title, event_date: event.eventDate,
+    event_time: event.eventTime, location: event.location, speakers: event.speakers,
+    description: event.description, image_url: event.imageUrl, source_url: event.sourceUrl,
+    source_name: input.sourceName, active: true, scraped_at: new Date().toISOString(),
+    content_hash: createHash('sha256').update([input.sourceName, event.title, event.eventDate || '', event.eventTime || ''].join('|')).digest('hex'),
   }))
-
-  const { error: insertErr } = await supabase
-    .from('community_events')
-    .insert(rows)
-
-  if (insertErr) {
-    logger.error(input.sourceName, `Event insert failed: ${insertErr.message}`)
-    throw insertErr
+  // Insert first: a failed refresh must never erase the last usable feed.
+  const { error } = await supabase.from('community_events').upsert(rows, { onConflict: 'content_hash' })
+  if (error) throw error
+  if (input.cancelledUrls?.length) {
+    const { error: cancellationError } = await supabase.from('community_events').update({ active: false })
+      .eq('source_name', input.sourceName).in('source_url', input.cancelledUrls)
+    if (cancellationError) throw cancellationError
+  }
+  if (input.retireMissing) {
+    const { error: cleanupError } = await supabase.from('community_events').update({ active: false })
+      .eq('source_name', input.sourceName)
+      .or(`content_hash.is.null,content_hash.not.in.(${rows.map(row => row.content_hash).join(',')})`)
+    if (cleanupError) throw cleanupError
   }
 }
 
